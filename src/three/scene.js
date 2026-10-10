@@ -1,10 +1,11 @@
-// The 3D farm: renderer, camera, lights, island, plants, effects and picking.
+// The 3D farm: renderer, camera, lights, the valley, plants, effects and picking.
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
-import { buildIsland, plotCenter, SOIL_TOP, PLANT_SCALE, cloud, butterfly } from './island.js';
+import { buildFarm, plotCenter, SOIL_TOP, PLANT_SCALE, butterfly } from './farm.js';
+import { buildCountryside, VIEW_BOUNDS, at } from './countryside.js';
 import { buildPlant } from './models.js';
 import { updateRainbow } from './materials.js';
 import { glowTexture, starTexture, skyTexture, ringTexture, sunRaysTexture, sunFaceTexture } from './textures.js';
@@ -16,6 +17,8 @@ const DRY = new THREE.Color('#9b6440');
 const WET = new THREE.Color('#5e3720');
 const LOCKED = new THREE.Color('#7dc95a');
 const CAM_DIR = new THREE.Vector3(1, 0.95, 1).normalize();
+// The sun hangs in the sky behind the mountains, up and to the left.
+const SUN_AT = at(-5, 20, 3.4);
 
 const easeOutBack = (t) => 1 + 2.4 * Math.pow(t - 1, 3) + 1.4 * Math.pow(t - 1, 2);
 const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
@@ -50,7 +53,8 @@ export class FarmScene {
     this.plantMode = false;
     this.clock = new THREE.Timer();
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+    // Everything is drawn into offscreen buffers that smooth their own edges (see setQuality), so the canvas needs no antialiasing.
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.NeutralToneMapping;
     renderer.toneMappingExposure = 1.1;
@@ -72,10 +76,11 @@ export class FarmScene {
     const sun = new THREE.DirectionalLight('#fff0c4', 2.4);
     sun.position.set(3.5, 9, -1.2);
     sun.castShadow = true;
-    sun.shadow.camera.left = -5.5;
-    sun.shadow.camera.right = 5.5;
-    sun.shadow.camera.top = 5.5;
-    sun.shadow.camera.bottom = -5.5;
+    // Shadows cover the farm and the buildings round it; the far valley does without.
+    sun.shadow.camera.left = -8;
+    sun.shadow.camera.right = 8;
+    sun.shadow.camera.top = 8;
+    sun.shadow.camera.bottom = -8;
     sun.shadow.camera.near = 1;
     sun.shadow.camera.far = 25;
     sun.shadow.bias = -0.0006;
@@ -89,6 +94,8 @@ export class FarmScene {
     this.world.add(this.plantsGroup);
     this.fxGroup = new THREE.Group();
     this.world.add(this.fxGroup);
+    this.countryside = buildCountryside();
+    this.world.add(this.countryside.group);
 
     this.slots = [];
     for (let i = 0; i < 16; i++) {
@@ -101,18 +108,11 @@ export class FarmScene {
       this.slots.push({ root, holder: null, key: '', top: 0, wetUntil: 0, locked: false, empty: true, look: null, ripe: false, phase: Math.random() * TAU });
     }
 
-    scene.add(this.camera);
     this.sunSprite = this.makeSun();
-    this.camera.add(this.sunSprite);
+    this.sunSprite.position.copy(SUN_AT);
+    this.sunSprite.scale.setScalar(2.2);
+    scene.add(this.sunSprite);
 
-    this.clouds = [];
-    const cloudSpots = [[-7, -1.5, 2, 1.4], [6, 1.2, -5, 1.1], [-2, -4.5, 7, 1.8], [8, -3.5, 2, 1.5], [-8, 2.2, -4, 1], [3, -5, 8, 1.3], [-5, 3, -8, 1.2]];
-    for (const [x, y, z, s] of cloudSpots) {
-      const c = cloud(s);
-      c.position.set(x, y, z);
-      scene.add(c);
-      this.clouds.push(c);
-    }
     this.butterflies = ['#ff8fc1', '#ffd23f'].map((col, i) => {
       const b = butterfly(col);
       b.userData.phase = i * 3.1;
@@ -129,16 +129,17 @@ export class FarmScene {
   }
 
   setTheme(theme) {
-    if (this.island) {
-      this.world.remove(this.island.group);
-      this.island.group.traverse((o) => {
+    if (this.farm) {
+      this.world.remove(this.farm.group);
+      this.farm.group.traverse((o) => {
         if (o.geometry) o.geometry.dispose();
+        if (o.userData.ownMaterial) o.material.dispose();
       });
-      for (const p of this.island.plots) p.tile.material.dispose();
+      for (const p of this.farm.plots) p.tile.material.dispose();
     }
-    this.island = buildIsland(theme);
-    this.world.add(this.island.group);
-    this.island.plots.forEach((p, i) => {
+    this.farm = buildFarm(theme);
+    this.world.add(this.farm.group);
+    this.farm.plots.forEach((p, i) => {
       p.tile.userData.plot = i;
       this.slots[i].tile = p.tile;
       this.slots[i].hit = p.hit;
@@ -150,17 +151,30 @@ export class FarmScene {
     this.quality = q;
     const high = q === 'high';
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, high ? 2 : 1.25));
-    this.sun.shadow.mapSize.set(high ? 2048 : 1024, high ? 2048 : 1024);
+    // The shadow box is 16 units wide: this many texels keep shadow edges as crisp as on the old, smaller island.
+    const shadowSize = Math.min(high ? 3072 : 1536, this.renderer.capabilities.maxTextureSize);
+    this.sun.shadow.mapSize.set(shadowSize, shadowSize);
     if (this.sun.shadow.map) {
       this.sun.shadow.map.dispose();
       this.sun.shadow.map = null;
     }
-    if (high && !this.composer) {
-      this.composer = new EffectComposer(this.renderer);
+    if (!this.composer) {
+      this.composer = new EffectComposer(this.renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }));
       this.composer.addPass(new RenderPass(this.scene, this.camera));
       this.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.32, 0.35, 0.97);
       this.composer.addPass(this.bloom);
       this.composer.addPass(new OutputPass());
+    }
+    this.bloom.enabled = high;
+    // Smooth edges with MSAA: 4 samples, or 2 where pixels are already small (Retina), which keeps memory near
+    // what the old antialiased canvas used.
+    const gl = this.renderer.getContext();
+    const supported = gl.getInternalformatParameter(gl.RENDERBUFFER, gl.RGBA16F, gl.SAMPLES);
+    const samples = Math.min(this.renderer.getPixelRatio() > 1.5 ? 2 : 4, supported && supported.length ? supported[0] : 0);
+    for (const target of [this.composer.renderTarget1, this.composer.renderTarget2]) {
+      if (target.samples === samples) continue;
+      target.samples = samples;
+      target.dispose();
     }
     this.resize();
   }
@@ -175,20 +189,22 @@ export class FarmScene {
       this.composer.setPixelRatio(this.renderer.getPixelRatio());
       this.composer.setSize(w, h);
     }
-    this.applyView();
+    // A new screen shape can change how far out the view may zoom.
+    this.setZoom(this.zoom);
   }
 
-  /** Frames the island for the screen shape, then applies the player's zoom and pan. */
-  applyView() {
+  /** The view for this screen shape and zoom, in world units; the shift keeps the farm above the bottom bars. */
+  viewSize() {
     const aspect = this.width / this.height;
     const portrait = aspect < 0.8;
-    const needW = portrait ? 8.6 : 12.0;
-    const needH = 8.0;
-    const baseH = Math.max(needH, needW / aspect);
+    const baseH = Math.max(8.0, (portrait ? 8.6 : 12.0) / aspect);
     const viewH = baseH / this.zoom;
-    const viewW = viewH * aspect;
-    // Keep the island a little above centre so the bottom bars do not cover it.
-    const shiftY = (portrait ? 0.03 : 0.05) * baseH;
+    return { aspect, baseH, viewH, viewW: viewH * aspect, shiftY: (portrait ? 0.03 : 0.05) * baseH };
+  }
+
+  /** Frames the farm for the screen shape, then applies the player's zoom and pan. */
+  applyView() {
+    const { viewH, viewW, shiftY } = this.viewSize();
     const cx = this.pan.x;
     const cy = this.pan.y + shiftY;
     this.camera.left = cx - viewW / 2;
@@ -197,14 +213,17 @@ export class FarmScene {
     this.camera.bottom = cy - viewH / 2;
     this.camera.updateProjectionMatrix();
     this.viewH = viewH;
-    if (this.sunSprite) {
-      this.sunSprite.position.set(this.camera.left + viewW * (portrait ? 0.2 : 0.14), this.camera.top - viewH * (portrait ? 0.2 : 0.25), -70);
-      this.sunSprite.scale.setScalar(viewH * (portrait ? 0.16 : 0.22));
-    }
+  }
+
+  /** Zooming out stops once the screen spans the whole valley across or up and down. */
+  minZoom() {
+    const { aspect, baseH } = this.viewSize();
+    const b = VIEW_BOUNDS;
+    return Math.max(0.5, (baseH * aspect) / (b.right - b.left), baseH / (b.top - b.bottom));
   }
 
   setZoom(z) {
-    this.zoom = Math.min(2.4, Math.max(0.8, z));
+    this.zoom = Math.min(2.4, Math.max(this.minZoom(), z));
     this.clampPan();
     this.applyView();
   }
@@ -217,10 +236,13 @@ export class FarmScene {
     this.applyView();
   }
 
+  /** The view can travel to the edges of the valley but not past them. */
   clampPan() {
-    const limit = 0.6 + (this.zoom - 1) * 3.2;
-    this.pan.x = Math.min(limit, Math.max(-limit, this.pan.x));
-    this.pan.y = Math.min(limit, Math.max(-limit, this.pan.y));
+    const { viewH, viewW, shiftY } = this.viewSize();
+    const b = VIEW_BOUNDS;
+    const fit = (v, lo, hi, size) => (hi - lo <= size ? (lo + hi) / 2 : Math.min(hi - size / 2, Math.max(lo + size / 2, v)));
+    this.pan.x = fit(this.pan.x, b.left, b.right, viewW);
+    this.pan.y = fit(this.pan.y + shiftY, b.bottom, b.top, viewH) - shiftY;
   }
 
   resetView() {
@@ -489,7 +511,7 @@ export class FarmScene {
       const rect = this.canvas.getBoundingClientRect();
       ndc.set(((ev.clientX - rect.left) / rect.width) * 2 - 1, -((ev.clientY - rect.top) / rect.height) * 2 + 1);
       ray.setFromCamera(ndc, this.camera);
-      const targets = [...this.slots.map((s) => s.tile), ...this.slots.map((s) => s.root), ...this.island.clickables];
+      const targets = [...this.slots.map((s) => s.tile), ...this.slots.map((s) => s.root), ...this.farm.clickables];
       const hits = ray.intersectObjects(targets, true);
       for (const h of hits) {
         let o = h.object;
@@ -646,14 +668,7 @@ export class FarmScene {
     });
 
     if (this.sunRays) this.sunRays.material.rotation = t * 0.15;
-    for (const c of this.clouds) {
-      c.position.x += dt * 0.12;
-      c.position.z -= dt * 0.12;
-      if (c.position.x > 11) {
-        c.position.x -= 20;
-        c.position.z += 20;
-      }
-    }
+    this.countryside.update(t, dt);
     this.butterflies.forEach((b, k) => {
       const ph = t * 0.35 + b.userData.phase;
       const x = Math.sin(ph) * 2.6;
@@ -670,8 +685,7 @@ export class FarmScene {
 
     for (const fn of this.frameHooks) fn(t);
 
-    if (this.quality === 'high' && this.composer) this.composer.render(dt);
-    else this.renderer.render(this.scene, this.camera);
+    this.composer.render(dt);
   }
 }
 

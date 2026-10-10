@@ -554,6 +554,9 @@ export class App {
 function guessQuality() {
   const cores = navigator.hardwareConcurrency || 4;
   const mem = navigator.deviceMemory || 4;
+  // Laptops and desktops (mouse or trackpad, no touch screen) can draw the sharp picture even with 4 threads.
+  const computer = matchMedia('(pointer: fine)').matches && !matchMedia('(any-pointer: coarse)').matches;
+  if (computer) return cores <= 2 ? 'low' : 'high';
   return cores <= 4 || mem <= 3 ? 'low' : 'high';
 }
 

@@ -265,7 +265,7 @@ const S = {
   cloudJoined: { vi: 'Đã kết nối mã gia đình', en: 'Family code connected' },
   haveCode: { vi: 'Đã chơi trên máy khác? Nhập mã', en: 'Played on another device? Enter your code' },
   welcomeTitle: { vi: 'Chào mừng bé!', en: 'Welcome!' },
-  welcomeText: { vi: 'Đây là hòn đảo nông trại trên mây của bé. Trồng cây, chăm sóc và săn những cây đột biến thật đẹp nhé!', en: 'This is your farm island in the clouds. Grow plants, look after them and hunt for amazing mutations!' },
+  welcomeText: { vi: 'Đây là nông trại trên mây của bé, giữa núi rừng và sông suối. Trồng cây, chăm sóc và săn những cây đột biến thật đẹp nhé!', en: 'This is your farm in the clouds, among forests, mountains and a river. Grow plants, look after them and hunt for amazing mutations!' },
   how1: { vi: 'Gieo hạt vào ô đất', en: 'Plant seeds in the soil' },
   how2: { vi: 'Tưới nước để được thêm quả và dễ đột biến', en: 'Water for extra crops and more mutations' },
   how3: { vi: 'Thu hoạch rồi bán ở Kho', en: 'Harvest, then sell in the Barn' },
