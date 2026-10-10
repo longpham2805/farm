@@ -1,0 +1,32 @@
+// Draws the app icon. full=true fills the whole square (for maskable icons).
+module.exports = (full) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="32%" cy="26%" r="85%">
+      <stop offset="0" stop-color="#fff6b8"/><stop offset="0.55" stop-color="#ffd23f"/><stop offset="1" stop-color="#ffa514"/>
+    </radialGradient>
+    <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9be86a"/><stop offset="1" stop-color="#45b83a"/>
+    </linearGradient>
+    <linearGradient id="dirt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c98a4b"/><stop offset="1" stop-color="#8a5328"/>
+    </linearGradient>
+  </defs>
+  ${full ? '<rect width="512" height="512" fill="url(#bg)"/>' : '<rect width="512" height="512" rx="116" fill="url(#bg)"/>'}
+  <g transform="${full ? 'translate(51 51) scale(0.8)' : ''}">
+    <g transform="translate(150 140)">
+      ${Array.from({ length: 12 }, (_, i) => `<path d="M0 -92 L13 -62 L-13 -62 Z" fill="#fff3a0" opacity="0.9" transform="rotate(${i * 30})"/>`).join('')}
+      <circle r="56" fill="#ffe14a" stroke="#ffb300" stroke-width="6"/>
+      <circle cx="-18" cy="-8" r="7" fill="#7a4a10"/><circle cx="18" cy="-8" r="7" fill="#7a4a10"/>
+      <path d="M-20 12 Q0 30 20 12" stroke="#7a4a10" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <ellipse cx="-32" cy="10" rx="9" ry="6" fill="#ff8a5c" opacity="0.6"/><ellipse cx="32" cy="10" rx="9" ry="6" fill="#ff8a5c" opacity="0.6"/>
+    </g>
+    <path d="M86 352 Q256 330 426 352 L372 430 Q256 486 140 430 Z" fill="url(#dirt)"/>
+    <ellipse cx="256" cy="352" rx="172" ry="50" fill="url(#grass)"/>
+    <ellipse cx="256" cy="345" rx="96" ry="22" fill="#9b6440"/>
+    <path d="M262 346 C262 300 256 270 264 226" stroke="#2f9a35" stroke-width="20" fill="none" stroke-linecap="round"/>
+    <path d="M262 258 C210 262 168 226 166 168 C226 166 262 204 262 258 Z" fill="#4fd14a" stroke="#2f9a35" stroke-width="6"/>
+    <path d="M266 236 C300 196 352 182 398 196 C384 246 330 262 266 236 Z" fill="#6fe05a" stroke="#2f9a35" stroke-width="6"/>
+    <circle cx="350" cy="350" r="22" fill="#ff3d3d"/><path d="M350 330 q4 -10 12 -12" stroke="#2f9a35" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <circle cx="170" cy="358" r="18" fill="#ff9a1a"/>
+  </g>
+</svg>`;
