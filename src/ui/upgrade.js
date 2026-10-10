@@ -45,7 +45,7 @@ export function openUpgrade(app) {
       }
       const reqs = [
         h('div', { class: `req ${check.xpOk ? 'ok' : 'miss'}` }, '⭐', h('b', { class: 'num' }, `${fmtNum(Math.min(s.xp, need.xp))}/${fmtNum(need.xp)}`)),
-        h('div', { class: `req ${check.coinsOk ? 'ok' : 'miss'}` }, '🪙', h('b', { class: 'num' }, fmtNum(need.coins))),
+        h('div', { class: `req ${check.coinsOk ? 'ok' : 'miss'}` }, '🌏', h('b', { class: 'num' }, fmtNum(need.coins))),
       ];
       if (need.material) {
         const have = G.cropCount(s, need.material.crop);

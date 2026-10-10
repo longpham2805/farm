@@ -33,6 +33,7 @@
 }
 
 * { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 html, body { height: 100%; margin: 0; overflow: hidden; }
 body {
   background: var(--sky);
@@ -69,7 +70,7 @@ img { max-width: 100%; }
 @keyframes bob { 50% { transform: translateY(-8px) scale(1.05); } }
 
 /* ── Shared pieces ─────────────────────────────────── */
-.coin::before { content: '🪙'; margin-right: 2px; }
+.coin::before { content: '🌏'; margin-right: 2px; }
 .num { font-variant-numeric: tabular-nums; }
 
 .btn {
@@ -313,6 +314,7 @@ img { max-width: 100%; }
   padding: 0 calc(12px + var(--safe-r)) calc(8px + var(--safe-b)) calc(12px + var(--safe-l));
   animation: sheetup 0.25s ease-out;
 }
+.sheet.still { animation: none; }
 @keyframes sheetup { from { transform: translateY(100%); } }
 .sheet-tabs { position: relative; display: flex; gap: 4px; align-items: flex-end; }
 .sheet-tab { flex: none; white-space: nowrap; }
@@ -400,15 +402,15 @@ img { max-width: 100%; }
 #modal-root:empty { display: none; }
 .overlay {
   position: absolute; inset: 0; z-index: 40;
-  display: grid; place-items: center;
-  padding: calc(16px + var(--safe-t)) calc(16px + var(--safe-r)) calc(16px + var(--safe-b)) calc(16px + var(--safe-l));
+  display: flex; align-items: center; justify-content: center;
+  padding: calc(28px + var(--safe-t)) calc(16px + var(--safe-r)) calc(16px + var(--safe-b)) calc(16px + var(--safe-l));
   background: rgba(90, 56, 10, 0.45);
   animation: fadein 0.2s;
 }
 @keyframes fadein { from { opacity: 0; } }
 .modal {
   position: relative;
-  width: min(880px, 100%); max-height: 100%;
+  width: min(880px, 100%); max-height: 100%; min-height: 0;
   display: flex; flex-direction: column;
   padding: 30px 18px 16px;
   background: var(--paper);
@@ -444,11 +446,14 @@ img { max-width: 100%; }
 .section-title { font-family: var(--font-display); font-size: 18px; margin: 8px 0 6px; }
 
 /* shop / warehouse split */
-.split { display: grid; grid-template-columns: 1fr 260px; gap: 14px; min-height: 0; }
-.split .grid-wrap { min-width: 0; }
+/* Wide screens: the list and the detail scroll on their own, so Buy/Sell stays reachable on short screens. */
+.modal-body:has(> .split) { display: flex; flex-direction: column; }
+.split { flex: 1; display: grid; grid-template-columns: 1fr 260px; grid-template-rows: minmax(0, 1fr); gap: 14px; min-height: 0; }
+.split > * { overflow-y: auto; overscroll-behavior: contain; }
+.split .grid-wrap { min-width: 0; padding: 4px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; justify-items: center; }
 .detail {
-  align-self: start; position: sticky; top: 0;
+  align-self: start; max-height: 100%;
   padding: 14px; border-radius: 18px; background: var(--paper-2);
   display: flex; flex-direction: column; gap: 8px;
 }
@@ -593,8 +598,10 @@ img { max-width: 100%; }
 
 /* ── Small screens ─────────────────────────────────── */
 @media (max-width: 760px) {
-  .split { grid-template-columns: 1fr; }
-  .detail { position: static; order: -1; padding: 10px; gap: 6px; }
+  .modal-body:has(> .split) { display: block; }
+  .split { grid-template-columns: 1fr; grid-template-rows: none; }
+  .split > * { overflow: visible; }
+  .detail { max-height: none; order: -1; padding: 10px; gap: 6px; }
   .detail-pic { width: 60px; height: 60px; border-radius: 12px; }
   .detail-pic img { width: 54px; height: 54px; }
   .detail h3 { font-size: 17px; }

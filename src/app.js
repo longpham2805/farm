@@ -388,7 +388,7 @@ export class App {
     this.scene.fxWater(i);
     sfx.water();
     const p = this.plotScreen(i);
-    if (r.rewarded) floatText(p.x, p.y - 10, `🪙+${r.coins}`, 'gold');
+    if (r.rewarded) floatText(p.x, p.y - 10, `🌏+${r.coins}`, 'gold');
     else toast(t('helpedFriend'));
     this.handleChests(r.chests);
     this.refresh();

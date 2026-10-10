@@ -18,10 +18,14 @@ export const CROPS = [
     name: { vi: 'Cà rốt', en: 'Carrot' }, color: '#ff7a00', leaf: '#3fcf3a' },
   { id: 'tomato', tier: 1, unlock: 2, price: 224, xp: 4, yield: 3, sell: 90, grow: 60, variants: 3,
     name: { vi: 'Cà chua', en: 'Tomato' }, color: '#ff2a1a', leaf: '#33b833' },
+  { id: 'banana', tier: 1, unlock: 2, price: 240, xp: 5, yield: 3, sell: 96, grow: 75, variants: 3,
+    name: { vi: 'Chuối', en: 'Banana' }, color: '#ffe11a', leaf: '#3cb835' },
   { id: 'waterSpinach', tier: 1, unlock: 3, price: 160, xp: 5, yield: 4, sell: 60, grow: 90, variants: 3,
     name: { vi: 'Rau muống', en: 'Water Spinach' }, color: '#38d438', leaf: '#a6ec5a' },
   { id: 'mushroom', tier: 1, unlock: 3, price: 298, xp: 8, yield: 3, sell: 119, grow: 180, variants: 3,
     name: { vi: 'Nấm', en: 'Mushroom' }, color: '#ef4a1f', leaf: '#fff0d2' },
+  { id: 'strawberry', tier: 1, unlock: 3, price: 280, xp: 7, yield: 3, sell: 112, grow: 150, variants: 8,
+    name: { vi: 'Dâu tây', en: 'Strawberry' }, color: '#ff1a45', leaf: '#33b833' },
 
   // ── Tier 2 · blue ───────────────────────────────────────────
   { id: 'cucumber', tier: 2, unlock: 3, price: 199, xp: 25, yield: 3, sell: 155, grow: 360, variants: 3,
@@ -42,8 +46,6 @@ export const CROPS = [
     name: { vi: 'Ớt chuông', en: 'Bell Pepper' }, color: '#ff1f1f', leaf: '#33b833' },
   { id: 'papaya', tier: 2, unlock: 7, price: 290, xp: 38, yield: 4, sell: 260, grow: 3600, variants: 3,
     name: { vi: 'Đu đủ', en: 'Papaya' }, color: '#ff9a00', leaf: '#3fc23a' },
-  { id: 'banana', tier: 2, unlock: 7, price: 247, xp: 40, yield: 5, sell: 243, grow: 4920, variants: 3,
-    name: { vi: 'Chuối', en: 'Banana' }, color: '#ffe11a', leaf: '#3cb835' },
   { id: 'eggplant', tier: 2, unlock: 8, price: 285, xp: 45, yield: 5, sell: 279, grow: 7380, variants: 3,
     name: { vi: 'Cà tím', en: 'Eggplant' }, color: '#8a2be2', leaf: '#3fae35' },
 
@@ -72,8 +74,6 @@ export const CROPS = [
     name: { vi: 'Xoài', en: 'Mango' }, color: '#ffb800', leaf: '#2fa83a' },
 
   // ── Tier 4 · red ────────────────────────────────────────────
-  { id: 'strawberry', tier: 4, unlock: 16, price: 369, xp: 350, yield: 6, sell: 504, grow: 59400, variants: 8, tags: ['exp'],
-    name: { vi: 'Dâu tây', en: 'Strawberry' }, color: '#ff1a45', leaf: '#33b833' },
   { id: 'dragonFruit', tier: 4, unlock: 17, price: 420, xp: 210, yield: 6, sell: 640, grow: 50400, variants: 5,
     name: { vi: 'Thanh long', en: 'Dragon Fruit' }, color: '#ff2d95', leaf: '#3fcf4a' },
   { id: 'mangosteen', tier: 4, unlock: 18, price: 408, xp: 200, yield: 6, sell: 609, grow: 49500, variants: 5, tags: ['special'],

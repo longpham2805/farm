@@ -91,7 +91,7 @@ function svg(markup) {
 export function rewardChips(reward) {
   const out = [];
   if (!reward) return out;
-  if (reward.coins) out.push(h('span', { class: 'rw' }, h('span', { class: 'e' }, '🪙'), fmtNum(reward.coins)));
+  if (reward.coins) out.push(h('span', { class: 'rw' }, h('span', { class: 'e' }, '🌏'), fmtNum(reward.coins)));
   if (reward.xp) out.push(h('span', { class: 'rw' }, h('span', { class: 'e' }, '⭐'), fmtNum(reward.xp)));
   if (reward.energy) out.push(h('span', { class: 'rw' }, h('span', { class: 'e' }, '✨'), fmtNum(reward.energy)));
   if (reward.seeds) {

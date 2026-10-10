@@ -23,7 +23,7 @@ export class Hud {
     const btn = (key, icon, label, onClick, extra) =>
       (r[key] = h('button', { class: 'hbtn', onClick, 'aria-label': label }, h('span', { class: 'ico' }, icon), label, extra || null));
 
-    r.coins = h('div', { class: 'coins' }, h('span', { class: 'ico' }, '🪙'), (r.coinText = h('span', { class: 'num' })));
+    r.coins = h('div', { class: 'coins' }, h('span', { class: 'ico' }, '🌏'), (r.coinText = h('span', { class: 'num' })));
 
     if (app.view.mode === 'npc') {
       const npc = NPC_BY_ID[app.view.npcId];

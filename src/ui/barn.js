@@ -80,11 +80,11 @@ export function openBarn(app, startTab = 'crops') {
         const r = G.sell(s, sel, qty);
         if (r.ok) {
           sfx.coin();
-          toast(`🪙 ${t('sold', { coins: fmtNum(r.coins) })}`, 'good');
+          toast(`🌏 ${t('sold', { coins: fmtNum(r.coins) })}`, 'good');
           qty = 1;
           app.refresh();
         }
-      } }, `${t('sell')} 🪙`, h('span', { class: 'num' }, fmtNum(price * qty)));
+      } }, `${t('sell')} 🌏`, h('span', { class: 'num' }, fmtNum(price * qty)));
       range.addEventListener('input', () => {
         qty = Number(range.value);
         val.textContent = qty;
@@ -102,7 +102,7 @@ export function openBarn(app, startTab = 'crops') {
             h('div', { class: 'tags' }, variant ? h('span', { class: 'tag mut' }, '✨ ', t('tagMutation')) : null))),
         h('dl', { class: 'stats' },
           h('dt', null, t('owned')), h('dd', null, fmtNum(have)),
-          h('dt', null, t('sellEach')), h('dd', null, `🪙 ${fmtNum(price)}`),
+          h('dt', null, t('sellEach')), h('dd', null, `🌏 ${fmtNum(price)}`),
           reserved[sel] ? [h('dt', null, '🔒'), h('dd', null, t('keptForUpgrade'))] : null),
         nutritionBlock(cropId),
         h('div', { class: 'qty' },
@@ -121,7 +121,7 @@ export function openBarn(app, startTab = 'crops') {
                 confirmAll = false;
                 if (r.ok) {
                   sfx.coin();
-                  toast(`🪙 ${t('sold', { coins: fmtNum(r.coins) })}`, 'good');
+                  toast(`🌏 ${t('sold', { coins: fmtNum(r.coins) })}`, 'good');
                 }
                 app.refresh();
               } }, t('yes')),

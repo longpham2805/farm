@@ -44,7 +44,7 @@ export function openShop(app, focus = null) {
           } }, label)));
 
       const grid = h('div', { class: 'grid' }, list.map((d) => seedBag(d.id, {
-        label: d.unlock > s.level ? `🔒 ${t('level')} ${d.unlock}` : `🪙${fmtNum(d.price)}`,
+        label: d.unlock > s.level ? `🔒 ${t('level')} ${d.unlock}` : `🌏${fmtNum(d.price)}`,
         locked: d.unlock > s.level,
         selected: d.id === sel,
         corner: s.seeds[d.id] ? `x${s.seeds[d.id]}` : null,
@@ -69,7 +69,7 @@ export function openShop(app, focus = null) {
         stat(t('variants'), `${def.variants}`);
         stat(t('xpGain'), `⭐ ${fmtNum(def.xp)}`);
         stat(t('yield'), `${def.yield} (+2 💧)`);
-        stat(t('sellEach'), `🪙 ${fmtNum(G.sellPrice(s, def.id, 0))}`);
+        stat(t('sellEach'), `🌏 ${fmtNum(G.sellPrice(s, def.id, 0))}`);
         stat(t('growTime'), fmtDur(G.growMsFor(def, s.level)));
       }
       stat(t('owned'), `${fmtNum(s.seeds[def.id] || 0)}`);
@@ -100,7 +100,7 @@ export function openShop(app, focus = null) {
           qty = 1;
           app.refresh();
         },
-      }, `${t('buy')} 🪙`, h('span', { class: 'num' }, fmtNum(def.price * qty)));
+      }, `${t('buy')} 🌏`, h('span', { class: 'num' }, fmtNum(def.price * qty)));
 
       const detail = h('div', { class: 'detail' },
         h('div', { class: 'detail-head' }, pic,

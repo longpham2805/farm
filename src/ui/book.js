@@ -69,7 +69,7 @@ export function openBook(app) {
 
 export function rewardText(reward) {
   const parts = [];
-  if (reward.coins) parts.push(`🪙${fmtNum(reward.coins)}`);
+  if (reward.coins) parts.push(`🌏${fmtNum(reward.coins)}`);
   if (reward.energy) parts.push(`✨${reward.energy}`);
   if (reward.xp) parts.push(`⭐${reward.xp}`);
   if (reward.seeds) for (const [id, n] of Object.entries(reward.seeds)) parts.push(`${n}× ${seedName(id)}`);

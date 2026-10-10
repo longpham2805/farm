@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
   return {
     base: './',
     publicDir: single ? false : 'public',
-    plugins: single ? [viteSingleFile(), stripPwaTags()] : [serviceWorker()],
+    plugins: single ? [viteSingleFile(), stripPwaTags()] : [serviceWorker(), absoluteShareImage()],
     build: {
       outDir: single ? 'dist-single' : 'dist',
       chunkSizeWarningLimit: 1200,
@@ -43,7 +43,22 @@ function serviceWorker() {
 function stripPwaTags() {
   return {
     name: 'farm-strip-pwa',
-    transformIndexHtml: (html) => html.replace(/^\s*<link rel="(manifest|apple-touch-icon|icon)"[^>]*>\n/gm, ''),
+    transformIndexHtml: (html) => html
+      .replace(/^\s*<link rel="(manifest|apple-touch-icon|icon)"[^>]*>\n/gm, '')
+      .replace(/^\s*<meta property="og:image"[^>]*>\n/gm, ''),
+  };
+}
+
+/** Link previews (the iPhone share sheet, chat apps) need a full URL for og:image. SITE_URL is set by the Pages workflow. */
+function absoluteShareImage() {
+  const site = process.env.SITE_URL;
+  return {
+    name: 'farm-share-image',
+    apply: 'build',
+    enforce: 'post',
+    transformIndexHtml: (html) => (site
+      ? html.replace(/(<meta property="og:image" content=")\.?\/?([^"]+)"/, (_, head, path) => `${head}${new URL(path, site.replace(/\/?$/, '/'))}"`)
+      : html),
   };
 }
 

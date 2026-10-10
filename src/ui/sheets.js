@@ -22,14 +22,18 @@ export class Sheets {
     if (sheet === 'seeds') key += `|${this.seedTab}|${app.seedSel}|${app.plantTarget}|${JSON.stringify(s.seeds)}`;
     if (sheet === 'friends') key += `|${this.friendTab}|${this.friendKey()}`;
     if (key === this.key) return;
+    // Same sheet redrawn (a seed planted, a tab picked): keep it in place, no slide-up again.
+    const same = !!sheet && this.key.split('|')[0] === sheet;
     const scroller = this.root.querySelector('.scroller');
     const scroll = scroller ? scroller.scrollLeft : 0;
     this.key = key;
     clear(this.root);
-    if (sheet === 'seeds') this.root.append(this.seedSheet());
-    else if (sheet === 'friends') this.root.append(this.friendSheet());
+    const el = sheet === 'seeds' ? this.seedSheet() : sheet === 'friends' ? this.friendSheet() : null;
+    if (!el) return;
+    if (same) el.classList.add('still');
+    this.root.append(el);
     const next = this.root.querySelector('.scroller');
-    if (next && key.split('|')[0] === sheet) next.scrollLeft = scroll;
+    if (next && same) next.scrollLeft = scroll;
   }
 
   tabs(list, current, onPick, closable = true, hint = null) {
@@ -56,7 +60,6 @@ export class Sheets {
         corner: isPack(id) ? '?' : null,
         onClick: () => app.selectSeed(id),
       })));
-    const onlyFree = ids.length === 1;
     return h('div', { class: 'sheet' },
       this.tabs([['all', t('tabAll')], ['normal', t('tabNormal')], ['special', t('tabSpecial')]], this.seedTab, (id) => {
         this.seedTab = id;
@@ -66,7 +69,7 @@ export class Sheets {
         list,
         h('div', { class: 'sheet-side' },
           app.seedSel ? h('button', { class: 'btn small', onClick: () => app.plantAll(app.seedSel) }, '🌱 ', t('plantAll')) : null,
-          onlyFree || this.seedTab !== 'all' ? h('button', { class: 'btn small honey', onClick: () => app.go('shop') }, '🏪 ', t('shop')) : null)));
+          h('button', { class: 'btn small honey', onClick: () => app.go('shop') }, '🏪 ', t('shop')))));
   }
 
   friendKey() {

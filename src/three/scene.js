@@ -573,6 +573,9 @@ export class FarmScene {
   // ── Frame loop ──────────────────────────────────────────────
 
   frame() {
+    // iOS reports the old size in the resize event after a rotation, so check every frame.
+    const c = this.canvas;
+    if (c.clientWidth && c.clientHeight && (c.clientWidth !== this.width || c.clientHeight !== this.height)) this.resize();
     this.clock.update();
     const dt = Math.min(0.05, this.clock.getDelta());
     const t = this.clock.getElapsed();
