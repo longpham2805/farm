@@ -1,6 +1,13 @@
 // Game balance. All numbers in one place so they are easy to tune.
 
 export const SAVE_KEY = 'nong-trai-vui-ve-save-v1';
+
+// Family-code sync (Firestore). Leave empty to turn the cloud part off; the save code still works.
+// Both values come from Firebase console → Project settings → Your apps → Web app. They are not secrets.
+export const CLOUD = {
+  projectId: 'boyfarm-598e3',
+  apiKey: 'AIzaSyDk4jPGMPCexnoq5iHEfmul6zoe-2BiMpM',
+};
 export const GRID = 4; // 4 × 4 plots
 export const MAX_LEVEL = 30;
 

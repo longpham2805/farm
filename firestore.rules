@@ -1,0 +1,18 @@
+rules_version = '2';
+
+// Family-code sync. Paste into Firebase console → Firestore Database → Rules → Publish.
+// One document per family code. Whoever knows a code can read and save that farm;
+// codes cannot be listed, deleted, or used to store anything but a farm.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /farms/{code} {
+      allow get: if code.matches('^[2-9A-HJ-NP-Z]{12}$');
+      allow create, update: if code.matches('^[2-9A-HJ-NP-Z]{12}$')
+        && request.resource.data.keys().hasOnly(['save', 'updatedAt', 'v'])
+        && request.resource.data.save is string
+        && request.resource.data.save.size() < 500000
+        && request.resource.data.updatedAt is int;
+      allow list, delete: if false;
+    }
+  }
+}

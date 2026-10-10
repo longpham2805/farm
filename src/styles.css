@@ -589,6 +589,20 @@ img { max-width: 100%; }
 .credits { font-size: 12px; color: var(--ink-soft); margin-top: 10px; }
 .danger { color: var(--berry-dark); }
 
+/* sync screen */
+.sync-box { padding: 12px; border-radius: 18px; background: var(--paper-2); margin-bottom: 12px; }
+.sync-box .section-title { margin-top: 0; }
+.sync-box p { margin: 6px 0; }
+.sync-code { font-family: var(--font-display); font-size: 30px; letter-spacing: 3px; text-align: center; padding: 6px 0; -webkit-user-select: text; user-select: text; }
+.sync-status { margin: 6px 0 0; }
+.code-input { text-transform: uppercase; letter-spacing: 2px; text-align: center; }
+.code-area { width: 100%; font: 13px/1.35 ui-monospace, Menlo, monospace; padding: 8px 10px; border-radius: 12px; border: 3px solid var(--paper-3); background: #fff; color: var(--ink); resize: vertical; word-break: break-all; -webkit-user-select: text; user-select: text; }
+.farm-cards { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+.farm-cards .arrow { font-size: 22px; flex: none; }
+.farm-card { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 14px; background: #fff; display: flex; flex-direction: column; gap: 2px; }
+.farm-card b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.link-btn { margin-top: 10px; color: var(--ink-soft); text-decoration: underline; font-size: 14px; }
+
 /* toasts */
 #toast-root { position: absolute; left: 50%; top: calc(74px + var(--safe-t)); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 60; pointer-events: none; }
 .toast { padding: 8px 18px; border-radius: 999px; background: rgba(92, 54, 8, 0.9); color: #fff; font-size: 15px; box-shadow: var(--shadow); animation: toast 2.6s ease forwards; max-width: 86vw; text-align: center; }

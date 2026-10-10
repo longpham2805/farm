@@ -65,6 +65,31 @@ After the first visit it also works offline.
 `dist-single/index.html` is the whole game in one file. It can be copied to a phone or
 tablet and opened directly, but it cannot be installed as an app.
 
+### Playing on several devices
+
+Settings → *Đồng bộ & mã lưu* has two ways to share one farm:
+
+- **Family code** (*Mã gia đình*): make a code on one device, type it on the others. The farm then
+  syncs by itself when online. If two devices played before syncing, the farm with more play wins.
+  Plants ripening on a device nobody touches never overwrite real play.
+- **Save code** (*Mã lưu*): the whole farm as a line of text to copy, send and paste. No internet
+  or setup needed; it is a one-time move, not a sync.
+
+The family code keeps each farm in a free Firebase (Firestore) database. There is no server code:
+the game talks to Firestore's REST API directly. One-time setup:
+
+1. Go to https://console.firebase.google.com → **Create a project** (Google Analytics can be off).
+2. **Build → Firestore Database → Create database**: *Standard edition*, location
+   `asia-southeast1` (Singapore) or any near you, **production mode**.
+3. In the database's **Rules** tab, replace everything with the contents of `firestore.rules`
+   and press **Publish**.
+4. **Project settings** (gear icon) → **Your apps** → the web icon `</>` → give it any name →
+   **Register app** (no Hosting). Copy `apiKey` and `projectId` from the code it shows.
+5. Put them in `CLOUD` in `src/config.js` and push. Firebase web keys are not secrets; the rules
+   are what protect the data.
+
+Until `CLOUD` is filled in, the family code part is hidden and only the save code shows.
+
 Older saves are upgraded automatically: wheat becomes rice, and the removed flower and
 candy crops become fruits of the same tier (see `RENAMED_CROPS`).
 
@@ -78,6 +103,7 @@ candy crops become fruits of the same tier (see `RENAMED_CROPS`).
 | `src/data/styles.js` | Mutation looks and which looks each crop can get |
 | `src/data/quests.js`, `src/data/npcs.js` | Quest chapters, daily quests, neighbours |
 | `src/game/logic.js` | All game rules as plain functions (tested in `tests/`) |
+| `src/game/cloud.js`, `src/game/sync.js` | Family-code sync through Firestore, and save codes |
 | `src/three/models.js` | Procedural 3D model for every crop, growth stage and mutation |
 | `src/three/scene.js` | Renderer, camera, lights, effects, picking, zoom and pan |
 | `src/three/island.js` | The floating island, barn, pond, trees and fences |

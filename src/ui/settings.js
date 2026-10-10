@@ -1,6 +1,8 @@
 import { h } from './dom.js';
 import { t } from '../i18n.js';
 import { openModal } from './overlay.js';
+import { openSync } from './sync.js';
+import { cloudReady } from '../game/cloud.js';
 
 const AVATARS = ['🧑‍🌾', '👦', '👧', '🧒', '🐣', '🦖', '🤖', '🦸', '🧙', '🐻', '🐨', '🦁'];
 
@@ -50,6 +52,8 @@ export function openSettings(app) {
         h('div', { class: 'field' }, h('label', null, t('music')), seg([[true, t('on')], [false, t('off')]], s.music, set('music'))),
         h('div', { class: 'field' }, h('label', null, t('graphics')), seg([['high', t('gfxHigh')], ['low', t('gfxLow')]], s.quality, set('quality'))),
         installField(app, api),
+        h('div', { class: 'field' }, h('label', null, '☁️ ', t('syncField')),
+          h('div', null, h('button', { class: 'btn honey small', onClick: () => openSync(app) }, '☁️ ', t('syncOpen')))),
         h('p', { class: 'muted' }, '💾 ', t('saveNote')),
         confirmReset
           ? h('div', { class: 'center' }, h('p', { class: 'danger' }, t('resetConfirm')),
@@ -113,7 +117,8 @@ export function openWelcome(app) {
           api.close();
           app.refresh();
           app.openSeeds();
-        } }, '🌱 ', t('start'))));
+        } }, '🌱 ', t('start'))),
+        h('div', { class: 'center' }, h('button', { class: 'link-btn', onClick: () => openSync(app, cloudReady() ? 'enter' : 'paste') }, '☁️ ', t('haveCode'))));
     },
   });
 }

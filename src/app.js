@@ -1,6 +1,8 @@
 // Connects the game rules, the 3D scene and the HTML interface.
 import * as G from './game/logic.js';
 import { loadState, saveState, clearSave } from './game/store.js';
+import { storeFarm } from './game/cloud.js';
+import { CloudSync } from './game/sync.js';
 import { FarmScene, HOME_THEME, npcTheme } from './three/scene.js';
 import { NPC_BY_ID, NPCS } from './data/npcs.js';
 import { CROP_BY_ID, isPack } from './data/crops.js';
@@ -70,6 +72,7 @@ export class App {
       if (document.hidden) this.save(true);
     });
     window.addEventListener('pagehide', () => this.save(true));
+    this.cloud = new CloudSync(this);
 
     setTimeout(() => {
       const loading = document.getElementById('loading');
@@ -78,6 +81,7 @@ export class App {
       if (!state.seenIntro) openWelcome(this);
       prewarm(CROPS.map((c) => c.id));
       for (const [id, n] of Object.entries(helped)) toast(t('whileAway', { name: NPC_BY_ID[id].name, n }), 'good');
+      if (this.cloud.startToast) toast(`☁️ ${t(this.cloud.startToast)}`, 'good');
     }, 350);
   }
 
@@ -88,9 +92,19 @@ export class App {
   // ── Persistence and refresh ─────────────────────────────────
 
   save(immediate = false) {
+    if (this.reloading) return;
     clearTimeout(this.saveTimer);
     if (immediate) saveState(this.state);
     else this.saveTimer = setTimeout(() => saveState(this.state), 800);
+    if (this.cloud) this.cloud.changed();
+  }
+
+  /** Swaps in a farm from another device (family code or save code) by restarting the game with it. */
+  replaceFarm(save) {
+    clearTimeout(this.saveTimer);
+    this.reloading = true;
+    storeFarm(save);
+    location.reload();
   }
 
   /** Call after any change to the state. */
