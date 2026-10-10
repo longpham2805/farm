@@ -50,6 +50,18 @@ Netlify, Cloudflare Pages…). On a phone or computer, open it in the browser an
 *Install app* / *Add to Home Screen* (Settings → *Cài lên màn hình chính* explains how).
 After the first visit it also works offline.
 
+### Publishing on GitHub Pages
+
+`.github/workflows/deploy-pages.yml` builds the game and publishes it on every push to
+`main`. One-time setup:
+
+1. On GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+   (On a free account, Pages only works for public repositories.)
+2. Merge the game into `main`. The workflow runs (see the **Actions** tab) and the game
+   appears at `https://<user>.github.io/<repo>/`, here
+   https://longpham2805.github.io/farm/.
+3. To publish again without a code change: **Actions → Deploy to GitHub Pages → Run workflow**.
+
 `dist-single/index.html` is the whole game in one file. It can be copied to a phone or
 tablet and opened directly, but it cannot be installed as an app.
 
