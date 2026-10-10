@@ -2,7 +2,7 @@
 // and the current time, so the rules can be tested in Node.
 
 import * as C from '../config.js';
-import { CROPS, CROP_BY_ID, PACK_BY_ID, isPack, seedDef, packPool, hasTag, TOTAL_VARIETIES } from '../data/crops.js';
+import { CROPS, CROP_BY_ID, PACK_BY_ID, RENAMED_CROPS, isPack, seedDef, packPool, hasTag, TOTAL_VARIETIES } from '../data/crops.js';
 import { CHAPTERS, DAILY } from '../data/quests.js';
 import { NPCS, NPC_BY_ID } from '../data/npcs.js';
 import { rng, randInt, pick, pickWeighted, dayKey } from '../util.js';
@@ -11,7 +11,7 @@ import { rng, randInt, pick, pickWeighted, dayKey } from '../util.js';
 
 export function newGame(now) {
   const state = {
-    v: 1,
+    v: SAVE_VERSION,
     createdAt: now,
     lastSeen: now,
     profile: { name: '', avatar: '🧑‍🌾' },
@@ -37,6 +37,8 @@ export function newGame(now) {
   return state;
 }
 
+const SAVE_VERSION = 2;
+
 /** Fill in any fields an older save is missing. */
 export function hydrate(saved, now) {
   const base = newGame(now);
@@ -45,8 +47,60 @@ export function hydrate(saved, now) {
     state[key] = { ...base[key], ...(saved[key] || {}) };
   }
   if (!Array.isArray(state.plots) || state.plots.length !== C.GRID * C.GRID) state.plots = base.plots;
+  migrateCrops(state);
+  state.v = SAVE_VERSION;
   ensureDaily(state, now);
   return state;
+}
+
+/** Old crop ids become their replacements; unknown crops are dropped. */
+function mapCrop(id) {
+  if (CROP_BY_ID[id]) return id;
+  return RENAMED_CROPS[id] || null;
+}
+
+function mapKey(key) {
+  const [id, v] = key.split(':');
+  const to = mapCrop(id);
+  if (!to) return null;
+  return varietyKey(to, Math.min(Number(v) || 0, CROP_BY_ID[to].variants - 1));
+}
+
+export function migrateCrops(state) {
+  const seeds = {};
+  for (const [id, n] of Object.entries(state.seeds || {})) {
+    const to = isPack(id) ? id : mapCrop(id);
+    if (to && n > 0) seeds[to] = (seeds[to] || 0) + n;
+  }
+  state.seeds = seeds;
+  const items = {};
+  for (const [key, n] of Object.entries(state.items || {})) {
+    const to = mapKey(key);
+    if (to && n > 0) items[to] = (items[to] || 0) + n;
+  }
+  state.items = items;
+  const discovered = {};
+  for (const [key, at] of Object.entries(state.discovered || {})) {
+    const to = mapKey(key);
+    if (to) discovered[to] = Math.min(discovered[to] ?? at, at);
+  }
+  state.discovered = discovered;
+  state.plots = state.plots.map((p) => {
+    if (!p) return null;
+    const to = mapCrop(p.crop);
+    if (!to) return null;
+    const variant = p.variant == null ? p.variant : Math.min(p.variant, CROP_BY_ID[to].variants - 1);
+    return { ...p, crop: to, variant };
+  });
+  // Only plain renames keep a claimed set; merged crops start their set again.
+  const claimed = {};
+  for (const id of Object.keys(state.claimedSets || {})) {
+    if (CROP_BY_ID[id]) claimed[id] = true;
+    else if (id === 'wheat' || id === 'purpleRadish') claimed[RENAMED_CROPS[id]] = true;
+  }
+  state.claimedSets = claimed;
+  const npcCrops = Object.values(state.npcs || {}).flatMap((n) => n.plots || []).filter(Boolean);
+  if (npcCrops.some((p) => !CROP_BY_ID[p.crop])) state.npcs = {};
 }
 
 // ── Counters ──────────────────────────────────────────────────

@@ -6,10 +6,11 @@ import * as THREE from 'three';
 import { plantMat } from './materials.js';
 import { lookOf } from '../data/styles.js';
 import { CROP_BY_ID } from '../data/crops.js';
-import { stripeTexture, pineappleTexture, swirlTexture, kernelTexture } from './textures.js';
+import { stripeTexture, pineappleTexture, kernelTexture } from './textures.js';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const FRONT = V(1, 0.7, 1).normalize(); // toward the camera
+const FRONT_FLAT = V(1, 0, 1).normalize();
 const RIGHT = V(1, 0, -1).normalize(); // screen right
 const UPV = V(0, 1, 0);
 const FY = Math.PI / 4; // yaw that faces the camera
@@ -122,21 +123,6 @@ B.radish = (g, P, crop) => {
     tuft(r, P(crop.leaf, 'leaf'), { n: 5, len: 0.34, w: 0.09, tilt: 1.05, y: 0.38 });
   }
   return 0.72;
-};
-
-B.wheat = (g, P, crop) => {
-  const straw = P('#d6b24c', 'stem');
-  const ear = P(crop.color, 'produce');
-  tuft(g, P(crop.leaf, 'leaf'), { n: 7, len: 0.3, w: 0.04, tilt: 0.75 });
-  const spots = [[0, 0], [0.16, 0.06], [-0.14, 0.1], [0.08, -0.16], [-0.1, -0.12], [0.2, -0.08], [-0.2, -0.02], [0.02, 0.18]];
-  spots.forEach(([x, z], i) => {
-    const h = 0.55 + ((i * 37) % 10) / 50;
-    const s = group(g, [x, 0, z], 1, [((i % 3) - 1) * 0.1, 0, ((i % 2) - 0.5) * 0.18]);
-    s.add(mesh(CYL(), straw, [0, h / 2, 0], [0.012, h, 0.012]));
-    s.add(mesh(CAPS(0.04, 0.13), ear, [0, h + 0.08, 0], 1));
-    for (let k = 0; k < 3; k++) leaf(s, ear, { p: [0, h + 0.02 + k * 0.05, 0], len: 0.07, w: 0.02, tilt: 1.2, yaw: k * 2.1 });
-  });
-  return 0.85;
 };
 
 B.carrot = (g, P, crop) => {
@@ -263,30 +249,6 @@ B.garlic = (g, P, crop) => {
   return 0.8;
 };
 
-B.fox = (g, P, crop, look) => {
-  tuft(g, P(crop.leaf, 'leaf'), { n: 6, len: 0.3, w: 0.12, tilt: 0.3, y: 0.02 });
-  const fur = P(crop.color, 'produce');
-  const white = P('#fff3e6', 'accent');
-  const c = [0, 0.3, 0];
-  g.add(mesh(SPHERE(), fur, c, 0.22));
-  const muzzle = FRONT.clone().multiplyScalar(0.16).add(V(0, 0.24, 0));
-  g.add(mesh(SPHERE(), white, muzzle.toArray(), [0.1, 0.08, 0.1]));
-  g.add(mesh(SPHERE_LO(), P('#2a1b2e', 'face', { roughness: 0.3 }), FRONT.clone().multiplyScalar(0.25).add(V(0, 0.26, 0)).toArray(), 0.025));
-  for (const s of [-1, 1]) {
-    const ear = RIGHT.clone().multiplyScalar(s * 0.12).add(V(0, 0.48, 0));
-    g.add(mesh(CONE(), fur, ear.toArray(), [0.07, 0.16, 0.07], [0, 0, -s * 0.35]));
-    g.add(mesh(CONE(), white, ear.clone().add(FRONT.clone().multiplyScalar(0.02)).toArray(), [0.04, 0.1, 0.03], [0, 0, -s * 0.35]));
-  }
-  const tail = group(g, [-0.16, 0.2, -0.16], 1, [0.5, 0, -0.5]);
-  tail.add(mesh(CAPS(0.07, 0.18), fur, [0, 0.1, 0], 1));
-  tail.add(mesh(SPHERE(), white, [0, 0.24, 0], 0.07));
-  face(g, look, c, 0.22, { mouth: false, up: 0.12 });
-  const bloom = group(g, [0.02, 0.52, 0.02]);
-  for (let k = 0; k < 5; k++) leaf(bloom, P('#ff8fc1', 'accent'), { len: 0.09, w: 0.045, tilt: 0.5, yaw: (k / 5) * TAU });
-  bloom.add(mesh(SPHERE_LO(), P('#ffe066', 'accent'), [0, 0.02, 0], 0.03));
-  return 0.62;
-};
-
 B.pepper = (g, P, crop) => {
   g.add(mesh(CYL(0.6), P('#4f9a3a', 'stem'), [0, 0.28, 0], [0.025, 0.56, 0.025]));
   for (let i = 0; i < 8; i++) leaf(g, P(crop.leaf, 'leaf'), { p: [0, 0.14 + i * 0.055, 0], len: 0.24, w: 0.1, tilt: 0.4, yaw: i * 2.3 });
@@ -365,18 +327,6 @@ B.pumpkin = (g, P, crop) => {
   return 0.62;
 };
 
-B.purpleRadish = (g, P, crop, look) => {
-  const body = P(crop.color, 'produce');
-  g.add(mesh(SPHERE(), body, [0, 0.26, 0], [0.24, 0.26, 0.24]));
-  g.add(mesh(CONE(), body, [0, 0.02, 0], [0.08, 0.16, 0.08], [Math.PI, 0, 0]));
-  face(g, look, [0, 0.26, 0], 0.24);
-  tuft(g, P(crop.leaf, 'leaf'), { n: 5, len: 0.3, w: 0.1, tilt: 1.0, y: 0.48 });
-  const wrap = P('#f3e7ff', 'deco', { roughness: 0.7 });
-  g.add(mesh(TORUS(0.205, 0.022, TAU), wrap, [0, 0.13, 0], 1, [Math.PI / 2 + 0.2, 0, 0.1]));
-  for (const s of [-1, 1]) leaf(g, P(crop.leaf, 'leaf'), { p: RIGHT.clone().multiplyScalar(s * 0.2).add(V(0, 0.22, 0)).toArray(), len: 0.14, w: 0.05, tilt: 0.6, yaw: FY + s * Math.PI / 2 });
-  return 0.8;
-};
-
 B.grape = (g, P, crop) => {
   const wood = P('#9a6a3e', 'stem');
   const a = RIGHT.clone().multiplyScalar(0.36);
@@ -421,20 +371,6 @@ B.corn = (g, P, crop) => {
   return 1.0;
 };
 
-B.lotus = (g, P, crop, look) => {
-  g.add(mesh(CYL(), P(crop.leaf, 'leaf'), [0, 0.02, 0], [0.34, 0.025, 0.34]));
-  const petal = P(crop.color, 'produce');
-  const inner = P('#ffd0e6', 'produce');
-  tuft(g, petal, { n: 8, len: 0.2, w: 0.09, tilt: 0.45, y: 0.06, th: 0.03 });
-  tuft(g, inner, { n: 6, len: 0.17, w: 0.08, tilt: 0.95, y: 0.08, yaw0: 0.4, th: 0.03 });
-  const c = [0, 0.2, 0];
-  g.add(mesh(SPHERE(), P('#ffb3d6', 'produce'), c, 0.14));
-  face(g, look, c, 0.14);
-  const pod = group(g, [0, 0.33, 0]);
-  pod.add(mesh(CYL(1.3), P('#ffe066', 'accent'), [0, 0, 0], [0.05, 0.04, 0.05]));
-  return 0.45;
-};
-
 B.lettuce = (g, P, crop) => {
   const outer = P(crop.leaf, 'produce');
   const mid = P(crop.color, 'produce');
@@ -443,20 +379,6 @@ B.lettuce = (g, P, crop) => {
   for (let i = 0; i < 7; i++) leaf(g, mid, { p: [0, 0.05, 0], len: 0.24, w: 0.16, tilt: 0.95, yaw: i * 0.9 + 0.3, th: 0.05 });
   g.add(mesh(SPHERE(), heart, [0, 0.16, 0], [0.13, 0.14, 0.13]));
   return 0.4;
-};
-
-B.lantern = (g, P, crop, look) => {
-  tuft(g, P(crop.leaf, 'leaf'), { n: 5, len: 0.26, w: 0.08, tilt: 0.5 });
-  const stem = P('#4f9a5a', 'stem');
-  const curve = new THREE.CatmullRomCurve3([V(-0.12, 0, -0.12), V(-0.12, 0.45, -0.12), V(-0.02, 0.72, -0.02), V(0.12, 0.66, 0.12)]);
-  g.add(new THREE.Mesh(geo('lanternStem', () => new THREE.TubeGeometry(curve, 20, 0.022, 6)), stem));
-  const bell = group(g, [0.12, 0.62, 0.12]);
-  const pts = [[0, 0], [0.16, 0.01], [0.17, 0.06], [0.15, 0.13], [0.1, 0.19], [0.03, 0.22], [0, 0.22]];
-  const shell = mesh(LATHE('bell', pts), P(crop.color, 'produce', { emissive: crop.color, emissiveIntensity: 0.35, side: THREE.DoubleSide }), [0, -0.2, 0], 1);
-  bell.add(shell);
-  bell.add(mesh(SPHERE(), P('#fff4b0', 'deco', { emissive: '#ffd84a', emissiveIntensity: 1.6 }), [0, -0.16, 0], 0.07));
-  face(g, look, [0.12, 0.5, 0.12], 0.155, { up: 0.05 });
-  return 0.82;
 };
 
 B.onion = (g, P, crop) => {
@@ -508,42 +430,6 @@ B.strawberry = (g, P, crop) => {
     for (let k = 0; k < 6; k++) leaf(b, calyx, { p: [0, 0.23, 0], len: 0.08, w: 0.035, tilt: 0.15, yaw: (k / 6) * TAU });
   }
   return 0.5;
-};
-
-B.gentian = (g, P, crop, look) => {
-  const stem = P('#3f7a5a', 'stem');
-  const bellM = P(crop.color, 'produce', { side: THREE.DoubleSide });
-  const pts = [[0, 0], [0.03, 0.01], [0.05, 0.08], [0.08, 0.16], [0.12, 0.21], [0.13, 0.22]];
-  for (const [x, z, h, s] of [[0.18, -0.1, 0.42, 0.8], [-0.16, 0.06, 0.36, 0.7]]) {
-    const f = group(g, [x, 0, z], s);
-    f.add(mesh(CYL(), stem, [0, h / 2, 0], [0.018, h, 0.018]));
-    f.add(mesh(LATHE('trumpet', pts), bellM, [0, h, 0], 1));
-    leaf(f, P(crop.leaf, 'leaf'), { p: [0, h * 0.4, 0], len: 0.16, w: 0.04, tilt: 0.7, yaw: 1 });
-  }
-  tuft(g, P(crop.leaf, 'leaf'), { n: 6, len: 0.22, w: 0.05, tilt: 0.7 });
-  const c = [0.02, 0.36, 0.02];
-  g.add(mesh(CYL(), stem, [0.02, 0.12, 0.02], [0.03, 0.24, 0.03]));
-  g.add(mesh(SPHERE(), bellM, c, [0.16, 0.15, 0.16]));
-  for (let k = 0; k < 5; k++) {
-    const a = (k / 5) * TAU;
-    g.add(mesh(CONE(), bellM, [0.02 + Math.cos(a) * 0.1, 0.5, 0.02 + Math.sin(a) * 0.1], [0.05, 0.1, 0.03], [Math.sin(a) * 0.6, 0, -Math.cos(a) * 0.6]));
-  }
-  face(g, look, c, 0.16);
-  const moon = mesh(TORUS(0.1, 0.03, Math.PI * 1.3), P('#ffe680', 'deco', { emissive: '#ffcf3a', emissiveIntensity: 1.2 }), [-0.2, 0.72, -0.2], 1, [0, FY, 0.4]);
-  moon.castShadow = false;
-  g.add(moon);
-  return 0.66;
-};
-
-B.dahlia = (g, P, crop, look) => {
-  g.add(mesh(CYL(0.7), P('#4c9a4a', 'stem'), [0, 0.22, 0], [0.03, 0.44, 0.03]));
-  for (let i = 0; i < 4; i++) leaf(g, P(crop.leaf, 'leaf'), { p: [0, 0.08 + i * 0.07, 0], len: 0.24, w: 0.1, tilt: 0.35, yaw: i * 1.7 });
-  const head = flowerHead(g, P, crop.color, '#ffd166', { petals: 12, r: 0.17, len: 0.15, w: 0.06, rings: 3 });
-  head.position.set(0, 0.5, 0);
-  const c = FRONT.clone().multiplyScalar(0.05).add(V(0, 0.5, 0));
-  g.add(mesh(SPHERE(), P('#ffd9e4', 'produce'), c.toArray(), 0.09));
-  face(g, look, c.toArray(), 0.09);
-  return 0.72;
 };
 
 B.broccoli = (g, P, crop, look) => {
@@ -603,24 +489,290 @@ B.pear = (g, P, crop) => {
   return 0.86;
 };
 
-B.candy = (g, P, crop, look) => {
-  tuft(g, P(crop.leaf, 'leaf'), { n: 5, len: 0.22, w: 0.08, tilt: 0.5 });
-  g.add(mesh(CYL(), P('#ffffff', 'accent', { roughness: 0.3 }), [0, 0.22, 0], [0.025, 0.44, 0.025]));
-  const disk = new THREE.Group();
-  disk.position.set(0, 0.5, 0);
-  disk.quaternion.copy(quatTo(FRONT));
-  g.add(disk);
-  const capM = P('#ffffff', 'produce', { map: swirlTexture(), roughness: 0.2 });
-  const side = P(crop.color, 'produce', { roughness: 0.2 });
-  const d = new THREE.Mesh(geo('candyDisk', () => new THREE.CylinderGeometry(0.22, 0.22, 0.07, 32)), [side, capM, capM]);
-  d.rotation.x = Math.PI / 2;
-  d.castShadow = true;
-  disk.add(d);
-  face(g, look, [0, 0.5, 0], 0.16, { up: -0.1 });
-  for (const [x, z, col] of [[0.24, 0.1, '#7fd6ff'], [0.12, 0.24, '#ffd23f'], [-0.22, 0.16, '#9b7bff']]) {
-    g.add(mesh(SPHERE(), P(col, 'accent', { roughness: 0.15 }), [x, 0.06, z], 0.06));
+
+// Small repeatable random numbers so every tree of a kind looks the same.
+function rand(seed) {
+  let a = 0;
+  for (let i = 0; i < seed.length; i++) a = (Math.imul(a, 31) + seed.charCodeAt(i)) >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const CANOPY = [[0, 0.62, 0, 0.27], [-0.17, 0.54, 0.05, 0.19], [0.14, 0.55, -0.15, 0.2], [0.05, 0.77, -0.05, 0.17]];
+
+/** A small round fruit tree. fruit(group, position, outward, index) adds one fruit. */
+function fruitTree(g, P, crop, { canopy = CANOPY, trunk = 0.42, fruits = 7, hang = false, fruit }) {
+  g.add(mesh(CYL(0.65), P('#9a6236', 'stem'), [0, trunk / 2, 0], [0.05, trunk, 0.05]));
+  const leafM = P(crop.leaf, 'leaf', { roughness: 0.7 });
+  let top = 0;
+  for (const [x, y, z, r] of canopy) {
+    g.add(mesh(SPHERE_LO(), leafM, [x, y, z], r));
+    top = Math.max(top, y + r);
   }
-  return 0.76;
+  const rnd = rand(crop.id);
+  for (let k = 0; k < fruits; k++) {
+    const [bx, by, bz, br] = canopy[k % canopy.length];
+    let d;
+    if (hang) {
+      // Hanging fruit sits on the lower, camera-facing side of the leaves.
+      d = V(rnd() * 2 - 1, 0, rnd() * 2 - 1).add(FRONT_FLAT.clone().multiplyScalar(1.6)).normalize();
+      d.y = -0.45 - rnd() * 0.35;
+      d.normalize();
+    } else {
+      d = V(rnd() * 2 - 1, rnd() * 1.3 - 0.4, rnd() * 2 - 1).normalize().add(FRONT.clone().multiplyScalar(1.15)).normalize();
+    }
+    fruit(g, V(bx, by, bz).addScaledVector(d, br * 0.9), d, k);
+  }
+  return top;
+}
+
+B.rice = (g, P, crop) => {
+  tuft(g, P(crop.leaf, 'leaf'), { n: 9, len: 0.42, w: 0.035, tilt: 1.05 });
+  const stalk = P('#9ad43a', 'stem');
+  const grain = P(crop.color, 'produce');
+  const spots = [[0, 0], [0.12, 0.06], [-0.1, 0.1], [0.06, -0.12], [-0.08, -0.1], [0.15, -0.06], [-0.15, 0]];
+  spots.forEach(([x, z], i) => {
+    const h = 0.5 + ((i * 37) % 10) / 60;
+    const s = group(g, [x, 0, z], 1, [0, i * 2.1 + 0.4, 0]);
+    s.add(mesh(CYL(), stalk, [0, h / 2, 0], [0.01, h, 0.01]));
+    // the ear of rice droops over as it gets heavy
+    for (let k = 0; k < 8; k++) {
+      const t = k / 7;
+      const y = h + 0.05 * Math.sin(t * Math.PI) - 0.16 * t * t;
+      s.add(mesh(SPHERE_LO(), grain, [k % 2 ? 0.016 : -0.016, y, 0.18 * t], [0.024, 0.033, 0.024]));
+    }
+  });
+  return 0.7;
+};
+
+B.waterSpinach = (g, P, crop) => {
+  const stemM = P(crop.leaf, 'accent');
+  const leafM = P(crop.color, 'produce');
+  for (let i = 0; i < 9; i++) {
+    const yaw = i * 2.4;
+    const h = 0.4 + (i % 4) * 0.06;
+    const s = group(g, [Math.sin(yaw) * 0.04, 0, Math.cos(yaw) * 0.04], 1, [0, yaw, 0]);
+    const lean = group(s, [0, 0, 0], 1, [0.22 + (i % 3) * 0.12, 0, 0]);
+    lean.add(mesh(CYL(), stemM, [0, h / 2, 0], [0.014, h, 0.014]));
+    leaf(lean, leafM, { p: [0, h * 0.55, 0], len: 0.17, w: 0.05, tilt: 0.7, yaw: 0.9 });
+    leaf(lean, leafM, { p: [0, h * 0.8, 0], len: 0.16, w: 0.045, tilt: 0.8, yaw: -0.9 });
+    leaf(lean, leafM, { p: [0, h, 0], len: 0.14, w: 0.04, tilt: 1.2, yaw: 0 });
+  }
+  return 0.6;
+};
+
+B.cabbage = (g, P, crop) => {
+  const outer = P(crop.leaf, 'leaf');
+  for (let i = 0; i < 7; i++) leaf(g, outer, { p: [0, 0.04, 0], len: 0.3, w: 0.2, tilt: 0.3, yaw: i * 0.9, th: 0.045 });
+  g.add(mesh(SPHERE(), P(crop.color, 'produce', { roughness: 0.45 }), [0, 0.21, 0], [0.19, 0.18, 0.19]));
+  const wrap = P('#8fe04a', 'produce', { roughness: 0.5 });
+  for (let i = 0; i < 6; i++) {
+    const yaw = i * (TAU / 6) + 0.2;
+    leaf(g, wrap, { p: [Math.sin(yaw) * 0.15, 0.05, Math.cos(yaw) * 0.15], len: 0.26, w: 0.17, tilt: 1.22, yaw, th: 0.03 });
+  }
+  return 0.42;
+};
+
+B.sweetPotato = (g, P, crop) => {
+  const leafM = P(crop.leaf, 'leaf');
+  for (let i = 0; i < 10; i++) {
+    const yaw = i * 0.7 + 2.4;
+    const r = 0.04 + (i % 3) * 0.08;
+    leaf(g, leafM, { p: [Math.sin(yaw) * r, 0.08 + (i % 3) * 0.05, Math.cos(yaw) * r], len: 0.16, w: 0.13, tilt: 0.5, yaw });
+  }
+  const skin = P(crop.color, 'produce', { roughness: 0.45 });
+  for (const [x, z, sc, a] of [[0.17, 0.16, 1, 0.5], [-0.1, 0.25, 0.85, 1.4], [0.27, -0.05, 0.75, 2.2]]) {
+    const tuber = group(g, [x, 0.07, z], sc * 1.3, [0, a, Math.PI / 2 - 0.15]);
+    tuber.add(mesh(CAPS(0.058, 0.14), skin, [0, 0, 0], 1));
+    tuber.add(mesh(CONE(), skin, [0, 0.14, 0], [0.04, 0.08, 0.04]));
+  }
+  return 0.42;
+};
+
+B.greenBean = (g, P, crop) => {
+  const pole = P('#e8b85a', 'stem', { roughness: 0.6 });
+  const leafM = P(crop.leaf, 'leaf');
+  const pod = P(crop.color, 'produce', { roughness: 0.35 });
+  for (const [x, z] of [[-0.12, -0.1], [0.12, 0.1]]) {
+    g.add(mesh(CYL(), pole, [x, 0.42, z], [0.018, 0.84, 0.018]));
+    for (let k = 0; k < 5; k++) {
+      const y = 0.15 + k * 0.14;
+      for (const off of [-1, 0, 1]) leaf(g, leafM, { p: [x, y, z], len: 0.12, w: 0.07, tilt: 0.3 + off * 0.2, yaw: k * 1.9 + off * 0.8 });
+    }
+    for (let k = 0; k < 4; k++) {
+      const at = V(x, 0.62 - k * 0.12, z).addScaledVector(FRONT, 0.06).addScaledVector(RIGHT, (k % 2 ? 1 : -1) * 0.035);
+      const b = group(g, at.toArray(), 1, [0, FY, (k % 2 ? 1 : -1) * 0.12]);
+      b.add(mesh(CAPS(0.024, 0.22), pod, [0, -0.12, 0], 1));
+    }
+  }
+  return 0.86;
+};
+
+B.papaya = (g, P, crop) => {
+  const trunk = P('#b5b87a', 'stem', { roughness: 0.8 });
+  g.add(mesh(CYL(0.75), trunk, [0, 0.33, 0], [0.045, 0.66, 0.045]));
+  for (let k = 0; k < 4; k++) g.add(mesh(TORUS(0.046, 0.007, TAU), P('#8f9660', 'stem'), [0, 0.1 + k * 0.12, 0], 1 - k * 0.06, [Math.PI / 2, 0, 0]));
+  const leafM = P(crop.leaf, 'leaf');
+  const stalk = P('#9ad45a', 'stem');
+  for (let i = 0; i < 7; i++) {
+    const st = group(g, [0, 0.66, 0], 1, [0, i * (TAU / 7), 0]);
+    st.add(mesh(CYL(), stalk, [0, 0.02, 0.12], [0.01, 0.26, 0.01], [1.25, 0, 0]));
+    for (const yaw of [-0.55, 0, 0.55]) leaf(st, leafM, { p: [0, 0.07, 0.24], len: 0.18, w: 0.08, tilt: -0.15, yaw });
+  }
+  const fruit = P(crop.color, 'produce', { roughness: 0.35 });
+  const flat = FRONT.clone().setY(0).normalize();
+  for (const [a, y] of [[0, 0.57], [0.9, 0.53], [-0.9, 0.54], [0.45, 0.44], [-0.45, 0.45]]) {
+    const d = flat.clone().applyAxisAngle(UPV, a);
+    g.add(mesh(SPHERE(), fruit, d.multiplyScalar(0.095).add(V(0, y, 0)).toArray(), [0.065, 0.095, 0.065]));
+  }
+  return 0.86;
+};
+
+B.beet = (g, P, crop, look) => {
+  const body = P(crop.color, 'produce', { roughness: 0.35 });
+  g.add(mesh(SPHERE(), body, [0, 0.25, 0], 0.24));
+  g.add(mesh(CONE(), body, [0, 0.02, 0], [0.07, 0.16, 0.07], [Math.PI, 0, 0]));
+  face(g, look, [0, 0.25, 0], 0.24);
+  const stemM = P('#ff3d7f', 'accent');
+  for (let k = 0; k < 5; k++) {
+    const st = group(g, [0, 0.46, 0], 1, [0, (k / 5) * TAU + 0.3, 0]);
+    st.add(mesh(CYL(), stemM, [0, 0.07, 0.03], [0.012, 0.15, 0.012], [0.4, 0, 0]));
+    leaf(st, P(crop.leaf, 'leaf'), { p: [0, 0.13, 0.06], len: 0.2, w: 0.09, tilt: 0.9 });
+  }
+  for (const s of [-1, 1]) leaf(g, P(crop.leaf, 'leaf'), { p: RIGHT.clone().multiplyScalar(s * 0.21).add(V(0, 0.22, 0)).toArray(), len: 0.14, w: 0.05, tilt: 0.6, yaw: FY + (s * Math.PI) / 2 });
+  return 0.82;
+};
+
+B.orange = (g, P, crop) => fruitTree(g, P, crop, {
+  fruits: 8,
+  fruit: (t, p) => {
+    t.add(mesh(SPHERE(), P(crop.color, 'produce', { roughness: 0.5 }), p.toArray(), 0.07));
+    t.add(mesh(SPHERE_LO(), P('#3f8a2e', 'accent'), p.clone().add(V(0, 0.066, 0)).toArray(), 0.014));
+  },
+});
+
+B.apple = (g, P, crop) => fruitTree(g, P, crop, {
+  fruits: 7,
+  fruit: (t, p, d, k) => {
+    const a = group(t, p.toArray());
+    a.add(mesh(SPHERE(), P(crop.color, 'produce', { roughness: 0.28 }), [0, 0, 0], [0.075, 0.068, 0.075]));
+    a.add(mesh(CYL(), P('#6b4a2a', 'accent'), [0, 0.07, 0], [0.008, 0.04, 0.008]));
+    if (k % 2 === 0) leaf(a, P(crop.leaf, 'leaf'), { p: [0, 0.08, 0], len: 0.06, w: 0.03, tilt: 0.3, yaw: 0.8 });
+  },
+});
+
+B.mango = (g, P, crop) => fruitTree(g, P, crop, {
+  canopy: [[0, 0.64, 0, 0.3], [-0.2, 0.56, 0.06, 0.2], [0.16, 0.57, -0.17, 0.21], [0.06, 0.8, -0.04, 0.18]],
+  fruits: 6,
+  hang: true,
+  fruit: (t, p, d, k) => {
+    const m = group(t, p.toArray(), 1, [0, k * 1.3, 0.25]);
+    m.add(mesh(CYL(), P('#5a7a2a', 'stem'), [0, 0.02, 0], [0.006, 0.06, 0.006]));
+    m.add(mesh(SPHERE(), P(crop.color, 'produce', { roughness: 0.3 }), [0, -0.09, 0], [0.065, 0.1, 0.056]));
+    m.add(mesh(SPHERE_LO(), P('#ff5a1f', 'accent', { roughness: 0.35 }), [0.024, -0.065, 0.024], [0.046, 0.06, 0.04]));
+  },
+});
+
+B.avocado = (g, P, crop) => {
+  const top = fruitTree(g, P, crop, {
+    canopy: [[0, 0.66, 0, 0.28], [-0.18, 0.56, 0.05, 0.2], [0.15, 0.58, -0.16, 0.2], [0.04, 0.82, -0.04, 0.17]],
+    fruits: 5,
+    hang: true,
+    fruit: (t, p, d, k) => {
+      const a = group(t, p.toArray(), 1, [0, k, 0.15]);
+      a.add(mesh(CYL(), P('#5a7a2a', 'stem'), [0, 0.02, 0], [0.006, 0.06, 0.006]));
+      a.add(mesh(LATHE('avocado', [[0, 0], [0.05, 0.01], [0.065, 0.05], [0.058, 0.09], [0.035, 0.13], [0.02, 0.15], [0, 0.155]]),
+        P('#2f6a0a', 'produce', { roughness: 0.55 }), [0, -0.19, 0], 1.2));
+    },
+  });
+  // A cut half on the ground shows the creamy inside and the big seed.
+  const half = group(g, FRONT_FLAT.clone().multiplyScalar(0.3).add(V(0, 0.05, 0)).toArray(), 1.6);
+  half.quaternion.copy(quatTo(V(0.35, 1, 0.35).normalize()));
+  half.add(mesh(CYL(), P('#2f5a10', 'accent'), [0, 0, 0], [0.085, 0.03, 0.12]));
+  half.add(mesh(CYL(), P('#d6f06a', 'produce', { roughness: 0.5 }), [0, 0.012, 0], [0.072, 0.03, 0.105]));
+  half.add(mesh(SPHERE(), P('#8a5326', 'deco', { roughness: 0.4 }), [0, 0.03, 0.02], 0.04));
+  return top;
+};
+
+B.lychee = (g, P, crop) => fruitTree(g, P, crop, {
+  canopy: [[0, 0.62, 0, 0.28], [-0.18, 0.55, 0.05, 0.2], [0.15, 0.56, -0.15, 0.2], [0.04, 0.78, -0.05, 0.17]],
+  fruits: 5,
+  hang: true,
+  fruit: (t, p) => {
+    const c = group(t, p.toArray());
+    const skin = P(crop.color, 'produce', { roughness: 0.6, flatShading: true });
+    for (const [x, y, z] of [[0, -0.02, 0], [0.045, -0.05, 0.02], [-0.035, -0.06, 0.03], [0.01, -0.095, 0.045], [0.05, -0.1, -0.02]]) {
+      c.add(mesh(geo('bumpy', () => new THREE.IcosahedronGeometry(1, 1)), skin, [x, y, z], 0.034));
+    }
+  },
+});
+
+B.dragonFruit = (g, P, crop) => {
+  g.add(mesh(BOX(), P('#d8cfc0', 'stem', { roughness: 0.9 }), [0, 0.3, 0], [0.07, 0.6, 0.07]));
+  const armM = P(crop.leaf, 'leaf', { roughness: 0.55 });
+  const tri = geo('tri', () => new THREE.CylinderGeometry(1, 1, 1, 3));
+  const fruitArms = [0, 1, 5];
+  for (let i = 0; i < 6; i++) {
+    const yaw = i * (TAU / 6) + 0.3;
+    const arm = group(g, [0, 0.6, 0], 1, [0, yaw, 0]);
+    arm.add(mesh(tri, armM, [0, -0.08, 0.12], [0.035, 0.3, 0.035], [Math.PI / 2 + 0.6, 0, 0]));
+    arm.add(mesh(tri, armM, [0, 0.06, 0.04], [0.03, 0.16, 0.03], [0.5, 0, 0]));
+    if (!fruitArms.includes(i)) continue;
+    const f = group(arm, [0, -0.25, 0.27]);
+    f.add(mesh(SPHERE(), P(crop.color, 'produce', { roughness: 0.3 }), [0, 0, 0], [0.095, 0.12, 0.095]));
+    const scale = P('#a6ef3a', 'accent');
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * TAU;
+      const y = k % 2 ? 0.03 : -0.03;
+      leaf(f, scale, { p: [Math.cos(a) * 0.085, y * 1.4, Math.sin(a) * 0.085], len: 0.075, w: 0.03, tilt: 0.9, yaw: Math.PI / 2 - a });
+    }
+  }
+  return 0.82;
+};
+
+B.mangosteen = (g, P, crop, look) => {
+  for (let i = 0; i < 5; i++) leaf(g, P(crop.leaf, 'leaf'), { p: [0, 0.03, 0], len: 0.24, w: 0.11, tilt: 0.35, yaw: i * 1.25 });
+  const c = [0, 0.26, 0];
+  g.add(mesh(SPHERE(), P(crop.color, 'produce', { roughness: 0.3 }), c, [0.23, 0.21, 0.23]));
+  const cal = P('#52c23a', 'accent', { roughness: 0.5 });
+  for (let k = 0; k < 4; k++) {
+    const a = (k / 4) * TAU + 0.4;
+    g.add(mesh(SPHERE(), cal, [Math.cos(a) * 0.07, 0.45, Math.sin(a) * 0.07], [0.08, 0.03, 0.05], [0, -a, 0]));
+  }
+  g.add(mesh(CYL(0.7), P('#6b4a2a', 'accent'), [0, 0.5, 0], [0.025, 0.08, 0.025]));
+  face(g, look, c, 0.22);
+  for (const s of [-1, 1]) {
+    const arm = RIGHT.clone().multiplyScalar(s * 0.22).add(V(0, 0.2, 0));
+    g.add(mesh(SPHERE(), P(crop.color, 'produce', { roughness: 0.3 }), arm.toArray(), 0.05));
+  }
+  return 0.56;
+};
+
+B.durian = (g, P, crop) => {
+  for (let i = 0; i < 6; i++) leaf(g, P(crop.leaf, 'leaf'), { p: [0, 0.02, 0], len: 0.3, w: 0.13, tilt: 0.2, yaw: i * 1.05 });
+  const skin = P(crop.color, 'produce', { roughness: 0.65 });
+  const fruitAt = (c, rx, ry, n) => {
+    g.add(mesh(SPHERE(), skin, c.toArray(), [rx, ry, rx]));
+    for (let i = 0; i < n; i++) {
+      const y = 1 - (i / (n - 1)) * 2;
+      if (y < -0.7) continue;
+      const r = Math.sqrt(1 - y * y);
+      const a = i * 2.39996;
+      const d = V(Math.cos(a) * r, y, Math.sin(a) * r);
+      const spike = mesh(CONE(), skin, V(d.x * rx, d.y * ry, d.z * rx).add(c).toArray(), [rx * 0.14, rx * 0.3, rx * 0.14]);
+      spike.quaternion.setFromUnitVectors(UPV, d);
+      g.add(spike);
+    }
+    g.add(mesh(CYL(0.6), P('#6b4a2a', 'accent'), c.clone().add(V(0, ry + 0.02, 0)).toArray(), [0.022, 0.07, 0.022]));
+  };
+  fruitAt(V(-0.02, 0.24, -0.02), 0.2, 0.23, 48);
+  fruitAt(V(0.24, 0.11, 0.16), 0.1, 0.11, 26);
+  return 0.56;
 };
 
 // ── Growth stages ─────────────────────────────────────────────

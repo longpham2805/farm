@@ -112,9 +112,12 @@ export function cropImg(cropId, variant = 0, className = 'thumb') {
     return img;
   }
   img.src = BLANK;
-  const job = queue.find((j) => j.key === key);
-  if (job) job.imgs.push(img);
-  else queue.push({ key, crop: cropId, variant, imgs: [img] });
+  // Pictures on screen go ahead of the background pre-rendering.
+  const at = queue.findIndex((j) => j.key === key);
+  const job = at >= 0 ? queue.splice(at, 1)[0] : { key, crop: cropId, variant, imgs: [] };
+  job.imgs.push(img);
+  const firstBackground = queue.findIndex((j) => !j.imgs.length);
+  queue.splice(firstBackground < 0 ? queue.length : firstBackground, 0, job);
   pump();
   return img;
 }

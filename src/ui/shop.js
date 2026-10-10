@@ -1,4 +1,4 @@
-import { h, seedBag, tierOf } from './dom.js';
+import { h, seedBag, tierOf, nutritionBlock } from './dom.js';
 import { t, fmtNum, fmtDur, seedName } from '../i18n.js';
 import * as G from '../game/logic.js';
 import { CROPS, PACKS, CROP_BY_ID, PACK_BY_ID, isPack, hasTag, packPool } from '../data/crops.js';
@@ -107,6 +107,7 @@ export function openShop(app, focus = null) {
           h('div', null, h('h3', null, seedName(def.id)),
             h('div', { class: 'tags' }, isPack(def.id) ? h('span', { class: 'tag mut' }, '?') : tagsFor(def)))),
         stats,
+        isPack(def.id) ? null : nutritionBlock(def.id),
         locked
           ? h('div', { class: 'center danger' }, '🔒 ', t('unlockAt', { n: def.unlock }))
           : [

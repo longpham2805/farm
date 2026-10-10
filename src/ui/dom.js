@@ -1,4 +1,5 @@
-import { t, fmtNum, seedName, cropName } from '../i18n.js';
+import { t, fmtNum, seedName, cropName, getLang } from '../i18n.js';
+import { NUTRIENTS, CROP_NUTRITION } from '../data/nutrition.js';
 import { CROP_BY_ID, PACK_BY_ID, isPack } from '../data/crops.js';
 import { cropImg } from '../three/thumbs.js';
 
@@ -9,7 +10,12 @@ export function h(tag, props, ...children) {
     for (const [k, v] of Object.entries(props)) {
       if (v == null || v === false) continue;
       if (k === 'class') el.className = v;
-      else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+      else if (k === 'style' && typeof v === 'object') {
+        for (const [prop, val] of Object.entries(v)) {
+          if (prop.startsWith('--')) el.style.setProperty(prop, val);
+          else el.style[prop] = val;
+        }
+      }
       else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2).toLowerCase(), v);
       else if (k === 'text') el.textContent = v;
       else if (k === 'value' || k === 'checked' || k === 'disabled') el[k] = v;
@@ -96,6 +102,38 @@ export function rewardChips(reward) {
     }
   }
   return out;
+}
+
+/**
+ * What is good inside a crop: nutrient badges (tap one to read what it does) and a fun fact.
+ * compact: just the little coloured badges.
+ */
+export function nutritionBlock(cropId, { compact = false } = {}) {
+  const info = CROP_NUTRITION[cropId];
+  if (!info) return null;
+  const lang = getLang();
+  if (compact) {
+    return h('div', { class: 'nutri-dots' }, info.n.map((id) =>
+      h('span', { class: 'nutri-dot', style: { '--nc': NUTRIENTS[id].color }, title: NUTRIENTS[id].name[lang] }, NUTRIENTS[id].code)));
+  }
+  const line = h('p', { class: 'nutri-benefit' });
+  const chips = info.n.map((id) => h('button', {
+    class: 'nutri',
+    style: { '--nc': NUTRIENTS[id].color },
+    'data-id': id,
+    onClick: () => show(id),
+  }, h('b', null, NUTRIENTS[id].code), NUTRIENTS[id].name[lang]));
+  function show(id) {
+    const n = NUTRIENTS[id];
+    line.textContent = `${n.name[lang]} ${n.benefit[lang]}.`;
+    for (const c of chips) c.classList.toggle('on', c.dataset.id === id);
+  }
+  show(info.n[0]);
+  return h('div', { class: 'nutri-box' },
+    h('div', { class: 'nutri-title' }, '🍎 ', t('nutrition')),
+    h('div', { class: 'nutri-row' }, chips),
+    line,
+    h('p', { class: 'nutri-fact' }, '💡 ', info.fact[lang]));
 }
 
 export function variantTitle(cropId, variant) {

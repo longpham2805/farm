@@ -32,6 +32,9 @@ export class Bubbles {
           kind = 'lock';
           icon = `🔒 ${PLOT_UNLOCK[i]}`;
         }
+      } else if (!d && !npc && app.sheet === 'seeds' && i === app.plantTarget) {
+        kind = 'target';
+        icon = '🌱';
       } else if (d) {
         if (d.info.mature) {
           if (npc) {

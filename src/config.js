@@ -29,7 +29,7 @@ export const LEVEL_MATERIALS = {
   13: { crop: 'lettuce', n: 12 },
   15: { crop: 'onion', n: 15 },
   18: { crop: 'strawberry', n: 15 },
-  21: { crop: 'dahlia', n: 9 },
+  21: { crop: 'mangosteen', n: 9 },
   24: { crop: 'broccoli', n: 9 },
   27: { crop: 'pineapple', n: 9 },
 };
@@ -61,9 +61,10 @@ export const VARIANT_SELL_MULT = [1, 2, 3, 4, 5, 6, 8, 10];
 export const CHEST_TIERS = ['green', 'blue', 'purple', 'red'];
 export const CHEST_WEIGHTS = { green: 60, blue: 28, purple: 10, red: 2 };
 
-export const START = { coins: 500, seeds: { wheat: 6 } };
+export const START = { coins: 500, seeds: { rice: 6 } };
 
 // Encyclopedia milestones: number of discovered varieties → reward.
+// The last milestone is every variety (see TOTAL_VARIETIES).
 export const MILESTONES = [
   { n: 5, reward: { coins: 300, seeds: { pack1: 2 } } },
   { n: 15, reward: { coins: 1000, seeds: { pack2: 2 } } },
@@ -71,5 +72,6 @@ export const MILESTONES = [
   { n: 50, reward: { coins: 8000, seeds: { pack3: 3 } } },
   { n: 75, reward: { coins: 20000, seeds: { pack3: 5 } } },
   { n: 100, reward: { coins: 50000, seeds: { pack4: 3 } } },
-  { n: 133, reward: { coins: 150000, seeds: { pack4: 10 } } },
+  { n: 125, reward: { coins: 90000, seeds: { pack4: 5 } } },
+  { n: Infinity, reward: { coins: 150000, seeds: { pack4: 10 } } },
 ];

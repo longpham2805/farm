@@ -37,6 +37,7 @@ export class App {
     this.view = { mode: 'home', npcId: null };
     this.sheet = null;
     this.seedSel = null;
+    this.plantTarget = null;
     this.reveals = [];
     this.revealing = false;
 
@@ -189,12 +190,13 @@ export class App {
       return;
     }
     if (!d) {
+      // Empty plot: it becomes the plot the next seed goes into.
       this.popover.close();
-      if (this.sheet === 'seeds' && this.seedSel) this.plant(i, this.seedSel);
+      if (this.sheet !== 'seeds') this.openSeeds(i);
       else {
-        this.openSeeds();
-        this.scene.setSelected(i);
-        this.pendingPlot = i;
+        sfx.tap();
+        this.setTarget(i);
+        this.sheets.render();
       }
       return;
     }
@@ -260,6 +262,9 @@ export class App {
     if (n) {
       sfx.plant();
       toast(t('planted', { n }), 'good');
+      this.setTarget(this.nextEmptyPlot());
+      this.sheets.render();
+      if (this.plantTarget == null) this.closeSheetSoon();
     } else {
       sfx.error();
       toast(G.seedCount(this.state, seedId) > 0 ? t('noEmpty') : t('noSeeds'), 'warn');
@@ -303,6 +308,7 @@ export class App {
     if (r.newDiscovery || (plot && plot.pack)) {
       this.queueReveal({ crop: r.crop, variant: r.variant, newDiscovery: r.newDiscovery, pack: plot && plot.pack });
     }
+    if (this.sheet === 'seeds' && this.plantTarget == null) this.setTarget(i);
     this.handleChests(r.chests);
     this.refresh();
     return true;
@@ -397,12 +403,13 @@ export class App {
 
   // ── Panels ──────────────────────────────────────────────────
 
-  openSeeds() {
+  /** Opens the seed bar. `target` is the plot to plant first (default: first empty one). */
+  openSeeds(target = null) {
     this.popover.close();
-    this.pendingPlot = null;
     this.sheet = 'seeds';
     if (!this.seedSel || G.seedCount(this.state, this.seedSel) <= 0) this.seedSel = this.defaultSeed();
     this.scene.setPlantMode(true);
+    this.setTarget(target ?? this.nextEmptyPlot());
     sfx.open();
     this.sheets.render();
     this.bubbles.sync();
@@ -418,7 +425,7 @@ export class App {
   closeSheet() {
     if (this.view.mode === 'npc') return;
     this.sheet = null;
-    this.pendingPlot = null;
+    this.setTarget(null);
     this.scene.setPlantMode(false);
     this.scene.setSelected(null);
     this.sheets.render();
@@ -426,16 +433,46 @@ export class App {
     this.hud.update();
   }
 
+  /** Tapping a seed plants it in the glowing plot, then moves the glow to the next empty plot. */
   selectSeed(id) {
     this.seedSel = id;
-    sfx.tap();
-    if (this.pendingPlot != null && !this.state.plots[this.pendingPlot]) {
-      const i = this.pendingPlot;
-      this.pendingPlot = null;
-      this.plant(i, id);
+    let i = this.plantTarget;
+    if (i == null || this.state.plots[i] || !G.plotUnlocked(this.state.level, i)) i = this.nextEmptyPlot();
+    if (i == null) {
+      sfx.tap();
+      toast(t('noEmpty'));
+      this.sheets.render();
       return;
     }
+    if (!this.plant(i, id)) return;
+    const next = this.nextEmptyPlot(i);
+    this.setTarget(next);
     this.sheets.render();
+    if (next == null) {
+      toast(`🌱 ${t('allPlanted')}`, 'good');
+      this.closeSheetSoon();
+    }
+  }
+
+  closeSheetSoon() {
+    setTimeout(() => {
+      if (this.sheet === 'seeds' && this.nextEmptyPlot() == null) this.closeSheet();
+    }, 900);
+  }
+
+  /** Next open, empty plot after `from`, wrapping round; null when the field is full. */
+  nextEmptyPlot(from = -1) {
+    for (let k = 1; k <= 16; k++) {
+      const i = (from + k + 16) % 16;
+      if (G.plotUnlocked(this.state.level, i) && !this.state.plots[i]) return i;
+    }
+    return null;
+  }
+
+  setTarget(i) {
+    this.plantTarget = i;
+    this.scene.setTarget(i);
+    this.bubbles.sync();
   }
 
   go(where) {

@@ -19,7 +19,7 @@ export class Sheets {
     const s = app.state;
     const sheet = app.sheet;
     let key = `${sheet}|${app.view.mode}|${app.view.npcId}|${s.settings.lang}`;
-    if (sheet === 'seeds') key += `|${this.seedTab}|${app.seedSel}|${JSON.stringify(s.seeds)}`;
+    if (sheet === 'seeds') key += `|${this.seedTab}|${app.seedSel}|${app.plantTarget}|${JSON.stringify(s.seeds)}`;
     if (sheet === 'friends') key += `|${this.friendTab}|${this.friendKey()}`;
     if (key === this.key) return;
     const scroller = this.root.querySelector('.scroller');
@@ -32,9 +32,10 @@ export class Sheets {
     if (next && key.split('|')[0] === sheet) next.scrollLeft = scroll;
   }
 
-  tabs(list, current, onPick, closable = true) {
+  tabs(list, current, onPick, closable = true, hint = null) {
     return h('div', { class: 'sheet-tabs' },
       list.map(([id, label]) => h('button', { class: `sheet-tab${current === id ? ' on' : ''}`, onClick: () => onPick(id) }, label)),
+      hint ? h('span', { class: 'sheet-hint' }, hint) : null,
       closable ? h('button', { class: 'sheet-tab close', 'aria-label': t('close'), onClick: () => this.app.closeSheet() }, '✕') : null);
   }
 
@@ -60,7 +61,7 @@ export class Sheets {
       this.tabs([['all', t('tabAll')], ['normal', t('tabNormal')], ['special', t('tabSpecial')]], this.seedTab, (id) => {
         this.seedTab = id;
         this.render();
-      }),
+      }, true, app.plantTarget == null ? t('seedHintFull') : `👆 ${t('seedHint')}`),
       h('div', { class: 'sheet-body' },
         list,
         h('div', { class: 'sheet-side' },

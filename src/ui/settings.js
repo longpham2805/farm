@@ -49,6 +49,7 @@ export function openSettings(app) {
         h('div', { class: 'field' }, h('label', null, t('sound')), seg([[true, t('on')], [false, t('off')]], s.sound, set('sound'))),
         h('div', { class: 'field' }, h('label', null, t('music')), seg([[true, t('on')], [false, t('off')]], s.music, set('music'))),
         h('div', { class: 'field' }, h('label', null, t('graphics')), seg([['high', t('gfxHigh')], ['low', t('gfxLow')]], s.quality, set('quality'))),
+        installField(app, api),
         h('p', { class: 'muted' }, '💾 ', t('saveNote')),
         confirmReset
           ? h('div', { class: 'center' }, h('p', { class: 'danger' }, t('resetConfirm')),
@@ -66,6 +67,23 @@ export function openSettings(app) {
       );
     },
   });
+}
+
+function installField(app, api) {
+  const standalone = window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone;
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  let body;
+  if (standalone) body = h('p', { class: 'muted', style: { margin: 0 } }, '✅ ', t('installed'));
+  else if (app.installPrompt) {
+    body = h('div', null, h('button', { class: 'btn honey small', onClick: async () => {
+      const prompt = app.installPrompt;
+      app.installPrompt = null;
+      prompt.prompt();
+      await prompt.userChoice.catch(() => null);
+      api.refresh();
+    } }, '📲 ', t('installBtn')));
+  } else body = h('p', { class: 'muted', style: { margin: 0 } }, ios ? t('installIos') : t('installOther'));
+  return h('div', { class: 'field' }, h('label', null, '📲 ', t('installTitle')), body);
 }
 
 export function openWelcome(app) {

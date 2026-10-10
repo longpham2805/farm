@@ -1,4 +1,4 @@
-import { h, rewardChips } from './dom.js';
+import { h, rewardChips, nutritionBlock } from './dom.js';
 import { t, fmtNum, cropName, seedName } from '../i18n.js';
 import * as G from '../game/logic.js';
 import { CROPS, TOTAL_VARIETIES } from '../data/crops.js';
@@ -59,7 +59,7 @@ export function openBook(app) {
         else if (complete) action = h('button', { class: 'btn small honey', onClick: () => claimGift(() => G.claimSet(s, crop.id)) }, '🎁 ', t('claim'));
         else action = h('div', { class: 'rewards' }, rewardChips(G.setReward(crop)));
         body.append(h('div', { class: 'set-row' },
-          h('div', { class: 'set-name' }, cropName(crop.id), h('small', { class: 'num' }, `${have}/${crop.variants}`)),
+          h('div', { class: 'set-name' }, cropName(crop.id), h('small', { class: 'num' }, `${have}/${crop.variants}`), nutritionBlock(crop.id, { compact: true })),
           h('div', { class: 'set-vars' }, vars),
           action));
       }

@@ -1,4 +1,4 @@
-import { h } from './dom.js';
+import { h, nutritionBlock } from './dom.js';
 import { t, cropName } from '../i18n.js';
 import { openModal, confetti } from './overlay.js';
 import { cropImg } from '../three/thumbs.js';
@@ -25,6 +25,7 @@ export function showReveal(app, { crop, variant, newDiscovery, pack }) {
           pic,
           h('h2', null, cropName(crop, variant)),
           newDiscovery ? h('p', { class: 'muted' }, '📖 ', t('addedToBook')) : null,
+          nutritionBlock(crop),
           h('div', { class: 'row-btns' }, h('button', { class: 'btn berry', onClick: () => api.close() }, t('ok')))));
       },
     });

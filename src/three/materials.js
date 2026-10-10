@@ -6,7 +6,14 @@ const cache = new Map();
 /** Materials that cycle through the rainbow every frame. */
 export const rainbowMats = new Set();
 
-const UNRIPE = new THREE.Color('#9bd36a');
+const UNRIPE = new THREE.Color('#9be05a');
+const hsl = {};
+
+/** Makes a colour more saturated (k > 1). */
+function vivid(c, k) {
+  c.getHSL(hsl);
+  c.setHSL(hsl.h, Math.min(1, hsl.s * k + 0.03), hsl.l);
+}
 
 /**
  * Material for one part of a plant.
@@ -18,7 +25,8 @@ export function plantMat(color, part, look = {}, extra = {}) {
   const style = look.style ? STYLES[look.style] : null;
   const styled = !!style && (part === 'produce' || (style.whole && part !== 'face' && part !== 'deco'));
   const key = [color, part, styled ? look.style : '', look.unripe && part === 'produce' ? 'u' : '',
-    extra.map ? extra.map.uuid : '', extra.roughness ?? '', extra.emissive ?? '', extra.metalness ?? '', extra.opacity ?? ''].join('|');
+    extra.map ? extra.map.uuid : '', extra.roughness ?? '', extra.emissive ?? '', extra.metalness ?? '', extra.opacity ?? '',
+    extra.flatShading ? 'f' : '', extra.side ?? ''].join('|');
   const hit = cache.get(key);
   if (hit) return hit;
 
@@ -51,16 +59,22 @@ export function plantMat(color, part, look = {}, extra = {}) {
     if (style.rainbow) rainbowMats.add(mat);
   } else {
     const c = new THREE.Color(color);
+    if (part !== 'face' && part !== 'deco' && !extra.map) vivid(c, part === 'produce' || part === 'accent' ? 1.25 : 1.15);
     if (look.unripe && part === 'produce') c.lerp(UNRIPE, 0.65);
     mat = new THREE.MeshStandardMaterial({
       color: c,
-      roughness: extra.roughness ?? (part === 'leaf' || part === 'stem' ? 0.75 : 0.42),
+      roughness: extra.roughness ?? (part === 'leaf' || part === 'stem' ? 0.7 : 0.36),
       metalness: extra.metalness ?? 0,
       map: extra.map || null,
+      flatShading: !!extra.flatShading,
     });
     if (extra.emissive) {
       mat.emissive = new THREE.Color(extra.emissive);
       mat.emissiveIntensity = extra.emissiveIntensity ?? 0.6;
+    } else if (!extra.map && part !== 'face' && part !== 'deco') {
+      // A little self-glow keeps fruit colours bright even in shade.
+      mat.emissive = c.clone();
+      mat.emissiveIntensity = part === 'produce' ? 0.14 : part === 'accent' ? 0.1 : 0.06;
     }
     if (extra.opacity) {
       mat.transparent = true;

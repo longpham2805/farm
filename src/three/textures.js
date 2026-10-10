@@ -70,6 +70,53 @@ export const skyTexture = (top = '#7fc8ff', mid = '#bfe6ff', bottom = '#ffe3f1')
     g.fillRect(0, 0, w, h);
   });
 
+export const sunRaysTexture = () =>
+  canvasTex('sunRays', 256, 256, (g, w) => {
+    const c = w / 2;
+    g.fillStyle = '#ffffff';
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      g.beginPath();
+      g.moveTo(c + Math.cos(a - 0.12) * c * 0.42, c + Math.sin(a - 0.12) * c * 0.42);
+      g.lineTo(c + Math.cos(a) * c * 0.98, c + Math.sin(a) * c * 0.98);
+      g.lineTo(c + Math.cos(a + 0.12) * c * 0.42, c + Math.sin(a + 0.12) * c * 0.42);
+      g.closePath();
+      g.fill();
+    }
+  });
+
+/** A smiling sun face. */
+export const sunFaceTexture = () =>
+  canvasTex('sunFace', 256, 256, (g, w) => {
+    const c = w / 2;
+    const grad = g.createRadialGradient(c * 0.8, c * 0.7, c * 0.1, c, c, c * 0.95);
+    grad.addColorStop(0, '#fff6a0');
+    grad.addColorStop(0.7, '#ffd21f');
+    grad.addColorStop(1, '#ffb300');
+    g.fillStyle = grad;
+    g.beginPath();
+    g.arc(c, c, c * 0.95, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = '#7a4a10';
+    for (const x of [-0.3, 0.3]) {
+      g.beginPath();
+      g.ellipse(c + x * c, c - 0.12 * c, c * 0.075, c * 0.11, 0, 0, Math.PI * 2);
+      g.fill();
+    }
+    g.fillStyle = 'rgba(255, 120, 80, 0.45)';
+    for (const x of [-0.52, 0.52]) {
+      g.beginPath();
+      g.ellipse(c + x * c, c + 0.12 * c, c * 0.12, c * 0.07, 0, 0, Math.PI * 2);
+      g.fill();
+    }
+    g.strokeStyle = '#7a4a10';
+    g.lineWidth = c * 0.07;
+    g.lineCap = 'round';
+    g.beginPath();
+    g.arc(c, c + 0.05 * c, c * 0.3, 0.2 * Math.PI, 0.8 * Math.PI);
+    g.stroke();
+  });
+
 export const stripeTexture = () =>
   canvasTex('stripes', 128, 64, (g, w, h) => {
     g.fillStyle = '#5cbf4a';
@@ -107,20 +154,6 @@ export const pineappleTexture = () =>
       g.beginPath();
       g.arc(x + 10, y, 2.5, 0, Math.PI * 2);
       g.fill();
-    }
-  });
-
-export const swirlTexture = () =>
-  canvasTex('swirl', 256, 256, (g, w) => {
-    const c = w / 2;
-    const colors = ['#ff5fb4', '#ffffff', '#7fd6ff', '#ffffff', '#ffd23f', '#ffffff'];
-    for (let i = 0; i < 360; i += 2) {
-      const a = (i * Math.PI) / 180;
-      for (let r = 0; r < c; r += 2) {
-        const band = Math.floor((a * 3 + r * 0.09) / (Math.PI / 3)) % colors.length;
-        g.fillStyle = colors[(band + colors.length) % colors.length];
-        g.fillRect(c + Math.cos(a) * r, c + Math.sin(a) * r, 3, 3);
-      }
     }
   });
 

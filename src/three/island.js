@@ -111,7 +111,7 @@ function frog() {
 
 export function cloud(scale = 1) {
   const g = new THREE.Group();
-  const mat = worldMat('#ffffff', { roughness: 1, emissive: '#e8f2ff', emissiveIntensity: 0.35 });
+  const mat = worldMat('#ffffff', { roughness: 1, emissive: '#fff4d6', emissiveIntensity: 0.4 });
   const sph = new THREE.SphereGeometry(1, 14, 10);
   for (const [x, y, z, s] of [[0, 0, 0, 0.6], [0.55, -0.08, 0.1, 0.45], [-0.55, -0.1, 0, 0.42], [0.2, 0.25, -0.05, 0.42], [-0.25, 0.18, 0.1, 0.36]]) {
     const c = new THREE.Mesh(sph, mat);

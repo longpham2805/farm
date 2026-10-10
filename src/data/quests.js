@@ -3,12 +3,14 @@
 //   level, discovered, sets
 // `go` tells the UI which screen helps with the task.
 
+import { CROPS, TOTAL_VARIETIES } from './crops.js';
+
 export const CHAPTERS = [
   {
     title: { vi: 'Nông trại đầu tiên', en: 'My First Farm' },
     tasks: [
       { id: 'c1a', kind: 'planted', n: 3, go: 'seeds', reward: { coins: 50 } },
-      { id: 'c1b', kind: 'watered', n: 2, go: 'farm', reward: { seeds: { wheat: 3 } } },
+      { id: 'c1b', kind: 'watered', n: 2, go: 'farm', reward: { seeds: { rice: 3 } } },
       { id: 'c1c', kind: 'harvested', n: 6, go: 'farm', reward: { coins: 100 } },
       { id: 'c1d', kind: 'sold', n: 5, go: 'warehouse', reward: { seeds: { pack1: 1 } } },
       { id: 'c1e', kind: 'level', n: 2, go: 'upgrade', reward: { coins: 200 } },
@@ -66,8 +68,8 @@ export const CHAPTERS = [
   {
     title: { vi: 'Vua nông trại', en: 'Farm Royalty' },
     tasks: [
-      { id: 'c7a', kind: 'discovered', n: 133, go: 'book', reward: { coins: 300000 } },
-      { id: 'c7b', kind: 'sets', n: 31, go: 'book', reward: { seeds: { pack4: 10 } } },
+      { id: 'c7a', kind: 'discovered', n: TOTAL_VARIETIES, go: 'book', reward: { coins: 300000 } },
+      { id: 'c7b', kind: 'sets', n: CROPS.length, go: 'book', reward: { seeds: { pack4: 10 } } },
       { id: 'c7c', kind: 'level', n: 30, go: 'upgrade', reward: { coins: 500000 } },
     ],
   },

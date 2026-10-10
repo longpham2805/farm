@@ -1,4 +1,4 @@
-import { h } from './dom.js';
+import { h, nutritionBlock } from './dom.js';
 import { t, fmtNum, cropName } from '../i18n.js';
 import * as G from '../game/logic.js';
 import { CROP_BY_ID } from '../data/crops.js';
@@ -104,6 +104,7 @@ export function openBarn(app, startTab = 'crops') {
           h('dt', null, t('owned')), h('dd', null, fmtNum(have)),
           h('dt', null, t('sellEach')), h('dd', null, `🪙 ${fmtNum(price)}`),
           reserved[sel] ? [h('dt', null, '🔒'), h('dd', null, t('keptForUpgrade'))] : null),
+        nutritionBlock(cropId),
         h('div', { class: 'qty' },
           h('button', { class: 'step', onClick: () => set(qty - 1), 'aria-label': '-' }, '−'),
           range, val,

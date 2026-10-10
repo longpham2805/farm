@@ -16,24 +16,34 @@ module.exports = {
     await p.fill('#farmer-name', 'Tí');
     await p.click('.avatars button:nth-child(6)');
     await p.click('text=Bắt đầu chơi');
-    await p.waitForTimeout(600);
+    await p.waitForTimeout(700);
     await shot('seedbar');
-    for (const i of [5, 6]) { const c = await pos(p, i); await p.mouse.click(c.x, c.y); await p.waitForTimeout(150); }
-    await p.click('text=Gieo hết');
-    await p.waitForTimeout(900);
-    await shot('planted');
-    await travel(p, 9500);
+    const bag = (n) => p.locator('.sheet .bag').nth(n);
+    await bag(1).click();
+    await p.waitForTimeout(250);
+    await bag(1).click();
+    await p.waitForTimeout(600);
+    await shot('planted-two');
+    for (let k = 0; k < 4; k++) { await bag(0).click({ timeout: 2000 }).catch(() => {}); await p.waitForTimeout(200); }
+    await p.waitForTimeout(400);
+    await shot('planted-all');
+    // Jump to 60% of the rice's growth: past its thirsty point, not yet ripe.
+    await p.evaluate(() => {
+      const f = window.farm;
+      const rice = f.state.plots.find((pl) => pl && pl.crop === 'rice');
+      f._offset = rice.plantedAt + rice.growMs * 0.6 - Date.now();
+      f.now = () => Date.now() + f._offset;
+      f.tick();
+    });
     await p.waitForTimeout(900);
     await shot('thirsty');
-    await p.click('.pill-act');
+    await p.click('.pill-act:not(.harvest)');
     await p.waitForTimeout(1200);
     await travel(p, 11000);
     await p.waitForTimeout(1200);
     await shot('ripe');
     await p.click('.pill-act.harvest');
-    await p.waitForTimeout(450);
-    await shot('harvesting');
-    await p.waitForTimeout(1500);
+    await p.waitForTimeout(1800);
     await shot('reveal');
   },
   async menus(p, shot) {
@@ -43,10 +53,10 @@ module.exports = {
       s.seenIntro = true;
       s.coins = 123456; s.level = 12; s.xp = 9000; s.energy = 64;
       s.chests = { green: 6, blue: 3, purple: 1, red: 1 };
-      s.seeds = { wheat: 12, sunflower: 30, pack2: 3, fox: 4, corn: 2 };
-      s.items = { 'wheat:0': 30, 'wheat:1': 4, 'sunflower:0': 22, 'sunflower:1': 3, 'sunflower:2': 2, 'fox:3': 1, 'lettuce:0': 5, 'corn:0': 14, 'tomato:2': 3 };
+      s.seeds = { rice: 12, sunflower: 30, pack2: 3, papaya: 4, corn: 2 };
+      s.items = { 'rice:0': 30, 'rice:1': 4, 'sunflower:0': 22, 'sunflower:1': 3, 'sunflower:2': 2, 'papaya:2': 1, 'lettuce:0': 5, 'corn:0': 14, 'tomato:2': 3 };
       for (const k of Object.keys(s.items)) s.discovered[k] = Date.now();
-      s.discovered['wheat:2'] = Date.now();
+      s.discovered['rice:2'] = Date.now();
       s.stats = { planted: 50, watered: 20, harvested: 300, sold: 50, bought: 20, mutations: 4, visits: 2, friendWater: 5 };
       s.quests.chapter = 1;
       document.querySelectorAll('.overlay').forEach((o) => o.remove());
@@ -96,7 +106,7 @@ module.exports = {
       f.closeSheet();
       const s = f.state;
       s.level = 6; s.coins = 4321;
-      const crops = ['sunflower', 'fox', 'corn', 'tomato', 'wheat', 'carrot', 'pepper', 'banana', 'potato', 'garlic', 'cucumber', 'mushroom'];
+      const crops = ['sunflower', 'papaya', 'corn', 'tomato', 'rice', 'carrot', 'pepper', 'banana', 'potato', 'garlic', 'cucumber', 'mushroom'];
       let k = 0;
       s.plots = s.plots.map((_, i) => (f.describe(i) && f.describe(i).locked) ? null : ({ crop: crops[k++ % crops.length], pack: null, plantedAt: Date.now() - (i % 3 === 0 ? 1e9 : 3000), growMs: i % 3 === 0 ? 1000 : 60000, waters: 0, variant: i % 3 === 0 ? (i % 2) : null }));
       f.syncPlots(false);
@@ -122,7 +132,7 @@ module.exports = {
       const s = f.state;
       s.seenIntro = true; s.level = 12;
       document.querySelectorAll('.overlay').forEach((o) => o.remove());
-      const crops = ['sunflower', 'fox', 'corn', 'lotus', 'grape', 'lantern', 'pumpkin', 'strawberry', 'tomato', 'ginger', 'lettuce', 'blueberry', 'gentian', 'dahlia', 'broccoli', 'candy'];
+      const crops = ['sunflower', 'papaya', 'corn', 'mangosteen', 'grape', 'orange', 'pumpkin', 'strawberry', 'tomato', 'ginger', 'lettuce', 'blueberry', 'dragonFruit', 'apple', 'broccoli', 'durian'];
       s.plots = crops.map((c, i) => ({ crop: c, pack: null, plantedAt: Date.now() - 1e9, growMs: 1000, waters: 2, variant: i % 4 === 0 ? 0 : (i % 3) + 1 }));
       f.syncPlots(false);
       f.refresh();
@@ -146,7 +156,7 @@ module.exports.english = async (p, shot) => {
     document.querySelectorAll('.overlay').forEach((o) => o.remove());
     f.setSetting('lang', 'en');
     const s = f.state;
-    s.level = 5; s.coins = 2500; s.seeds = { wheat: 4, carrot: 6, pack1: 2 };
+    s.level = 5; s.coins = 2500; s.seeds = { rice: 4, carrot: 6, pack1: 2 };
     s.plots[5] = { crop: 'sunflower', pack: null, plantedAt: Date.now() - 1e9, growMs: 1000, waters: 2, variant: 2 };
     s.plots[6] = { crop: 'tomato', pack: null, plantedAt: Date.now() - 20000, growMs: 60000, waters: 0, variant: null };
     s.plots[9] = { crop: 'carrot', pack: 'pack1', plantedAt: Date.now() - 2000, growMs: 60000, waters: 0, variant: null };

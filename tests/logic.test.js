@@ -3,9 +3,11 @@ import assert from 'node:assert/strict';
 import * as G from '../src/game/logic.js';
 import { setRng, seeded } from '../src/util.js';
 import { CROPS, PACKS, TOTAL_VARIETIES } from '../src/data/crops.js';
-import { MILESTONES, LEVEL_XP, LEVEL_COST, MAX_LEVEL } from '../src/config.js';
+import { MILESTONES, LEVEL_XP, LEVEL_COST, MAX_LEVEL, LEVEL_MATERIALS } from '../src/config.js';
+import { NUTRIENTS, CROP_NUTRITION } from '../src/data/nutrition.js';
 import { CHAPTERS } from '../src/data/quests.js';
 import { variantLooks } from '../src/data/styles.js';
+import { hasBuilder } from '../src/three/models.js';
 
 const T0 = new Date(2026, 9, 10, 9, 0, 0).getTime();
 
@@ -17,7 +19,7 @@ function fresh() {
 test('data tables are consistent', () => {
   assert.equal(LEVEL_XP.length, MAX_LEVEL - 1);
   assert.equal(LEVEL_COST.length, MAX_LEVEL - 1);
-  assert.equal(MILESTONES.at(-1).n, TOTAL_VARIETIES);
+  assert.ok(MILESTONES.at(-2).n < TOTAL_VARIETIES);
   assert.equal(new Set(CROPS.map((c) => c.id)).size, CROPS.length);
   for (const c of CROPS) {
     const looks = variantLooks(c);
@@ -27,15 +29,43 @@ test('data tables are consistent', () => {
   for (const p of PACKS) assert.ok(G.CROPS.filter(p.pool).length > 0, p.id);
   const sets = CHAPTERS.at(-1).tasks.find((t) => t.kind === 'sets');
   assert.equal(sets.n, CROPS.length);
+  for (const c of CROPS) {
+    assert.ok(hasBuilder(c.id), `no 3D model for ${c.id}`);
+    const info = CROP_NUTRITION[c.id];
+    assert.ok(info && info.fact.vi && info.fact.en, `no nutrition for ${c.id}`);
+    for (const n of info.n) assert.ok(NUTRIENTS[n], `${c.id}: unknown nutrient ${n}`);
+  }
+  for (const [mat] of Object.entries(LEVEL_MATERIALS).map(([, m]) => [m.crop])) assert.ok(G.CROP_BY_ID[mat], mat);
+});
+
+test('old saves keep their crops after the seed list changed', () => {
+  const old = {
+    level: 4,
+    seeds: { wheat: 5, fox: 2, rice: 1, pack1: 1, nonsense: 3 },
+    items: { 'wheat:0': 7, 'wheat:2': 1, 'candy:7': 2, 'purpleRadish:4': 1 },
+    discovered: { 'wheat:0': 5, 'rice:0': 3, 'gentian:4': 9, 'lotus:1': 1 },
+    plots: [{ crop: 'dahlia', plantedAt: 1, growMs: 5, waters: 0, variant: 4 }, ...Array(15).fill(null)],
+    claimedSets: { wheat: true, fox: true },
+    npcs: { meo: { plots: [{ crop: 'candy' }] } },
+  };
+  const s = G.hydrate(old, T0);
+  assert.deepEqual(s.seeds, { rice: 6, papaya: 2, pack1: 1 });
+  assert.deepEqual(s.items, { 'rice:0': 7, 'rice:2': 1, 'lychee:2': 2, 'beet:4': 1 });
+  assert.deepEqual(s.discovered, { 'rice:0': 3, 'durian:4': 9, 'mangosteen:1': 1 });
+  assert.equal(s.plots[0].crop, 'avocado');
+  assert.equal(s.plots[0].variant, 2);
+  assert.deepEqual(s.claimedSets, { rice: true });
+  assert.deepEqual(s.npcs, {});
+  assert.equal(s.v, 2);
 });
 
 test('plant, water, ripen, harvest', () => {
   const s = fresh();
   assert.equal(G.plotCount(1), 6);
-  assert.deepEqual(G.plant(s, 0, 'wheat', T0), { ok: false, err: 'locked' });
-  assert.ok(G.plant(s, 5, 'wheat', T0).ok);
-  assert.equal(s.seeds.wheat, 5);
-  assert.deepEqual(G.plant(s, 5, 'wheat', T0), { ok: false, err: 'occupied' });
+  assert.deepEqual(G.plant(s, 0, 'rice', T0), { ok: false, err: 'locked' });
+  assert.ok(G.plant(s, 5, 'rice', T0).ok);
+  assert.equal(s.seeds.rice, 5);
+  assert.deepEqual(G.plant(s, 5, 'rice', T0), { ok: false, err: 'occupied' });
 
   const plot = s.plots[5];
   assert.equal(plot.growMs, 20000);
@@ -74,12 +104,12 @@ test('mystery pack picks a crop from its pool', () => {
 test('buy, sell and sell all keep upgrade materials', () => {
   const s = fresh();
   assert.equal(G.buySeed(s, 'carrot', 1).err, 'locked');
-  assert.equal(G.buySeed(s, 'wheat', 100).err, 'noCoins');
-  assert.ok(G.buySeed(s, 'wheat', 2).ok);
+  assert.equal(G.buySeed(s, 'rice', 100).err, 'noCoins');
+  assert.ok(G.buySeed(s, 'rice', 2).ok);
   assert.equal(s.coins, 500 - 166);
 
   s.level = 3; // level 3 → 4 needs 6 tomatoes
-  s.items = { 'tomato:0': 4, 'tomato:1': 3, 'wheat:0': 10 };
+  s.items = { 'tomato:0': 4, 'tomato:1': 3, 'rice:0': 10 };
   assert.deepEqual(G.reservedItems(s), { 'tomato:0': 4, 'tomato:1': 2 });
   const preview = G.sellAllPreview(s);
   const r = G.sellAll(s);
@@ -156,7 +186,7 @@ test('neighbour farms grow, can be watered and picked with limits', () => {
   const npc = G.ensureNpc(s, 'meo', T0);
   assert.ok(npc.plots.filter(Boolean).length >= 6);
   // Make plot 5 ripe and plot 6 thirsty.
-  npc.plots[5] = { crop: 'wheat', plantedAt: T0 - 30000, growMs: 20000, variant: 1, waters: 0, stolen: false, linger: 3600000 };
+  npc.plots[5] = { crop: 'rice', plantedAt: T0 - 30000, growMs: 20000, variant: 1, waters: 0, stolen: false, linger: 3600000 };
   npc.plots[6] = { crop: 'tomato', plantedAt: T0 - 30000, growMs: 60000, variant: 0, waters: 0, stolen: false, linger: 3600000 };
   const w = G.npcWater(s, 'meo', 6, T0);
   assert.ok(w.ok && w.rewarded);
@@ -190,12 +220,12 @@ test('mutations happen at ripening and are kept on the plot', () => {
 
 test('collection sets and milestones pay out once', () => {
   const s = fresh();
-  for (let v = 0; v < 3; v++) s.discovered[`wheat:${v}`] = T0;
+  for (let v = 0; v < 3; v++) s.discovered[`rice:${v}`] = T0;
   s.discovered['radish:0'] = T0;
   s.discovered['carrot:0'] = T0;
   assert.equal(G.bookClaimable(s), 2);
-  assert.ok(G.claimSet(s, 'wheat').ok);
-  assert.equal(G.claimSet(s, 'wheat').ok, false);
+  assert.ok(G.claimSet(s, 'rice').ok);
+  assert.equal(G.claimSet(s, 'rice').ok, false);
   assert.ok(G.claimMilestone(s, 0).ok);
   assert.equal(G.claimMilestone(s, 1).ok, false);
   assert.equal(G.bookClaimable(s), 0);
@@ -203,7 +233,7 @@ test('collection sets and milestones pay out once', () => {
 
 test('friends water your plants while you are away', () => {
   const s = fresh();
-  G.plant(s, 5, 'wheat', T0);
+  G.plant(s, 5, 'rice', T0);
   s.plots[5].growMs = 3600000;
   s.lastSeen = T0;
   let total = 0;

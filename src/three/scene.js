@@ -7,7 +7,7 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { buildIsland, plotCenter, SOIL_TOP, PLANT_SCALE, cloud, butterfly } from './island.js';
 import { buildPlant } from './models.js';
 import { updateRainbow } from './materials.js';
-import { glowTexture, starTexture, skyTexture, ringTexture } from './textures.js';
+import { glowTexture, starTexture, skyTexture, ringTexture, sunRaysTexture, sunFaceTexture } from './textures.js';
 import { STYLES } from '../data/styles.js';
 import { CROP_BY_ID } from '../data/crops.js';
 
@@ -45,6 +45,7 @@ export class FarmScene {
     this.tweens = [];
     this.particles = [];
     this.selected = null;
+    this.target = null;
     this.hovered = null;
     this.plantMode = false;
     this.clock = new THREE.Timer();
@@ -52,13 +53,13 @@ export class FarmScene {
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.NeutralToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 1.1;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer = renderer;
 
     const scene = new THREE.Scene();
-    scene.background = skyTexture();
+    scene.background = skyTexture('#86cbff', '#fff3bf', '#ffcf5c');
     this.scene = scene;
 
     this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
@@ -67,8 +68,8 @@ export class FarmScene {
     this.camera.position.copy(CAM_DIR).multiplyScalar(30);
     this.camera.lookAt(0, 0, 0);
 
-    scene.add(new THREE.HemisphereLight('#e3f3ff', '#7aa35a', 1.15));
-    const sun = new THREE.DirectionalLight('#fff0d4', 2.3);
+    scene.add(new THREE.HemisphereLight('#fff6dc', '#86a85a', 1.2));
+    const sun = new THREE.DirectionalLight('#fff0c4', 2.4);
     sun.position.set(3.5, 9, -1.2);
     sun.castShadow = true;
     sun.shadow.camera.left = -5.5;
@@ -99,6 +100,10 @@ export class FarmScene {
       this.plantsGroup.add(root);
       this.slots.push({ root, holder: null, key: '', top: 0, wetUntil: 0, locked: false, empty: true, look: null, ripe: false, phase: Math.random() * TAU });
     }
+
+    scene.add(this.camera);
+    this.sunSprite = this.makeSun();
+    this.camera.add(this.sunSprite);
 
     this.clouds = [];
     const cloudSpots = [[-7, -1.5, 2, 1.4], [6, 1.2, -5, 1.1], [-2, -4.5, 7, 1.8], [8, -3.5, 2, 1.5], [-8, 2.2, -4, 1], [3, -5, 8, 1.3], [-5, 3, -8, 1.2]];
@@ -192,6 +197,10 @@ export class FarmScene {
     this.camera.bottom = cy - viewH / 2;
     this.camera.updateProjectionMatrix();
     this.viewH = viewH;
+    if (this.sunSprite) {
+      this.sunSprite.position.set(this.camera.left + viewW * (portrait ? 0.2 : 0.14), this.camera.top - viewH * (portrait ? 0.2 : 0.25), -70);
+      this.sunSprite.scale.setScalar(viewH * (portrait ? 0.16 : 0.22));
+    }
   }
 
   setZoom(z) {
@@ -306,6 +315,23 @@ export class FarmScene {
     return g;
   }
 
+  makeSun() {
+    const g = new THREE.Group();
+    const add = (map, color, size, opacity) => {
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map, color, transparent: true, opacity, depthWrite: false, fog: false }));
+      sp.scale.setScalar(size);
+      g.add(sp);
+      return sp;
+    };
+    add(glowTexture(), '#ffd84a', 2.6, 0.55);
+    this.sunRays = add(sunRaysTexture(), '#ffe066', 1.7, 0.9);
+    add(glowTexture(), '#fff7c2', 0.95, 1);
+    const face = add(sunFaceTexture(), '#ffffff', 0.62, 1);
+    face.position.z = 0.01;
+    g.renderOrder = -10;
+    return g;
+  }
+
   beamTexture() {
     if (this._beam) return this._beam;
     const c = document.createElement('canvas');
@@ -331,6 +357,12 @@ export class FarmScene {
     this.refreshTiles();
   }
 
+  /** The plot that the next seed goes into (shown with a pulsing glow). */
+  setTarget(i) {
+    this.target = i;
+    this.refreshTiles();
+  }
+
   setPlantMode(on) {
     this.plantMode = on;
     this.refreshTiles();
@@ -345,7 +377,7 @@ export class FarmScene {
       if (!slot.locked) mat.color.copy(DRY);
       else mat.color.copy(LOCKED);
       mat.emissive.set('#ffc94d');
-      mat.emissiveIntensity = i === this.selected ? 0.45 : i === this.hovered && !slot.locked ? 0.18 : 0;
+      mat.emissiveIntensity = i === this.selected || i === this.target ? 0.45 : i === this.hovered && !slot.locked ? 0.18 : 0;
     });
   }
 
@@ -577,8 +609,10 @@ export class FarmScene {
       if (slot.tile && !slot.locked) {
         const wet = slot.wetUntil > now ? Math.min(1, (slot.wetUntil - now) / 1500) : 0;
         slot.tile.material.color.copy(DRY).lerp(WET, wet);
-        if (this.plantMode && slot.empty && i !== this.selected) {
-          slot.tile.material.emissiveIntensity = 0.12 + 0.12 * Math.sin(t * 4);
+        if (this.plantMode && i === this.target && slot.empty) {
+          slot.tile.material.emissiveIntensity = 0.55 + 0.25 * Math.sin(t * 6);
+        } else if (this.plantMode && slot.empty && i !== this.selected) {
+          slot.tile.material.emissiveIntensity = 0.08;
         }
       }
       const h = slot.holder;
@@ -608,6 +642,7 @@ export class FarmScene {
       }
     });
 
+    if (this.sunRays) this.sunRays.material.rotation = t * 0.15;
     for (const c of this.clouds) {
       c.position.x += dt * 0.12;
       c.position.z -= dt * 0.12;
