@@ -1,9 +1,11 @@
-// The floating island the farm sits on, plus scenery.
+// The farm in the middle of the valley: the plots, the barn, the fences and the frog's pond.
+// It is rebuilt with other colours when visiting a neighbour; the valley around stays.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { worldMat } from './materials.js';
+import { Batch } from './batch.js';
 
-export const ISLAND = 8.4;
 export const SPACING = 1.32;
 export const PLOT = 1.16;
 export const PLANT_SCALE = 1.16;
@@ -28,50 +30,47 @@ export const plotCenter = (index) => {
   return new THREE.Vector3((c - 1.5) * SPACING, 0, (r - 1.5) * SPACING);
 };
 
-function tree(x, z, s, leafColor) {
-  const g = new THREE.Group();
-  g.position.set(x, 0, z);
-  g.scale.setScalar(s);
-  g.add(m(new THREE.CylinderGeometry(0.08, 0.12, 0.7, 7), worldMat('#8a5a3a'), [0, 0.35, 0]));
-  const leaves = worldMat(leafColor, { flatShading: true });
-  const blob = new THREE.IcosahedronGeometry(1, 1);
-  g.add(m(blob, leaves, [0, 0.9, 0], 0.42));
-  g.add(m(blob, leaves, [0.22, 0.75, 0.1], 0.3));
-  g.add(m(blob, leaves, [-0.2, 0.78, -0.08], 0.3));
-  g.add(m(blob, leaves, [0.02, 1.18, 0.02], 0.26));
-  return g;
+// Trees, flowers, rocks and fences go into one merged mesh each, so they draw in a single call.
+const TRUNK = new THREE.CylinderGeometry(0.08, 0.12, 0.7, 7);
+const BLOB = new THREE.IcosahedronGeometry(1, 1);
+const STEM = new THREE.CylinderGeometry(0.012, 0.012, 0.16, 5);
+const PETAL = new THREE.SphereGeometry(1, 6, 4);
+const POST = new THREE.BoxGeometry(0.1, 0.5, 0.1);
+const POST_TOP = new THREE.ConeGeometry(0.075, 0.08, 4);
+const RAIL = new THREE.BoxGeometry(0.05, 0.07, 1);
+const ROCK = new THREE.DodecahedronGeometry(1, 0);
+
+function tree(batch, x, z, s, leafColor) {
+  batch.push(x, 0, z, 0, s);
+  batch.add(TRUNK, '#8a5a3a', [0, 0.35, 0]);
+  batch.add(BLOB, leafColor, [0, 0.9, 0], 0.42, null, true);
+  batch.add(BLOB, leafColor, [0.22, 0.75, 0.1], 0.3, null, true);
+  batch.add(BLOB, leafColor, [-0.2, 0.78, -0.08], 0.3, null, true);
+  batch.add(BLOB, leafColor, [0.02, 1.18, 0.02], 0.26, null, true);
+  batch.pop();
 }
 
-function flower(x, z, color) {
-  const g = new THREE.Group();
-  g.position.set(x, 0, z);
-  g.add(m(new THREE.CylinderGeometry(0.012, 0.012, 0.16, 5), worldMat('#4f9a3a'), [0, 0.08, 0], 1, null, false));
-  const petal = worldMat(color);
-  const sph = new THREE.SphereGeometry(1, 8, 6);
+function flower(batch, x, z, color) {
+  batch.add(STEM, '#4f9a3a', [x, 0.08, z]);
   for (let i = 0; i < 5; i++) {
     const a = (i / 5) * TAU;
-    g.add(m(sph, petal, [Math.cos(a) * 0.035, 0.17, Math.sin(a) * 0.035], [0.03, 0.015, 0.03], null, false));
+    batch.add(PETAL, color, [x + Math.cos(a) * 0.035, 0.17, z + Math.sin(a) * 0.035], [0.03, 0.015, 0.03]);
   }
-  g.add(m(sph, worldMat('#ffe066'), [0, 0.175, 0], 0.022, null, false));
-  return g;
+  batch.add(PETAL, '#ffe066', [x, 0.175, z], 0.022);
 }
 
-function fence(from, to, color) {
-  const g = new THREE.Group();
-  const wood = worldMat(color);
+function fence(batch, from, to, color) {
   const dir = new THREE.Vector3().subVectors(to, from);
   const len = dir.length();
   const posts = Math.round(len / 0.7);
-  const post = new THREE.BoxGeometry(0.1, 0.5, 0.1);
   for (let i = 0; i <= posts; i++) {
     const p = from.clone().addScaledVector(dir, i / posts);
-    g.add(m(post, wood, [p.x, 0.25, p.z]));
-    g.add(m(new THREE.ConeGeometry(0.075, 0.08, 4), wood, [p.x, 0.54, p.z], 1, [0, Math.PI / 4, 0]));
+    batch.add(POST, color, [p.x, 0.25, p.z]);
+    batch.add(POST_TOP, color, [p.x, 0.54, p.z], 1, [0, Math.PI / 4, 0]);
   }
   const angle = Math.atan2(dir.x, dir.z);
   const mid = from.clone().add(to).multiplyScalar(0.5);
-  for (const y of [0.18, 0.38]) g.add(m(new THREE.BoxGeometry(0.05, 0.07, len), wood, [mid.x, y, mid.z], 1, [0, angle, 0]));
-  return g;
+  for (const y of [0.18, 0.38]) batch.add(RAIL, color, [mid.x, y, mid.z], [1, 1, len], [0, angle, 0]);
 }
 
 function barn(theme) {
@@ -109,18 +108,13 @@ function frog() {
   return g;
 }
 
+let cloudGeometry = null;
 export function cloud(scale = 1) {
-  const g = new THREE.Group();
-  const mat = worldMat('#ffffff', { roughness: 1, emissive: '#fff4d6', emissiveIntensity: 0.4 });
-  const sph = new THREE.SphereGeometry(1, 14, 10);
-  for (const [x, y, z, s] of [[0, 0, 0, 0.6], [0.55, -0.08, 0.1, 0.45], [-0.55, -0.1, 0, 0.42], [0.2, 0.25, -0.05, 0.42], [-0.25, 0.18, 0.1, 0.36]]) {
-    const c = new THREE.Mesh(sph, mat);
-    c.position.set(x, y, z);
-    c.scale.set(s, s * 0.8, s);
-    g.add(c);
-  }
-  g.scale.setScalar(scale);
-  return g;
+  cloudGeometry ||= mergeGeometries([[0, 0, 0, 0.6], [0.55, -0.08, 0.1, 0.45], [-0.55, -0.1, 0, 0.42], [0.2, 0.25, -0.05, 0.42], [-0.25, 0.18, 0.1, 0.36]]
+    .map(([x, y, z, s]) => new THREE.SphereGeometry(1, 14, 10).scale(s, s * 0.8, s).translate(x, y, z)));
+  const c = new THREE.Mesh(cloudGeometry, worldMat('#ffffff', { roughness: 1, emissive: '#fff4d6', emissiveIntensity: 0.4 }));
+  c.scale.setScalar(scale);
+  return c;
 }
 
 export function butterfly(color) {
@@ -143,29 +137,12 @@ export function butterfly(color) {
 }
 
 /**
- * Builds the island. theme: { grass, fence, barn, roof }
+ * Builds the farm. theme: { fence, barn, roof, tree, tree2 }
  * Returns { group, plots: [{ tile, hit }], clickables }
  */
-export function buildIsland(theme) {
+export function buildFarm(theme) {
   const group = new THREE.Group();
   const clickables = [];
-
-  const grass = worldMat(theme.grass, { roughness: 0.95 });
-  const top = m(new RoundedBoxGeometry(ISLAND, 0.4, ISLAND, 4, 0.18), grass, [0, -0.2, 0]);
-  top.castShadow = false;
-  group.add(top);
-  const dirt = worldMat('#b9824f');
-  const body = m(new RoundedBoxGeometry(ISLAND - 0.15, 1.0, ISLAND - 0.15, 3, 0.2), dirt, [0, -0.85, 0]);
-  group.add(body);
-  const rock = worldMat('#9a6f4a', { flatShading: true });
-  const under = m(new THREE.ConeGeometry(4.6, 3.2, 7), rock, [0, -2.9, 0], 1, [Math.PI, 0.3, 0]);
-  group.add(under);
-  for (const [x, z, s] of [[2.4, 2.1, 0.9], [-2.2, 2.5, 0.7], [2.6, -2.0, 0.6]]) {
-    group.add(m(new THREE.ConeGeometry(0.8, 1.6, 6), rock, [x, -1.7, z], s, [Math.PI, 0, 0]));
-  }
-  // grass lip
-  const lip = worldMat(theme.grassDark || '#5fb346');
-  group.add(m(new RoundedBoxGeometry(ISLAND + 0.04, 0.12, ISLAND + 0.04, 2, 0.06), lip, [0, -0.38, 0]));
 
   // plots
   const plots = [];
@@ -184,10 +161,13 @@ export function buildIsland(theme) {
     plots.push({ tile, hit });
   }
 
+  const deco = new Batch();
+  const flowers = new Batch();
+
   // fences along the back edges
-  const e = ISLAND / 2 - 0.2;
-  group.add(fence(new THREE.Vector3(-e, 0, -e + 1.4), new THREE.Vector3(-e, 0, e - 0.3), theme.fence));
-  group.add(fence(new THREE.Vector3(-e + 1.4, 0, -e), new THREE.Vector3(e - 0.3, 0, -e), theme.fence));
+  const e = 4.0;
+  fence(deco, new THREE.Vector3(-e, 0, -e + 1.4), new THREE.Vector3(-e, 0, e - 0.3), theme.fence);
+  fence(deco, new THREE.Vector3(-e + 1.4, 0, -e), new THREE.Vector3(e - 0.3, 0, -e), theme.fence);
 
   const b = barn(theme);
   b.position.set(-3.3, 0, -3.3);
@@ -196,10 +176,10 @@ export function buildIsland(theme) {
   group.add(b);
   clickables.push(b);
 
-  group.add(tree(-3.55, 0.7, 1.0, theme.tree || '#4fb35a'));
-  group.add(tree(0.8, -3.55, 0.9, theme.tree2 || '#6cc35a'));
-  group.add(tree(3.5, -3.0, 0.8, theme.tree || '#4fb35a'));
-  group.add(tree(-3.5, 3.2, 0.65, theme.tree2 || '#6cc35a'));
+  tree(deco, -3.55, 0.7, 1.0, theme.tree || '#4fb35a');
+  tree(deco, 0.8, -3.55, 0.9, theme.tree2 || '#6cc35a');
+  tree(deco, 3.5, -3.0, 0.8, theme.tree || '#4fb35a');
+  tree(deco, -3.5, 3.2, 0.65, theme.tree2 || '#6cc35a');
 
   // pond with a frog
   const pond = m(new THREE.CylinderGeometry(0.62, 0.62, 0.04, 28), worldMat('#5ec8ff', { roughness: 0.15, metalness: 0.1 }), [3.45, 0.0, 1.0], [0.85, 1, 0.75]);
@@ -215,18 +195,18 @@ export function buildIsland(theme) {
   group.add(f);
   clickables.push(f);
 
-  const rockGeo = new THREE.DodecahedronGeometry(1, 0);
   for (const [x, z, s] of [[3.4, -0.8, 0.16], [-3.4, -1.2, 0.13], [1.8, 3.5, 0.12], [-1.3, 3.55, 0.1]]) {
-    group.add(m(rockGeo, worldMat('#c9c2b4', { flatShading: true }), [x, 0.05, z], [s, s * 0.7, s]));
+    deco.add(ROCK, '#c9c2b4', [x, 0.05, z], [s, s * 0.7, s], null, true);
   }
 
   const flowerColors = ['#ff8fc1', '#fff3f8', '#ffd23f', '#b48aff', '#ff7a7a'];
   let k = 0;
   for (let t = -3.6; t <= 3.6; t += 0.34) {
-    if (t < -2.6 || Math.abs(t - 1.0) > 0.75) group.add(flower(3.85, t + Math.sin(t * 7) * 0.08, flowerColors[k++ % 5]));
-    group.add(flower(t + Math.cos(t * 5) * 0.08, 3.85, flowerColors[k++ % 5]));
+    if (t < -2.6 || Math.abs(t - 1.0) > 0.75) flower(flowers, 3.85, t + Math.sin(t * 7) * 0.08, flowerColors[k++ % 5]);
+    flower(flowers, t + Math.cos(t * 5) * 0.08, 3.85, flowerColors[k++ % 5]);
   }
-  for (const [x, z] of [[3.0, 3.0], [3.15, 2.8], [2.85, 3.2], [-3.0, 2.0], [2.0, -3.0]]) group.add(flower(x, z, flowerColors[k++ % 5]));
+  for (const [x, z] of [[3.0, 3.0], [3.15, 2.8], [2.85, 3.2], [-3.0, 2.0], [2.0, -3.0]]) flower(flowers, x, z, flowerColors[k++ % 5]);
+  group.add(deco.build(), flowers.build({ castShadow: false }));
 
   return { group, plots, clickables };
 }

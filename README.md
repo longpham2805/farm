@@ -1,10 +1,13 @@
 # Nông Trại Trên Mây · Cloud Farm
 
 A single-player 3D farm game for my son, made with [three.js](https://threejs.org).
-It is inspired by the farm minigame he loves: a small floating island under a smiling
-sun, with a 4×4 field where you plant, water and harvest everyday fruits and
-vegetables, and ripe plants can mutate into rare, glowing forms. Every crop also says
-which vitamins and minerals it has, in words a child understands.
+It is inspired by the farm minigame he loves: a 4×4 field where you plant, water and
+harvest everyday fruits and vegetables, and ripe plants can mutate into rare, glowing
+forms. Every crop also says which vitamins and minerals it has, in words a child understands.
+
+The field sits in a green valley under a smiling sun: dirt roads, a farmhouse, a barn, a silo
+and a windmill, hens, ducks, cows and a water buffalo, rice paddies, a river with a waterfall
+and a wooden bridge, and forests and mountains all around.
 
 Everything is in Vietnamese by default; English can be picked in Settings.
 
@@ -32,7 +35,8 @@ Everything is in Vietnamese by default; English can be picked in Settings.
    A full bar gives a chest with coins and seeds.
 11. **Quests** (*Nhiệm vụ*): chapters of main quests plus daily quests.
 
-Drag to move around the island; pinch or use the mouse wheel to zoom.
+Drag to look around the valley; pinch or use the mouse wheel to zoom. Zoom out to see the
+mountains and the sky.
 The game saves itself in the browser.
 
 ## Running it
@@ -106,7 +110,10 @@ candy crops become fruits of the same tier (see `RENAMED_CROPS`).
 | `src/game/cloud.js`, `src/game/sync.js` | Family-code sync through Firestore, and save codes |
 | `src/three/models.js` | Procedural 3D model for every crop, growth stage and mutation |
 | `src/three/scene.js` | Renderer, camera, lights, effects, picking, zoom and pan |
-| `src/three/island.js` | The floating island, barn, pond, trees and fences |
+| `src/three/farm.js` | The farm in the middle: plots, barn, fences and the frog's pond (recoloured for neighbours) |
+| `src/three/countryside.js` | The valley around it: the map, ground, river and waterfall, roads, forest, mountains, clouds |
+| `src/three/buildings.js`, `src/three/animals.js` | Farmhouse, silo, windmill, coop, well, bridge, paddies…; hens, ducks, cows, buffalo, birds |
+| `src/three/batch.js` | Merges many small still parts into one mesh, so the valley draws in a few calls |
 | `src/ui/` | HUD, bottom bars and the menus (shop, barn, collection, quests, chests…) |
 | `src/i18n.js` | Vietnamese and English text |
 | `public/` | App manifest and icons; `vite.config.js` writes the offline service worker |
