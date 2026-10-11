@@ -114,9 +114,18 @@ candy crops become fruits of the same tier (see `RENAMED_CROPS`).
 | `src/three/countryside.js` | The valley around it: the map, ground, river and waterfall, roads, forest, mountains, clouds |
 | `src/three/buildings.js`, `src/three/animals.js` | Farmhouse, silo, windmill, coop, well, bridge, paddies…; hens, ducks, cows, buffalo, birds |
 | `src/three/batch.js` | Merges many small still parts into one mesh, so the valley draws in a few calls |
+| `src/three/trees.js`, `src/three/treeModels.js` | Trees, palms and the fruit trees' crowns from the Low Poly Tree Pack, recoloured in the game's greens; `dev/tree-models.cjs` makes `treeModels.js` from the pack's `.dae` files |
+| `src/three/nature.js`, `src/three/natureModels.js` | Grass, flowers, stones, stumps, logs, fences, the bench, lanterns and signs from Cenji's LowPoly Nature pack, in the game's colours; `dev/nature-models.cjs` makes `natureModels.js` from the pack's `.glb` files |
 | `src/ui/` | HUD, bottom bars and the menus (shop, barn, collection, quests, chests…) |
 | `src/i18n.js` | Vietnamese and English text |
 | `public/` | App manifest and icons; `vite.config.js` writes the offline service worker |
 | `dev/gallery.html` | Shows every crop model (`?mode=thumbs` lists all 148 looks) |
+| `dev/trees.html` | Shows the tree models (`?sheet=pack` in the pack's own colours) |
+| `dev/nature.html` | Shows the nature models (`?pack` in the pack's own colours) |
 | `dev/icons.cjs` | Redraws the app icons from `dev/icon-svg.cjs` |
 | `docs/game-notes.md` | Notes taken from screenshots of the original game |
+
+## Credits
+
+- Tree and palm models: Low Poly Tree Pack by [Broken Vector](https://twitter.com/Broken_vector).
+- Grass, flowers, stones, stumps, fences, the bench, lanterns and signs: LowPoly Nature Forest Mega Pack (free) by Cenji.

@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Trees</title>
+<style>
+  html,body{margin:0;background:#cfe9f7;font-family:sans-serif}
+  #grid{display:grid;gap:2px}
+  figure{margin:0;position:relative;aspect-ratio:3/4}
+  figcaption{position:absolute;left:4px;top:2px;font-size:11px;color:#123;z-index:1}
+  #c{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none}
+</style></head>
+<body>
+<!-- The tree models in src/three/treeModels.js, in the game's light and colours; `node dev/tree-models.cjs <folder> all`
+     puts in the whole pack to compare. ?sheet=pack shows the pack's own colours, ?only=Type1 02,Type7 01 picks models,
+     ?cols=8 sets the grid width, ?native draws them at their real sizes, ?double draws back faces too. -->
+<div id="grid"></div>
+<canvas id="c"></canvas>
+<script type="module">
+import * as THREE from 'three';
+import { treeGeometry, treeSize } from '../src/three/trees.js';
+import { TREE_MODELS } from '../src/three/treeModels.js';
+
+// The pack's own colours ("Colorsheet Tree Normal.png"), block by block like SHEET in trees.js.
+const PACK_SHEET = [
+  '#1f1513', '#513a31', '#9d7c68', '#d3b396',
+  '#a6bc51', '#b7c873', '#9aab55', '#c3c361',
+  '#45502d', '#60703c', '#899e52', '#6f803f',
+  '#fff9ef', '#574a43', '#505e35', '#820070',
+];
+
+const params = new URLSearchParams(location.search);
+const sheet = params.get('sheet') === 'pack' ? PACK_SHEET : undefined;
+const names = params.get('only') ? params.get('only').split(',') : Object.keys(TREE_MODELS);
+const cols = Number(params.get('cols') || 8);
+const native = params.has('native');
+const grid = document.getElementById('grid');
+grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+const cells = names.map((name) => {
+  const f = document.createElement('figure');
+  const g = treeGeometry(name, 1, sheet);
+  const { height, radius } = treeSize(name);
+  const cap = document.createElement('figcaption');
+  cap.textContent = `${name} · ${height.toFixed(1)}m · ${g.attributes.position.count / 3}▲`;
+  f.append(cap);
+  grid.append(f);
+  return { f, g, height, radius };
+});
+const tallest = Math.max(...cells.map((c) => c.height));
+
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight, false);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.toneMappingExposure = 1.1;
+renderer.setScissorTest(true);
+renderer.setClearColor('#cfe9f7');
+
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight('#fff6dc', '#86a85a', 1.2));
+const sun = new THREE.DirectionalLight('#fff0c4', 2.4);
+sun.position.set(3.5, 9, -1.2);
+scene.add(sun);
+const ground = new THREE.Mesh(new THREE.CircleGeometry(0.75, 32).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#93da68', roughness: 0.95 }));
+scene.add(ground);
+const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, flatShading: true, side: params.has('double') ? THREE.DoubleSide : THREE.FrontSide });
+const tree = new THREE.Mesh(undefined, mat);
+scene.add(tree);
+// The game's camera direction.
+const camera = new THREE.OrthographicCamera(-0.75, 0.75, 1.2, -0.8, 0.1, 100);
+camera.position.copy(new THREE.Vector3(1, 0.95, 1).normalize().multiplyScalar(20));
+camera.lookAt(0, 0.45, 0);
+
+for (const { f, g, height, radius } of cells) {
+  const r = f.getBoundingClientRect();
+  const y = window.innerHeight - r.bottom;
+  renderer.setViewport(r.left, y, r.width, r.height);
+  renderer.setScissor(r.left, y, r.width, r.height);
+  tree.geometry = g;
+  // Fit the cell, or keep the real sizes relative to the tallest.
+  tree.scale.setScalar(native ? height / tallest * 1.25 : Math.min(1, 0.7 / (radius / height)));
+  renderer.render(scene, camera);
+}
+window.__ready = true;
+</script>
+</body></html>

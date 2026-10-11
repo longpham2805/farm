@@ -47,7 +47,10 @@ export class Batch {
     return this;
   }
 
-  /** Same placement arguments as the farm's m(): position, scale (number or [x, y, z]), rotation. */
+  /**
+   * Same placement arguments as the farm's m(): position, scale (number or [x, y, z]), rotation.
+   * A null colour keeps the geometry's own vertex colours (a tree model, say).
+   */
   add(geometry, color, p = [0, 0, 0], s = 1, r = null, flat = false) {
     tmpP.set(...p);
     if (typeof s === 'number') tmpS.setScalar(s);
@@ -55,9 +58,11 @@ export class Batch {
     tmpQ.setFromEuler(r ? tmpE.set(...r) : tmpE.set(0, 0, 0));
     tmpM.compose(tmpP, tmpQ, tmpS).premultiply(this.origin);
     const g = geometry.index ? geometry.toNonIndexed() : geometry.clone();
-    for (const name of Object.keys(g.attributes)) if (name !== 'position' && name !== 'normal') g.deleteAttribute(name);
+    for (const name of Object.keys(g.attributes)) {
+      if (name !== 'position' && name !== 'normal' && (color !== null || name !== 'color')) g.deleteAttribute(name);
+    }
     g.applyMatrix4(tmpM);
-    paint(g, color);
+    if (color !== null) paint(g, color);
     this.parts[flat ? 'flat' : 'smooth'].push(g);
   }
 

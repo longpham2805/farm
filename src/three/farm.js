@@ -5,6 +5,9 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { worldMat } from './materials.js';
 import { Batch } from './batch.js';
+import { treeGeometry } from './trees.js';
+import { addNature, railFence, steppingStones } from './nature.js';
+import { seeded } from '../util.js';
 
 export const SPACING = 1.32;
 export const PLOT = 1.16;
@@ -24,6 +27,9 @@ function m(geometry, material, p, s = 1, r = null, shadow = true) {
   return mesh;
 }
 
+/** Where the pond, the barn and the bench stand: [x, z, radius] spots the valley's grass and flowers keep off. */
+export const FARM_CLEAR = [[3.45, 1.0, 0.85], [-3.3, -3.3, 0.95], [3.35, -0.3, 0.5]];
+
 export const plotCenter = (index) => {
   const r = Math.floor(index / 4);
   const c = index % 4;
@@ -31,23 +37,15 @@ export const plotCenter = (index) => {
 };
 
 // Trees, flowers, rocks and fences go into one merged mesh each, so they draw in a single call.
-const TRUNK = new THREE.CylinderGeometry(0.08, 0.12, 0.7, 7);
-const BLOB = new THREE.IcosahedronGeometry(1, 1);
 const STEM = new THREE.CylinderGeometry(0.012, 0.012, 0.16, 5);
 const PETAL = new THREE.SphereGeometry(1, 6, 4);
-const POST = new THREE.BoxGeometry(0.1, 0.5, 0.1);
-const POST_TOP = new THREE.ConeGeometry(0.075, 0.08, 4);
-const RAIL = new THREE.BoxGeometry(0.05, 0.07, 1);
-const ROCK = new THREE.DodecahedronGeometry(1, 0);
 
-function tree(batch, x, z, s, leafColor) {
-  batch.push(x, 0, z, 0, s);
-  batch.add(TRUNK, '#8a5a3a', [0, 0.35, 0]);
-  batch.add(BLOB, leafColor, [0, 0.9, 0], 0.42, null, true);
-  batch.add(BLOB, leafColor, [0.22, 0.75, 0.1], 0.3, null, true);
-  batch.add(BLOB, leafColor, [-0.2, 0.78, -0.08], 0.3, null, true);
-  batch.add(BLOB, leafColor, [0.02, 1.18, 0.02], 0.26, null, true);
-  batch.pop();
+const treeGeometries = {};
+
+/** A tree model (see trees.js) at full size s = 1, turned about its trunk. */
+function tree(batch, name, x, z, s, turn) {
+  treeGeometries[name] ||= treeGeometry(name, 1.45);
+  batch.add(treeGeometries[name], null, [x, 0, z], s, [0, turn, 0], true);
 }
 
 function flower(batch, x, z, color) {
@@ -57,20 +55,6 @@ function flower(batch, x, z, color) {
     batch.add(PETAL, color, [x + Math.cos(a) * 0.035, 0.17, z + Math.sin(a) * 0.035], [0.03, 0.015, 0.03]);
   }
   batch.add(PETAL, '#ffe066', [x, 0.175, z], 0.022);
-}
-
-function fence(batch, from, to, color) {
-  const dir = new THREE.Vector3().subVectors(to, from);
-  const len = dir.length();
-  const posts = Math.round(len / 0.7);
-  for (let i = 0; i <= posts; i++) {
-    const p = from.clone().addScaledVector(dir, i / posts);
-    batch.add(POST, color, [p.x, 0.25, p.z]);
-    batch.add(POST_TOP, color, [p.x, 0.54, p.z], 1, [0, Math.PI / 4, 0]);
-  }
-  const angle = Math.atan2(dir.x, dir.z);
-  const mid = from.clone().add(to).multiplyScalar(0.5);
-  for (const y of [0.18, 0.38]) batch.add(RAIL, color, [mid.x, y, mid.z], [1, 1, len], [0, angle, 0]);
 }
 
 function barn(theme) {
@@ -137,7 +121,7 @@ export function butterfly(color) {
 }
 
 /**
- * Builds the farm. theme: { fence, barn, roof, tree, tree2 }
+ * Builds the farm. theme: { fence, barn, roof }
  * Returns { group, plots: [{ tile, hit }], clickables }
  */
 export function buildFarm(theme) {
@@ -162,12 +146,20 @@ export function buildFarm(theme) {
   }
 
   const deco = new Batch();
+  // Flowers, grass and other low plants, which cast no shadow.
   const flowers = new Batch();
+  // Grass and stones are strewn the same on every farm.
+  const rand = seeded(7);
+  const GRASS = ['PLANT_01_GrassShort', 'PLANT_02_GrassMedium', 'PLANT_04_GrassSparse'];
+  const tuft = (x, z, s = 0.3) => addNature(flowers, GRASS[Math.floor(rand() * GRASS.length)], [x, 0, z], s * (0.8 + rand() * 0.4), rand() * TAU);
 
-  // fences along the back edges
+  // fences along the back edges, with grass at some of the posts
   const e = 4.0;
-  fence(deco, new THREE.Vector3(-e, 0, -e + 1.4), new THREE.Vector3(-e, 0, e - 0.3), theme.fence);
-  fence(deco, new THREE.Vector3(-e + 1.4, 0, -e), new THREE.Vector3(e - 0.3, 0, -e), theme.fence);
+  for (const [from, to] of [[[-e, -e + 1.4], [-e, e - 0.3]], [[-e + 1.4, -e], [e - 0.3, -e]]]) {
+    for (const p of railFence(deco, new THREE.Vector3(from[0], 0, from[1]), new THREE.Vector3(to[0], 0, to[1]), theme.fence)) {
+      if (rand() < 0.6) tuft(p.x + (rand() - 0.5) * 0.3, p.z + (rand() - 0.5) * 0.3);
+    }
+  }
 
   const b = barn(theme);
   b.position.set(-3.3, 0, -3.3);
@@ -175,11 +167,17 @@ export function buildFarm(theme) {
   b.traverse((o) => (o.userData.action = 'barn'));
   group.add(b);
   clickables.push(b);
+  // leafy plants at the barn's front corners
+  addNature(deco, 'PLANT_10_BroadleafPlant', [-2.45, 0, -3.42], 0.3, 0.5);
+  addNature(deco, 'PLANT_10_BroadleafPlant', [-3.42, 0, -2.45], 0.27, 2.6);
 
-  tree(deco, -3.55, 0.7, 1.0, theme.tree || '#4fb35a');
-  tree(deco, 0.8, -3.55, 0.9, theme.tree2 || '#6cc35a');
-  tree(deco, 3.5, -3.0, 0.8, theme.tree || '#4fb35a');
-  tree(deco, -3.5, 3.2, 0.65, theme.tree2 || '#6cc35a');
+  for (const [name, x, z, s, turn] of [['Type0 06', -3.55, 0.7, 1.0, 0.4], ['Type0 05', 0.8, -3.55, 0.9, 2.1], ['Type0 06', 3.5, -3.0, 0.8, 4.0], ['Type0 05', -3.5, 3.2, 0.65, 5.2]]) {
+    tree(deco, name, x, z, s, turn);
+    for (let k = 0; k < 3; k++) {
+      const a = rand() * TAU;
+      tuft(x + Math.cos(a) * 0.22, z + Math.sin(a) * 0.22);
+    }
+  }
 
   // pond with a frog
   const pond = m(new THREE.CylinderGeometry(0.62, 0.62, 0.04, 28), worldMat('#5ec8ff', { roughness: 0.15, metalness: 0.1 }), [3.45, 0.0, 1.0], [0.85, 1, 0.75]);
@@ -194,9 +192,20 @@ export function buildFarm(theme) {
   f.traverse((o) => (o.userData.action = 'frog'));
   group.add(f);
   clickables.push(f);
+  // Stones at the back of the pond, tall grass and bluebells at its sides. a: angle round the pond from +x.
+  const rim = (a, r) => [3.45 + Math.cos(a) * 0.53 * r, 0, 1.0 + Math.sin(a) * 0.47 * r];
+  for (const [a, s] of [[3.55, 0.3], [3.9, 0.22], [4.25, 0.27]]) addNature(deco, 'ROCK_01_Small', rim(a, 1.3), s, a * 3);
+  addNature(flowers, 'PLANT_03_GrassTall', rim(5.0, 1.35), 0.32, 1);
+  addNature(flowers, 'PLANT_03_GrassTall', rim(5.4, 1.4), 0.26, 2.5);
+  addNature(flowers, 'FLOWER_04_BlueBells', rim(2.2, 1.45), 0.36, 2);
+  // A bench looking over the pond, and stepping stones from the pond to the road.
+  addNature(deco, 'PROP_10_WoodenBench', [3.35, 0, -0.3], 0.36);
+  steppingStones(deco, [new THREE.Vector3(4.12, 0, 0.62), new THREE.Vector3(4.45, 0, 0.43)]);
 
-  for (const [x, z, s] of [[3.4, -0.8, 0.16], [-3.4, -1.2, 0.13], [1.8, 3.5, 0.12], [-1.3, 3.55, 0.1]]) {
-    deco.add(ROCK, '#c9c2b4', [x, 0.05, z], [s, s * 0.7, s], null, true);
+  // rocks about the grass, each with a tuft beside it
+  for (const [name, x, z, s, turn] of [['ROCK_07_ClusterSmall', 3.4, -0.8, 0.2, 0.6], ['ROCK_02_Medium', -3.4, -1.2, 0.2, 2.2], ['ROCK_01_Small', 1.8, 3.5, 0.32, 4.0], ['ROCK_01_Small', -1.3, 3.55, 0.26, 5.1]]) {
+    addNature(deco, name, [x, 0, z], s, turn);
+    tuft(x + 0.16, z + 0.08, 0.25);
   }
 
   const flowerColors = ['#ff8fc1', '#fff3f8', '#ffd23f', '#b48aff', '#ff7a7a'];

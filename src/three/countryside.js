@@ -3,10 +3,12 @@
 // barn, fences, pond) is rebuilt when visiting a neighbour.
 import * as THREE from 'three';
 import { Batch } from './batch.js';
-import { cloud } from './farm.js';
+import { cloud, FARM_CLEAR } from './farm.js';
 import { addBuildings } from './buildings.js';
 import { addAnimals } from './animals.js';
 import { glowTexture } from './textures.js';
+import { treeGeometry, treeSize } from './trees.js';
+import { natureModel } from './nature.js';
 import { seeded } from '../util.js';
 
 const S = Math.SQRT1_2;
@@ -85,8 +87,16 @@ export const LAYOUT = {
   fruitTrees: [[-4.2, -3.4, '#ff6b5a'], [-5.2, -2.5, '#ffa53a'], [-3.4, -4.5, '#ff6b5a'], [-6.4, -1.4, '#ffd23f']],
   bananas: [[-7.4, 3.0], [-6.9, 4.9], [-4.6, 4.6]],
   bamboo: [[-9.0, 4.8], [-9.6, 1.0], [10.6, 5.0], [-8.4, -6.8], [3.0, -8.4]],
+  palms: [[9.6, -2.6, 0.3], [11.0, -4.0, 2.2], [10.1, -3.6, 4.0], [-4.8, -7.0, 1.1], [1.4, -8.3, 5.0]],
   paddies: [[8.6, -4.3], [10.4, -6.2], [6.2, -9.4], [7.6, -11.6], [11.6, -8.9]],
-  fences: [[[-7.2, -4.6], [-9.0, -2.4]], [[-9.0, -2.4], [-10.6, 0.6]], [[7.7, 1.4], [8.0, 4.4]]],
+  // A chopping stump by the farmhouse, the buffalo's mud wallow and a sign where the road forks.
+  woodpile: [-7.0, 2.3, 0.4],
+  mud: [5.5, -2.5, 0.3],
+  sign: [6.6, 0.4, -0.3],
+  // Stepping stones from the farmhouse porch and from the well to the road.
+  footpaths: [[[-5.37, 2.52], [-5.15, 2.36]], [[-6.05, -3.98], [-6.24, -3.88]]],
+  // [from, to, sections with a fallen rail]
+  fences: [[[-7.2, -4.6], [-9.0, -2.4]], [[-9.0, -2.4], [-10.6, 0.6], [1]], [[7.7, 1.4], [8.0, 4.4]]],
 };
 
 /** Open ground the forest keeps clear of, and that stays flat: [u, b, radius]. */
@@ -106,6 +116,7 @@ const CLEARINGS = [
   ...LAYOUT.fruitTrees.map(([u, b]) => [u, b, 0.7]),
   ...LAYOUT.bananas.map(([u, b]) => [u, b, 0.6]),
   ...LAYOUT.bamboo.map(([u, b]) => [u, b, 0.8]),
+  ...LAYOUT.palms.map(([u, b]) => [u, b, 0.6]),
 ];
 
 /** How far outside the open farmland a point is (negative inside). */
@@ -465,8 +476,6 @@ const ROAD_STRIPS = [
 const inWater = (p) => groundY(p.x, p.z) < -0.02;
 
 function buildRoads(batch, rand) {
-  const pebble = new THREE.DodecahedronGeometry(1, 0);
-  const tuft = new THREE.ConeGeometry(1, 1, 4);
   roads.forEach((road, ri) => {
     const frames = road.pts.map((_, i) => road.frame(i));
     const edge = (f, off) => {
@@ -491,13 +500,15 @@ function buildRoads(batch, rand) {
       g.computeVertexNormals();
       batch.addRaw(paint(g, color));
     });
-    // Pebbles and grass tufts along the edges.
+    // Pebbles and grass tufts along the edges (see nature.js), taking as many random numbers as they always have.
     for (let i = 0; i < frames.length; i += 3) {
       if (rand() < 0.45 || inWater(frames[i].p)) continue;
       const [x, z] = edge(frames[i], (rand() < 0.5 ? -1 : 1) * (0.42 + rand() * 0.12));
       const y = groundY(x, z);
-      if (rand() < 0.5) batch.add(pebble, rand() < 0.5 ? '#c9c2b4' : '#b5ad9e', [x, y + 0.02, z], [0.05, 0.035, 0.05], [rand(), rand(), 0], true);
-      else batch.add(tuft, '#6cbf4f', [x, y + 0.06, z], [0.05, 0.13, 0.05], [0, rand() * 3, 0.15], true);
+      if (rand() < 0.5) {
+        const name = rand() < 0.5 ? 'ROCK_01_Small' : 'ROCK_02_Medium';
+        batch.add(natureModel(name), null, [x, y - 0.005, z], name === 'ROCK_01_Small' ? 0.15 : 0.09, [rand() * 0.2, rand() * TAU, 0], true);
+      } else batch.add(natureModel(i % 2 ? 'PLANT_01_GrassShort' : 'PLANT_02_GrassMedium'), null, [x, y, z], i % 2 ? 0.4 : 0.22, [0, rand() * TAU, 0], true);
     }
   });
 }
@@ -534,25 +545,19 @@ function bridgeSpans() {
 
 // ── Trees ───────────────────────────────────────────────────────
 
-function treeGeometry(kind) {
+/** The tree models (see trees.js) pines and leafy trees are drawn with, and their heights. */
+const TREE_KINDS = {
+  pine: [['Type1 03', 1.4], ['Type1 04', 1.65], ['Type2 02', 1.5], ['Type2 03', 1.7]],
+  round: [['Type0 05', 1.5], ['Type3 01', 1.35], ['Type3 02', 1.4], ['Type4 03', 1.55]],
+};
+
+/** A low shrub of three lumps. */
+function bushGeometry() {
   const batch = new Batch();
   const ico = new THREE.IcosahedronGeometry(1, 0);
-  if (kind === 'pine') {
-    batch.add(new THREE.CylinderGeometry(0.06, 0.09, 0.42, 5, 1, true), '#7a4f32', [0, 0.21, 0], 1, null, true);
-    batch.add(new THREE.ConeGeometry(0.44, 0.64, 7, 1, true), '#3e8e4b', [0, 0.64, 0], 1, null, true);
-    batch.add(new THREE.ConeGeometry(0.35, 0.56, 7, 1, true), '#47994f', [0, 0.95, 0], 1, [0, 0.4, 0], true);
-    batch.add(new THREE.ConeGeometry(0.24, 0.46, 7, 1, true), '#52a457', [0, 1.22, 0], 1, [0, 0.9, 0], true);
-  } else if (kind === 'round') {
-    batch.add(new THREE.CylinderGeometry(0.07, 0.1, 0.55, 5, 1, true), '#85573a', [0, 0.27, 0], 1, null, true);
-    batch.add(ico, '#4fb35a', [0, 0.82, 0], 0.44, null, true);
-    batch.add(ico, '#5bbd5e', [0.25, 0.68, 0.1], 0.31, [0.5, 0.2, 0], true);
-    batch.add(ico, '#46a752', [-0.22, 0.71, -0.08], 0.31, [0.2, 0.9, 0.3], true);
-    batch.add(ico, '#66c465', [0.03, 1.1, 0.03], 0.27, [0.7, 0.3, 0.1], true);
-  } else {
-    batch.add(ico, '#5cb85a', [0, 0.17, 0], [0.28, 0.22, 0.28], null, true);
-    batch.add(ico, '#68c362', [0.2, 0.13, 0.06], [0.21, 0.17, 0.21], [0.4, 0, 0], true);
-    batch.add(ico, '#51ab50', [-0.19, 0.12, -0.05], [0.2, 0.16, 0.2], [0, 0.6, 0.3], true);
-  }
+  batch.add(ico, '#5cb85a', [0, 0.17, 0], [0.28, 0.22, 0.28], null, true);
+  batch.add(ico, '#68c362', [0.2, 0.13, 0.06], [0.21, 0.17, 0.21], [0.4, 0, 0], true);
+  batch.add(ico, '#51ab50', [-0.19, 0.12, -0.05], [0.2, 0.16, 0.2], [0, 0.6, 0.3], true);
   return batch.build().children[0].geometry;
 }
 
@@ -594,6 +599,19 @@ function buildForest(rand, extra) {
   }
   for (const [kind, ...t] of extra) spots[kind].push(t);
 
+  // Pines and leafy trees each pick one of their kind's models by where they stand. reach: canopy radius.
+  const models = [{ geometry: bushGeometry(), reach: 0.38, list: spots.bush }];
+  for (const [kind, list] of Object.entries(TREE_KINDS)) {
+    list.forEach(([name, height], i) => {
+      const size = treeSize(name);
+      models.push({
+        geometry: treeGeometry(name, height),
+        reach: (size.radius / size.height) * height,
+        list: spots[kind].filter(([x, , z]) => Math.floor(hash(x * 3.7, z * 5.3) * list.length) === i),
+      });
+    });
+  }
+
   const group = new THREE.Group();
   const shade = [];
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, flatShading: true });
@@ -603,10 +621,9 @@ function buildForest(rand, extra) {
   const tint = new THREE.Color();
   // Only trees inside the sun's shadow box (see FarmScene) cast shadows; the rest skip the shadow pass.
   const nearFarm = ([x, , z]) => Math.abs(x) < 8.5 && Math.abs(z) < 8.5;
-  for (const kind of Object.keys(spots)) {
-    const geometry = treeGeometry(kind);
+  for (const { geometry, reach, list: all } of models) {
     for (const near of [true, false]) {
-      const list = spots[kind].filter((t) => nearFarm(t) === near);
+      const list = all.filter((t) => nearFarm(t) === near);
       if (!list.length) continue;
       const mesh = new THREE.InstancedMesh(geometry, mat, list.length);
       list.forEach(([x, y, z, s, turn, k], i) => {
@@ -615,7 +632,7 @@ function buildForest(rand, extra) {
         const br = 0.86 + k * 0.26;
         const hue = ((k * 7.13) % 1) - 0.5;
         mesh.setColorAt(i, tint.setRGB(br * (1 + hue * 0.12), br, br * (1 - hue * 0.16)));
-        shade.push([x, z, s * (kind === 'bush' ? 0.45 : 0.62)]);
+        shade.push([x, z, s * (reach + 0.08)]);
       });
       mesh.castShadow = near;
       mesh.receiveShadow = near;
@@ -623,6 +640,103 @@ function buildForest(rand, extra) {
     }
   }
   return { group, shade };
+}
+
+// ── Ground cover ────────────────────────────────────────────────
+
+/** Spots kept bare of plants: [u, b, radius] round the buildings, the animals and the paddies. */
+const BARE = [
+  [LAYOUT.farmhouse[0], LAYOUT.farmhouse[1], 1.0],
+  [LAYOUT.silo[0], LAYOUT.silo[1], 0.5],
+  [LAYOUT.windmill[0], LAYOUT.windmill[1], 0.6],
+  [LAYOUT.coop[0], LAYOUT.coop[1] - 0.6, 1.3], // and the hens' run in front
+  [LAYOUT.well[0], LAYOUT.well[1], 0.45],
+  [LAYOUT.cart[0], LAYOUT.cart[1], 0.5],
+  [LAYOUT.scarecrow[0], LAYOUT.scarecrow[1], 0.25],
+  [LAYOUT.buffalo[0] - 0.35, LAYOUT.buffalo[1] + 0.2, 0.9], // and her calf
+  [LAYOUT.woodpile[0], LAYOUT.woodpile[1], 0.45],
+  [LAYOUT.mud[0], LAYOUT.mud[1], 0.75],
+  [LAYOUT.sign[0], LAYOUT.sign[1], 0.25],
+  ...LAYOUT.footpaths.flat().map(([u, b]) => [u, b, 0.2]),
+  ...LAYOUT.cows.map(([u, b]) => [u, b, 0.6]),
+  ...LAYOUT.bales.map(([u, b]) => [u, b, 0.3]),
+  ...LAYOUT.haystacks.map(([u, b]) => [u, b, 0.5]),
+  ...LAYOUT.bamboo.map(([u, b]) => [u, b, 0.35]),
+  ...LAYOUT.paddies.map(([u, b]) => [u, b, 1.35]),
+];
+
+// Models from the nature pack (see nature.js) and the scale each is drawn at.
+const GRASS = [['PLANT_01_GrassShort', 0.45], ['PLANT_02_GrassMedium', 0.3], ['PLANT_04_GrassSparse', 0.32]];
+const FLOWERS = [['FLOWER_05_RedWildflower', 0.46], ['FLOWER_04_BlueBells', 0.44], ['FLOWER_02_YellowCluster', 0.46]];
+const UNDERGROWTH = [['PLANT_10_BroadleafPlant', 0.34], ['PLANT_10_BroadleafPlant', 0.28], ['PLANT_09_WoodlandPlant', 0.45]];
+const LOGS = [['TREE_14_Stump', 0.26], ['TREE_15_StumpBroken', 0.2], ['TREE_16_FallenLog', 0.22], ['TREE_18_HollowLog', 0.2]];
+const MUSHROOMS = [['MUSH_01_RedSmall', 0.4], ['MUSH_02_BrownSmall', 0.4], ['MUSH_03_White', 0.32]];
+const STONES = [['ROCK_01_Small', 0.28], ['ROCK_02_Medium', 0.17], ['ROCK_07_ClusterSmall', 0.14]];
+
+/**
+ * Grass, flowers and small plants over the open farmland, thicker along the roads, the river and the edge of
+ * the forest, where stumps, logs and mushrooms lie as well. It draws its own random numbers, so nothing else moves.
+ * trees: the forest's [x, z, radius] spots, which stumps and logs keep clear of.
+ * Returns the group, and `plants`: the grass, flowers and leafy plants in it, which the fast graphics setting hides.
+ */
+function buildGroundCover(trees) {
+  const rand = seeded(7070);
+  const low = new Batch();
+  // Stumps, logs and stones cast shadows only inside the sun's shadow box (see FarmScene), like the trees.
+  const near = new Batch();
+  const far = new Batch();
+  const pick = (list, k) => list[Math.min(list.length - 1, Math.floor(k * list.length))];
+  // across: lie across the view (the camera looks along x = z), as a log should to show its length.
+  const put = (solid, [name, scale], x, z, across = false) => {
+    const batch = !solid ? low : Math.abs(x) < 8.5 && Math.abs(z) < 8.5 ? near : far;
+    const turn = across ? Math.PI / 4 + (rand() - 0.5) * 1.2 : rand() * TAU;
+    batch.add(natureModel(name), null, [x, groundY(x, z) - 0.01, z], scale * (0.8 + rand() * 0.4), [0, turn, 0], true);
+  };
+  const cell = 0.5;
+  for (let b = -12; b < 9; b += cell) {
+    for (let u = VIEW_BOUNDS.left - 1; u < VIEW_BOUNDS.right + 1; u += cell) {
+      const pu = u + (rand() - 0.5) * cell;
+      const pb = b + (rand() - 0.5) * cell;
+      const roll = rand();
+      const edge = farmEdge(pu, pb);
+      if (edge > 0.4) continue; // in the forest
+      const [x, z] = xz(pu, pb);
+      if (Math.abs(x) < 2.75 && Math.abs(z) < 2.75) continue; // the plots
+      if (FARM_CLEAR.some(([cx, cz, r]) => Math.hypot(x - cx, z - cz) < r)) continue;
+      if (BARE.some(([cu, cb, r]) => Math.hypot(pu - cu, pb - cb) < r)) continue;
+      const rv = river.nearest(x, z);
+      const bank = rv.d - riverHalf(rv.i);
+      if (bank < 0.3) continue;
+      const road = Math.min(...roads.map((r) => r.nearest(x, z).d));
+      if (road < 0.5) continue;
+      // Thickest by the roads, the water and the trees, in patches elsewhere.
+      const nearby = Math.max(smooth(1.3, 0.55, road), smooth(1.4, 0.4, bank), smooth(-2.2, 0, edge));
+      const patch = smooth(0.45, 0.72, fbm(pu * 0.5 + 21, pb * 0.5 + 4));
+      if (roll > 0.03 + 0.2 * patch + 0.42 * nearby) continue;
+      const k = rand();
+      // 0 out in the open, 1 where the forest starts.
+      const woods = smooth(-1.6, 0, edge);
+      if (fbm(pu * 0.35 + 40, pb * 0.35 + 17) > 0.62 && k < 0.45) {
+        // Flowers grow in drifts of one kind.
+        put(false, pick(FLOWERS, hash(Math.round(pu / 3), Math.round(pb / 3))), x, z);
+      } else if (k < 0.1 * smooth(0.3, 0.8, woods) && !trees.some(([tx, tz]) => Math.hypot(x - tx, z - tz) < 0.5)) {
+        // Stumps and logs at the edge of the forest, some with mushrooms.
+        const log = pick(LOGS, rand());
+        put(true, log, x, z, log[0].includes('Log'));
+        for (let n = rand() < 0.6 ? 2 : 0; n > 0; n--) put(true, pick(MUSHROOMS, rand() * 0.7), x + (rand() - 0.5) * 0.5, z + (rand() - 0.5) * 0.5);
+      } else if (k < 0.04 + 0.04 * woods) {
+        put(true, pick(STONES, rand()), x, z);
+      } else if (k < 0.08 + 0.3 * woods) {
+        put(false, pick(UNDERGROWTH, rand()), x, z);
+      } else {
+        put(false, pick(GRASS, rand()), x, z);
+      }
+    }
+  }
+  const group = new THREE.Group();
+  const plants = low.build({ castShadow: false });
+  group.add(plants, near.build(), far.build({ castShadow: false }));
+  return { group, plants };
 }
 
 // ── Mountains ───────────────────────────────────────────────────
@@ -728,6 +842,8 @@ export function buildCountryside() {
   const forest = buildForest(rand, mountains.trees);
   group.add(forest.group);
   group.add(buildGround(forest.shade));
+  const cover = buildGroundCover(forest.shade);
+  group.add(cover.group);
 
   const animals = addAnimals({ layout: LAYOUT, at, groundY, river, riverHalf, waterY: WATER_Y, coopYard: built.coopYard });
   group.add(animals.group);
@@ -759,5 +875,5 @@ export function buildCountryside() {
       }
     }
   };
-  return { group, update };
+  return { group, update, plants: cover.plants };
 }

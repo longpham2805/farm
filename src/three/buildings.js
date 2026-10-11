@@ -3,6 +3,8 @@
 import * as THREE from 'three';
 import { Batch, gableGeometry } from './batch.js';
 import { glowTexture } from './textures.js';
+import { treeGeometry, leafSpots } from './trees.js';
+import { addNature, natureModel, natureSize, railFence, steppingStones } from './nature.js';
 
 const TAU = Math.PI * 2;
 const FACE = Math.PI / 4; // turned to face the camera
@@ -11,7 +13,6 @@ const BOX = new THREE.BoxGeometry(1, 1, 1);
 const GABLE = gableGeometry();
 const BALL = new THREE.SphereGeometry(1, 10, 7);
 const ICO = new THREE.IcosahedronGeometry(1, 0);
-const ROCK = new THREE.DodecahedronGeometry(1, 0);
 const cyl = (top, bottom, seg) => new THREE.CylinderGeometry(top, bottom, 1, seg);
 const CYL6 = cyl(1, 1, 6);
 const CYL10 = cyl(1, 1, 10);
@@ -188,19 +189,6 @@ function bridge(batch, a, b) {
   batch.pop();
 }
 
-function fenceLine(batch, from, to, color, h = 0.42) {
-  const dir = new THREE.Vector3().subVectors(to, from);
-  const len = dir.length();
-  const posts = Math.max(1, Math.round(len / 0.65));
-  for (let i = 0; i <= posts; i++) {
-    const p = from.clone().addScaledVector(dir, i / posts);
-    batch.add(BOX, color, [p.x, h / 2, p.z], [0.08, h, 0.08]);
-  }
-  const angle = Math.atan2(dir.x, dir.z);
-  const mid = from.clone().add(to).multiplyScalar(0.5);
-  for (const y of [h * 0.38, h * 0.78]) batch.add(BOX, color, [mid.x, y, mid.z], [0.045, 0.06, len], [0, angle, 0]);
-}
-
 function signpost(batch) {
   batch.add(BOX, WOOD, [0, 0.36, 0], [0.06, 0.72, 0.06]);
   batch.add(BOX, '#e2bf8a', [0.14, 0.6, 0.04], [0.4, 0.14, 0.03]);
@@ -253,15 +241,41 @@ function banana(batch, rand) {
   batch.add(new THREE.SphereGeometry(1, 6, 5), '#b9d14f', [0.08, 0.5, 0.04], [0.06, 0.1, 0.06], null, true);
 }
 
-function fruitTree(batch, fruit, rand) {
-  batch.add(cyl(0.06, 0.09, 6), '#85573a', [0, 0.3, 0], [1, 0.6, 1], null, true);
-  batch.add(ICO, '#4fae55', [0, 0.82, 0], [0.48, 0.4, 0.48], [0.3, 0.5, 0], true);
-  batch.add(ICO, '#5cba5c', [0.18, 0.95, 0.1], 0.28, [0.2, 0.1, 0.4], true);
-  for (let k = 0; k < 7; k++) {
-    const a = rand() * TAU;
-    const y = 0.62 + rand() * 0.38;
-    batch.add(BALL, fruit, [Math.cos(a) * 0.44, y, Math.sin(a) * 0.44], 0.055);
+// Tree models (see trees.js) and their heights.
+const FRUIT_TREE = ['Type0 06', 1.2];
+const PALMS = [['Type7 02', 2.1], ['Type7 03', 1.9]];
+let fruitTreeGeometry = null;
+let palmGeometries = null;
+
+/** A round tree, turned `turn` from facing the camera, with seven fruits on the side the camera sees. */
+function fruitTree(batch, fruit, rand, turn) {
+  fruitTreeGeometry ||= treeGeometry(...FRUIT_TREE);
+  batch.add(fruitTreeGeometry, null, [0, 0, 0], 1, null, true);
+  // Unturned, a placed tree's +z side faces the camera.
+  for (const [p, n] of leafSpots(...FRUIT_TREE, 7, rand, Math.PI / 2 + turn)) {
+    batch.add(BALL, fruit, [p.x + n.x * 0.03, p.y + n.y * 0.03 - 0.02, p.z + n.z * 0.03], 0.055);
   }
+}
+
+/** A coconut palm; the two models take turns. */
+function palm(batch, k) {
+  palmGeometries ||= PALMS.map(([name, height]) => treeGeometry(name, height));
+  batch.add(palmGeometries[k % palmGeometries.length], null, [0, 0, 0], 1, null, true);
+}
+
+/** Flowers and leafy plants along the front of the farmhouse, left of the porch, in the house's frame. */
+function frontGarden(batch) {
+  [['FLOWER_02_YellowCluster', -0.74, 0.4], ['PLANT_10_BroadleafPlant', -0.52, 0.3], ['FLOWER_05_RedWildflower', -0.3, 0.42], ['FLOWER_01_WhiteCluster', -0.08, 0.36]]
+    .forEach(([name, x, s], k) => addNature(batch, name, [x, 0, 0.74 + (k % 2) * 0.07], s, k * 1.3));
+  addNature(batch, 'PLANT_10_BroadleafPlant', [0.82, 0, 0.45], 0.28, 2);
+}
+
+/** A chopping stump with a log and a branch beside it, and a red toadstool. */
+function woodpile(batch) {
+  addNature(batch, 'TREE_14_Stump', [0, 0, 0], 0.24);
+  addNature(batch, 'TREE_16_FallenLog', [0.36, 0, 0.26], 0.17, -0.5);
+  addNature(batch, 'DETAIL_02_FallenBranch', [-0.3, 0, 0.28], 0.22, 2.3);
+  addNature(batch, 'MUSH_01_RedSmall', [-0.24, 0, -0.08], 0.42);
 }
 
 /** Rice paddies: flooded plots with grassy dikes and rows of young rice. */
@@ -277,12 +291,15 @@ function paddies(batch, rand, cells) {
   }
 }
 
+/** Stones from the nature pack (see nature.js), each about 2s across. Takes seven values from rand per stone. */
 function rocksAround(batch, rand, center, n, spread, groundY) {
   for (let k = 0; k < n; k++) {
     const px = center.x + (rand() - 0.5) * spread;
     const pz = center.z + (rand() - 0.5) * spread;
     const s = 0.08 + rand() * 0.12;
-    batch.add(ROCK, rand() < 0.5 ? '#c9c2b4' : '#b3ab9c', [px, groundY(px, pz) + s * 0.3, pz], [s, s * 0.7, s], [rand(), rand(), rand()], true);
+    const name = rand() < 0.5 ? 'ROCK_01_Small' : 'ROCK_02_Medium';
+    const tilt = [(rand() - 0.5) * 0.3, rand() * TAU, (rand() - 0.5) * 0.3];
+    batch.add(natureModel(name), null, [px, groundY(px, pz) - 0.01, pz], (s * 2) / natureSize(name).width, tilt, true);
   }
 }
 
@@ -347,14 +364,27 @@ export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, riv
     return out;
   };
 
-  const smoke = smokePuffs(place(L.farmhouse, () => toWorld(farmhouse(batch))));
+  const smoke = smokePuffs(place(L.farmhouse, () => {
+    const chimney = toWorld(farmhouse(batch));
+    frontGarden(batch);
+    return chimney;
+  }));
   group.add(smoke.group);
   place(L.silo, () => silo(batch));
   place(L.cart, () => cart(batch));
   for (const spot of L.bales) place(spot, () => hayBale(batch));
   for (const [u, b, s] of L.haystacks) place([u, b, rand() * TAU], () => haystack(batch, s));
   place(L.scarecrow, () => scarecrow(batch));
-  place(L.well, () => well(batch));
+  place(L.well, () => {
+    well(batch);
+    addNature(batch, 'PLANT_10_BroadleafPlant', [-0.48, 0, 0.05], 0.3, 0.8);
+    addNature(batch, 'ROCK_01_Small', [0.42, 0, -0.18], 0.24, 2);
+  });
+  place(L.woodpile, () => woodpile(batch));
+  // The buffalo's wallow, a sign where the road forks, and footpaths of stepping stones.
+  place(L.mud, () => addNature(batch, 'GROUND_02_MudPatch', [0, 0, 0], 0.36, 0, { Mud: '#8d6a47', Dirt: '#b08a5e' }));
+  place(L.sign, () => addNature(batch, 'PROP_04_DirectionSign', [0, 0, 0], 0.34));
+  for (const path of L.footpaths) steppingStones(batch, path.map(([u, b]) => at(u, b)), groundY);
 
   const sails = place(L.windmill, () => {
     const blades = windmill(batch);
@@ -370,9 +400,13 @@ export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, riv
     return { center: toWorld(new THREE.Vector3(yard.x, 0, yard.z)), w: yard.w, d: yard.d, turn: FACE + L.coop[2] };
   });
 
-  for (const [u, b, fruit] of L.fruitTrees) place([u, b, rand() * TAU], () => fruitTree(batch, fruit, rand));
+  for (const [u, b, fruit] of L.fruitTrees) {
+    const turn = rand() * TAU;
+    place([u, b, turn], () => fruitTree(batch, fruit, rand, turn));
+  }
   for (const [u, b] of L.bananas) place([u, b, rand() * TAU], () => banana(batch, rand));
   for (const [u, b] of L.bamboo) place([u, b, 0], () => bamboo(batch, rand));
+  L.palms.forEach((spot, k) => place(spot, () => palm(batch, k)));
 
   for (const [a, b] of bridges) bridge(batch, a, b);
   if (bridges.length) {
@@ -383,13 +417,19 @@ export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, riv
     batch.push(p.x, 0, p.z, Math.atan2(-d.z, d.x) + Math.PI / 2);
     signpost(batch);
     batch.pop();
+    // Lanterns either side of that end of the bridge, their lamps hanging over the road.
+    const side = new THREE.Vector3(-d.z, 0, d.x);
+    for (const s of [1, -1]) {
+      const q = b.clone().addScaledVector(d, -0.05).addScaledVector(side, s * 0.6);
+      addNature(batch, 'PROP_12_LanternPost', [q.x, 0, q.z], 0.32, Math.atan2(s * side.z, -s * side.x));
+    }
   }
 
   paddies(batch, rand, L.paddies.map(([u, b]) => {
     const p = at(u, b);
     return [p.x, p.z, 1.9, 1.4];
   }));
-  for (const [a, b] of L.fences) fenceLine(batch, at(...a), at(...b), '#c98a4b');
+  for (const [a, b, broken] of L.fences) railFence(batch, at(...a), at(...b), '#c98a4b', { height: 0.44, broken });
 
   rocksAround(batch, rand, at(6.3, -2.6), 5, 1.2, groundY);
   rocksAround(batch, rand, at(-1.6, -8.4), 6, 1.6, groundY);

@@ -25,7 +25,7 @@ const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 const easeInCubic = (t) => t * t * t;
 
 export const HOME_THEME = {
-  grass: '#86d460', grassDark: '#5fb346', fence: '#c98a4b', barn: '#ef6461', roof: '#8a4b3a', tree: '#4fb35a', tree2: '#7ccf5a',
+  grass: '#86d460', grassDark: '#5fb346', fence: '#c98a4b', barn: '#ef6461', roof: '#8a4b3a',
 };
 
 export function npcTheme(npc) {
@@ -166,6 +166,8 @@ export class FarmScene {
       this.composer.addPass(new OutputPass());
     }
     this.bloom.enabled = high;
+    // The valley's grass and flowers are tens of thousands of small triangles; the fast setting goes without them.
+    this.countryside.plants.visible = high;
     // Smooth edges with MSAA: 4 samples, or 2 where pixels are already small (Retina), which keeps memory near
     // what the old antialiased canvas used.
     const gl = this.renderer.getContext();
