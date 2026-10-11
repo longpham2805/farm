@@ -15,8 +15,9 @@ const MODELS = [
   'MUSH_01_RedSmall', 'MUSH_02_BrownSmall', 'MUSH_03_White',
   // Stones
   'ROCK_01_Small', 'ROCK_02_Medium', 'ROCK_07_ClusterSmall', 'ROCK_14_SteppingStone',
+  'ROCK_03_BoulderLarge', 'ROCK_05_BoulderFlat', 'ROCK_06_BoulderMossy',
   // Fences and other things people made, and the buffalo's mud
-  'PROP_05_FenceStraight', 'PROP_07_FenceBroken', 'PROP_10_WoodenBench', 'PROP_12_LanternPost', 'PROP_04_DirectionSign',
+  'PROP_05_FenceStraight', 'PROP_07_FenceBroken', 'PROP_10_WoodenBench', 'PROP_04_DirectionSign',
   'GROUND_02_MudPatch',
 ];
 

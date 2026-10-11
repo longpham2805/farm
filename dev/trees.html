@@ -9,42 +9,43 @@
   #c{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none}
 </style></head>
 <body>
-<!-- The tree models in src/three/treeModels.js, in the game's light and colours; `node dev/tree-models.cjs <folder> all`
-     puts in the whole pack to compare. ?sheet=pack shows the pack's own colours, ?only=Type1 02,Type7 01 picks models,
-     ?cols=8 sets the grid width, ?native draws them at their real sizes, ?double draws back faces too. -->
+<!-- The trees from src/three/trees.js in the game's light, each kind from a few seeds; ?cols=6 sets the grid width,
+     ?seeds=1,2,3 picks the seeds. -->
 <div id="grid"></div>
 <canvas id="c"></canvas>
 <script type="module">
 import * as THREE from 'three';
-import { treeGeometry, treeSize } from '../src/three/trees.js';
-import { TREE_MODELS } from '../src/three/treeModels.js';
+import { pineTree, roundTree, birchTree, bush, fruitSpots, BLOSSOM } from '../src/three/trees.js';
+import { seeded } from '../src/util.js';
 
-// The pack's own colours ("Colorsheet Tree Normal.png"), block by block like SHEET in trees.js.
-const PACK_SHEET = [
-  '#1f1513', '#513a31', '#9d7c68', '#d3b396',
-  '#a6bc51', '#b7c873', '#9aab55', '#c3c361',
-  '#45502d', '#60703c', '#899e52', '#6f803f',
-  '#fff9ef', '#574a43', '#505e35', '#820070',
-];
+// The game's sun (SUN_DIR in countryside.js, which this page leaves out so as not to build the whole valley).
+const SUN_DIR = new THREE.Vector3(-0.414, 1.11, 0.91).normalize();
 
 const params = new URLSearchParams(location.search);
-const sheet = params.get('sheet') === 'pack' ? PACK_SHEET : undefined;
-const names = params.get('only') ? params.get('only').split(',') : Object.keys(TREE_MODELS);
-const cols = Number(params.get('cols') || 8);
-const native = params.has('native');
+const seeds = (params.get('seeds') || '1,2,3,4').split(',').map(Number);
+const cols = Number(params.get('cols') || 6);
+const kinds = [
+  ['pine', (s) => pineTree(s, 1.6)],
+  ['round', (s) => roundTree(s, 1.5)],
+  ['fruit', (s) => roundTree(s, 1.2)],
+  ['blossom', (s) => roundTree(s, 1.6, BLOSSOM)],
+  ['birch', (s) => birchTree(s, 1.8)],
+  ['bush', (s) => bush(s)],
+];
 const grid = document.getElementById('grid');
 grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-const cells = names.map((name) => {
-  const f = document.createElement('figure');
-  const g = treeGeometry(name, 1, sheet);
-  const { height, radius } = treeSize(name);
-  const cap = document.createElement('figcaption');
-  cap.textContent = `${name} · ${height.toFixed(1)}m · ${g.attributes.position.count / 3}▲`;
-  f.append(cap);
-  grid.append(f);
-  return { f, g, height, radius };
-});
-const tallest = Math.max(...cells.map((c) => c.height));
+const cells = [];
+for (const seed of seeds) {
+  for (const [kind, make] of kinds) {
+    const tree = make(seed);
+    const f = document.createElement('figure');
+    const cap = document.createElement('figcaption');
+    cap.textContent = `${kind} ${seed} · ${tree.geometry.attributes.position.count / 3}▲`;
+    f.append(cap);
+    grid.append(f);
+    cells.push({ f, kind, tree });
+  }
+}
 
 const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -54,30 +55,49 @@ renderer.toneMapping = THREE.NeutralToneMapping;
 renderer.toneMappingExposure = 1.1;
 renderer.setScissorTest(true);
 renderer.setClearColor('#cfe9f7');
+renderer.shadowMap.enabled = true;
 
+// The game's lights (see FarmScene).
 const scene = new THREE.Scene();
-scene.add(new THREE.HemisphereLight('#fff6dc', '#86a85a', 1.2));
-const sun = new THREE.DirectionalLight('#fff0c4', 2.4);
-sun.position.set(3.5, 9, -1.2);
+scene.add(new THREE.HemisphereLight('#e4eeff', '#7b9a4a', 0.8));
+const sun = new THREE.DirectionalLight('#ffe2a4', 3.2);
+sun.position.copy(SUN_DIR).multiplyScalar(6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+Object.assign(sun.shadow.camera, { left: -1.5, right: 1.5, top: 1.5, bottom: -1.5, near: 0.5, far: 12 });
 scene.add(sun);
-const ground = new THREE.Mesh(new THREE.CircleGeometry(0.75, 32).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#93da68', roughness: 0.95 }));
+const ground = new THREE.Mesh(new THREE.CircleGeometry(0.85, 32).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#8ad25a', roughness: 0.95 }));
+ground.receiveShadow = true;
 scene.add(ground);
-const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, flatShading: true, side: params.has('double') ? THREE.DoubleSide : THREE.FrontSide });
-const tree = new THREE.Mesh(undefined, mat);
-scene.add(tree);
+const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 });
+const model = new THREE.Mesh(undefined, mat);
+model.castShadow = true;
+model.receiveShadow = true;
+scene.add(model);
+const fruits = new THREE.Group();
+scene.add(fruits);
+const fruitMat = new THREE.MeshStandardMaterial({ color: '#ffa53a', roughness: 0.6 });
+const ball = new THREE.SphereGeometry(0.055, 10, 7);
 // The game's camera direction.
-const camera = new THREE.OrthographicCamera(-0.75, 0.75, 1.2, -0.8, 0.1, 100);
+const camera = new THREE.OrthographicCamera(-0.8, 0.8, 1.3, -0.85, 0.1, 100);
 camera.position.copy(new THREE.Vector3(1, 0.95, 1).normalize().multiplyScalar(20));
 camera.lookAt(0, 0.45, 0);
 
-for (const { f, g, height, radius } of cells) {
+for (const { f, kind, tree } of cells) {
   const r = f.getBoundingClientRect();
   const y = window.innerHeight - r.bottom;
   renderer.setViewport(r.left, y, r.width, r.height);
   renderer.setScissor(r.left, y, r.width, r.height);
-  tree.geometry = g;
-  // Fit the cell, or keep the real sizes relative to the tallest.
-  tree.scale.setScalar(native ? height / tallest * 1.25 : Math.min(1, 0.7 / (radius / height)));
+  model.geometry = tree.geometry;
+  fruits.clear();
+  if (kind === 'fruit') {
+    // Unturned, a tree's +z side faces the camera.
+    for (const [p] of fruitSpots(tree.puffs, 7, seeded(5), Math.PI / 2)) {
+      const m = new THREE.Mesh(ball, fruitMat);
+      m.position.copy(p);
+      fruits.add(m);
+    }
+  }
   renderer.render(scene, camera);
 }
 window.__ready = true;

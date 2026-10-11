@@ -1,10 +1,14 @@
-// Farm buildings and everything else people made around the field, merged into the countryside
-// batch. Only the windmill's sails and the chimney smoke move; they come back as their own objects.
+// Farm buildings and everything else people made round the farm, merged into the countryside batch: the
+// houses along the back of the ring road, the fields over the big bridge, the cows' meadow, the bridges,
+// lamps and benches, and the stones and lily pads along the river. Only the windmill's sails and the
+// chimney smoke move; they come back as their own objects.
 import * as THREE from 'three';
-import { Batch, gableGeometry } from './batch.js';
+import { Batch, gableGeometry, shingleRoof } from './batch.js';
 import { glowTexture } from './textures.js';
-import { treeGeometry, leafSpots } from './trees.js';
-import { addNature, natureModel, natureSize, railFence, steppingStones } from './nature.js';
+import { roundTree, fruitSpots, BLOSSOM } from './trees.js';
+import { addNature, putNature, natureSize, railFence, steppingStones } from './nature.js';
+import { streetLamp, buildGlow } from './farm.js';
+import { seeded } from '../util.js';
 
 const TAU = Math.PI * 2;
 const FACE = Math.PI / 4; // turned to face the camera
@@ -17,6 +21,8 @@ const cyl = (top, bottom, seg) => new THREE.CylinderGeometry(top, bottom, 1, seg
 const CYL6 = cyl(1, 1, 6);
 const CYL10 = cyl(1, 1, 10);
 const CYL16 = cyl(1, 1, 16);
+// A lily pad: a disc with a notch cut out.
+const PAD = new THREE.CylinderGeometry(1, 1, 1, 12, 1, false, 0.35, TAU - 0.35);
 
 const WOOD = '#8a5a3a';
 const PLANK = '#b98450';
@@ -24,14 +30,39 @@ const STONE = '#c9c2b4';
 const TRIM = '#fff8ef';
 const GLASS = '#a9dcff';
 const STRAW = '#ecc95c';
+const FENCE = '#c98a4b';
 
-/** A gable roof of two slabs from eaves at y to a ridge `rise` higher; depth is eave to eave. */
-function roof(batch, y, width, depth, rise, color, ridge) {
-  const d = depth / 2;
-  const slant = Math.hypot(d, rise);
-  const angle = Math.atan2(rise, d);
-  for (const s of [1, -1]) batch.add(BOX, color, [0, y + rise / 2 + 0.03, (s * d) / 2], [width, 0.07, slant + 0.06], [s * angle, 0, 0]);
-  batch.add(BOX, ridge, [0, y + rise + 0.04, 0], [width + 0.04, 0.08, 0.12]);
+// How much bigger than as modelled the buildings stand, now that they line the ring road.
+const SIZE = { farmhouse: 1.35, silo: 1.3, windmill: 1.3, coop: 1.15, hutch: 0.8, cart: 1.15, well: 1.15, hay: 1.2, fruitTree: 1.25 };
+
+const GREYS = ['#c9c2b4', '#b8b0a0', '#d6d0c2', '#aaa292'];
+
+/** A footing of rough stones of a few greys round a w × d base, about h tall. */
+function stoneFooting(batch, w, d, h, rand) {
+  // Lays stones along a side `len` long; place(t, width, colour, height) puts one centred t along it.
+  const lay = (len, place) => {
+    for (let t = -len / 2; t < len / 2 - 0.02;) {
+      const sw = Math.min(0.1 + rand() * 0.1, len / 2 - t);
+      place(t + sw / 2, sw, GREYS[Math.floor(rand() * GREYS.length)], h * (0.8 + rand() * 0.4));
+      t += sw + 0.008;
+    }
+  };
+  for (const s of [-1, 1]) {
+    lay(w, (t, sw, c, sh) => batch.add(BOX, c, [t, sh / 2, (s * d) / 2], [sw, sh, 0.06]));
+    lay(d, (t, sw, c, sh) => batch.add(BOX, c, [(s * w) / 2, sh / 2, t], [0.06, sh, sw]));
+  }
+}
+
+/** Courses of stones round a round wall: `rows` rings from y0 up, `step` apart, `n` stones a ring, radius r(y). */
+function stoneCourses(batch, rows, y0, step, n, r, height = step - 0.02) {
+  for (let row = 0; row < rows; row++) {
+    const y = y0 + row * step;
+    const rr = r(y);
+    for (let k = 0; k < n; k++) {
+      const a = ((k + (row % 2) * 0.5) / n) * TAU;
+      batch.add(BOX, GREYS[(k * 3 + row) % GREYS.length], [Math.sin(a) * rr, y, Math.cos(a) * rr], [((TAU * rr) / n) * 0.92, height, 0.03], [0, a, 0]);
+    }
+  }
 }
 
 function windowAt(batch, x, y, z, w = 0.26, h = 0.21, side = false) {
@@ -43,20 +74,29 @@ function windowAt(batch, x, y, z, w = 0.26, h = 0.21, side = false) {
   batch.add(BOX, GLASS, [x + out, y, z + zo], [gw, h, gd]);
 }
 
-// A cosy country house: yellow walls, red tile roof, a porch and a smoking chimney.
+// A cosy country house: cream walls on a footing of stones, timber corners, a tiled roof, a porch with railings
+// and a smoking chimney.
 function farmhouse(batch) {
   const wall = '#fbe1a2';
-  batch.add(BOX, STONE, [0, 0.05, 0], [1.62, 0.1, 1.12]);
+  const rand = seeded(3);
+  batch.add(BOX, STONE, [0, 0.05, 0], [1.56, 0.1, 1.06]);
+  stoneFooting(batch, 1.58, 1.08, 0.13, rand);
   batch.add(BOX, wall, [0, 0.45, 0], [1.5, 0.7, 1.0]);
   batch.add(GABLE, wall, [0, 0.8, 0], [1.5, 0.5, 1.0]);
-  roof(batch, 0.8, 1.8, 1.32, 0.52, '#e0673f', '#b84f2f');
+  for (const x of [-0.75, 0.75]) for (const z of [-0.5, 0.5]) batch.add(BOX, WOOD, [x, 0.46, z], [0.06, 0.72, 0.06]);
+  for (const z of [-0.51, 0.51]) batch.add(BOX, WOOD, [0, 0.79, z], [1.56, 0.05, 0.03]);
+  shingleRoof(batch, { y: 0.8, width: 1.8, depth: 1.32, rise: 0.52, tones: ['#e0673f', '#d35a35', '#ea7d52'], ridge: '#b84f2f', rows: 7 });
   batch.add(BOX, TRIM, [0.3, 0.35, 0.505], [0.34, 0.54, 0.03]);
   batch.add(BOX, WOOD, [0.3, 0.33, 0.515], [0.26, 0.47, 0.03]);
   batch.add(BALL, '#ffd36b', [0.39, 0.33, 0.535], 0.018);
   windowAt(batch, -0.35, 0.52, 0.505);
   for (const x of [-0.56, -0.14]) batch.add(BOX, '#5fa8d3', [x, 0.52, 0.51], [0.07, 0.27, 0.03]);
-  windowAt(batch, 0.755, 0.52, -0.1, 0.26, 0.21, true);
-  windowAt(batch, -0.755, 0.52, 0.1, 0.26, 0.21, true);
+  for (const s of [-1, 1]) {
+    // A shuttered window in each end wall, and a small one up in each gable.
+    windowAt(batch, s * 0.755, 0.52, -s * 0.1, 0.26, 0.21, true);
+    for (const z of [-0.21, 0.21]) batch.add(BOX, '#5fa8d3', [s * 0.765, 0.52, -s * 0.1 + z], [0.03, 0.27, 0.07]);
+    windowAt(batch, s * 0.755, 1.0, 0, 0.14, 0.13, true);
+  }
   // flower box under the front window
   batch.add(BOX, WOOD, [-0.35, 0.36, 0.55], [0.34, 0.07, 0.09]);
   ['#ff7a7a', '#ff8fc1', '#ffd23f', '#ff7a7a'].forEach((c, k) => batch.add(BALL, c, [-0.48 + k * 0.09, 0.41, 0.56], 0.035));
@@ -65,8 +105,21 @@ function farmhouse(batch) {
   batch.add(BOX, STONE, [0.3, 0.04, 0.9], [0.42, 0.08, 0.16]);
   for (const x of [0.04, 0.56]) batch.add(BOX, WOOD, [x, 0.38, 0.8], [0.05, 0.48, 0.05]);
   batch.add(BOX, '#e0673f', [0.3, 0.64, 0.7], [0.72, 0.05, 0.38], [0.28, 0, 0]);
-  // chimney
+  batch.add(BOX, '#c95632', [0.3, 0.6, 0.885], [0.72, 0.04, 0.04]);
+  // railings along the porch's sides, a lamp by the door and two potted plants
+  for (const x of [0.02, 0.58]) {
+    for (let z = 0.56; z < 0.8; z += 0.07) batch.add(BOX, PLANK, [x, 0.22, z], [0.025, 0.16, 0.025]);
+    batch.add(BOX, WOOD, [x, 0.31, 0.68], [0.035, 0.03, 0.3]);
+  }
+  batch.add(BOX, '#3d4148', [0.53, 0.5, 0.52], [0.05, 0.075, 0.05]);
+  batch.add(BOX, '#ffe9a8', [0.53, 0.5, 0.535], [0.035, 0.05, 0.03]);
+  for (const x of [0.1, 0.48]) {
+    batch.add(CYL10, '#c8673e', [x, 0.19, 0.6], [0.04, 0.07, 0.04]);
+    batch.add(ICO, '#5cb546', [x, 0.26, 0.6], 0.055, null, true);
+  }
+  // chimney, with bands of darker brick
   batch.add(BOX, '#b5523b', [-0.45, 1.2, -0.18], [0.17, 0.56, 0.17]);
+  for (const y of [1.08, 1.3]) batch.add(BOX, '#963f2c', [-0.45, y, -0.18], [0.18, 0.025, 0.18]);
   batch.add(BOX, '#8d3f2d', [-0.45, 1.5, -0.18], [0.21, 0.05, 0.21]);
   return new THREE.Vector3(-0.45, 1.58, -0.18);
 }
@@ -79,6 +132,12 @@ function silo(batch) {
   batch.add(new THREE.ConeGeometry(1, 1, 10), '#c9c2b4', [0, 1.66, 0], [0.07, 0.1, 0.07]);
   for (const x of [-0.07, 0.07]) batch.add(BOX, '#8f9aa6', [x, 0.7, 0.36], [0.025, 1.2, 0.025]);
   for (let y = 0.2; y < 1.25; y += 0.14) batch.add(BOX, '#8f9aa6', [0, y, 0.36], [0.16, 0.02, 0.02]);
+  // The ribs of its corrugated sheets, and a darker band where the dome sits.
+  for (let k = 0; k < 20; k++) {
+    const a = (k / 20) * TAU;
+    batch.add(BOX, '#c6cfd9', [Math.sin(a) * 0.343, 0.68, Math.cos(a) * 0.343], [0.016, 1.2, 0.016], [0, a, 0]);
+  }
+  batch.add(CYL16, '#c94e4b', [0, 1.29, 0], [0.356, 0.04, 0.356]);
 }
 
 /** The windmill's tower goes into the batch; its sails are a separate mesh that turns. */
@@ -87,7 +146,10 @@ function windmill(batch) {
   batch.add(cyl(0.27, 0.42, 8), '#f6ead0', [0, 0.87, 0], [1, 1.5, 1], null, true);
   batch.add(cyl(0.3, 0.3, 8), '#c98a4b', [0, 1.62, 0], [1, 0.06, 1], null, true);
   batch.add(new THREE.ConeGeometry(0.36, 1, 8), '#8a4b3a', [0, 1.9, 0], [1, 0.5, 1], null, true);
-  batch.add(BOX, WOOD, [0, 0.3, 0.405], [0.2, 0.34, 0.04]);
+  // Courses of stone round the foot of the tower, a framed door and a window.
+  stoneCourses(batch, 4, 0.19, 0.12, 14, (y) => (0.42 - (0.15 * (y - 0.12)) / 1.5) * Math.cos(Math.PI / 8) + 0.012);
+  batch.add(BOX, TRIM, [0, 0.31, 0.402], [0.25, 0.39, 0.03]);
+  batch.add(BOX, WOOD, [0, 0.3, 0.41], [0.2, 0.34, 0.04]);
   windowAt(batch, 0, 1.05, 0.335, 0.13, 0.15);
   const sails = new Batch();
   sails.add(BALL, '#6b4a2a', [0, 0, 0.02], 0.075);
@@ -103,16 +165,19 @@ function windmill(batch) {
   return sails.build();
 }
 
-function coop(batch) {
+/** A hen house on legs; with `yard`, a little fenced run in front, whose middle and size it returns. */
+function coop(batch, yard = true) {
   const wall = '#d9774a';
   for (const x of [-0.3, 0.3]) for (const z of [-0.22, 0.22]) batch.add(BOX, WOOD, [x, 0.12, z], [0.06, 0.24, 0.06]);
   batch.add(BOX, wall, [0, 0.46, 0], [0.72, 0.44, 0.56]);
   batch.add(GABLE, wall, [0, 0.68, 0], [0.72, 0.28, 0.56]);
-  roof(batch, 0.68, 0.86, 0.72, 0.28, '#7a4a2a', '#5e371f');
+  shingleRoof(batch, { y: 0.68, width: 0.86, depth: 0.72, rise: 0.28, tones: ['#7a4a2a', '#6b3f23', '#875632'], ridge: '#5e371f', rows: 4 });
+  // weatherboards across the front
+  for (let y = 0.29; y < 0.67; y += 0.065) batch.add(BOX, '#c4673f', [0, y, 0.282], [0.72, 0.012, 0.01]);
   batch.add(BOX, '#4a2a1a', [0.15, 0.36, 0.285], [0.16, 0.2, 0.02]);
   batch.add(BOX, '#ffe9a8', [-0.18, 0.52, 0.285], [0.13, 0.11, 0.02]);
   batch.add(BOX, PLANK, [0.15, 0.13, 0.47], [0.14, 0.02, 0.44], [0.55, 0, 0]);
-  // a little fenced yard in front
+  if (!yard) return null;
   const posts = [];
   for (let x = -0.9; x <= 0.91; x += 0.3) posts.push([x, 1.55]);
   for (let z = 0.35; z < 1.55; z += 0.3) posts.push([-0.9, z], [0.9, z]);
@@ -132,12 +197,13 @@ function well(batch) {
   batch.add(CYL10, '#3b7fae', [0, 0.37, 0], [0.25, 0.02, 0.25]);
   for (const x of [-0.28, 0.28]) batch.add(BOX, WOOD, [x, 0.62, 0], [0.06, 0.62, 0.06]);
   batch.add(CYL6, '#7a4f32', [0, 0.78, 0], [0.03, 0.62, 0.03], [0, 0, Math.PI / 2]);
-  batch.add(GABLE, '#8a4b3a', [0, 0.93, 0], [0.78, 0.26, 0.56]);
+  shingleRoof(batch, { y: 0.93, width: 0.78, depth: 0.56, rise: 0.26, tones: ['#d9573f', '#c94d36', '#e56a4d'], ridge: '#a8402c', rows: 3 });
+  stoneCourses(batch, 2, 0.09, 0.15, 10, (y) => 0.335 - y * 0.09, 0.13);
   batch.add(BOX, '#d9c4a0', [0, 0.66, 0], [0.012, 0.24, 0.012]);
   batch.add(cyl(0.07, 0.055, 8), WOOD, [0, 0.5, 0], [1, 0.11, 1]);
 }
 
-/** A Vietnamese straw stack: a dome of rice straw round a pole. */
+/** A haystack: a dome of straw round a pole. */
 function haystack(batch, s = 1) {
   batch.add(new THREE.SphereGeometry(1, 9, 6), STRAW, [0, 0.28 * s, 0], [0.42 * s, 0.56 * s, 0.42 * s], null, true);
   batch.add(new THREE.ConeGeometry(1, 1, 9), '#d9b24a', [0, 0.9 * s, 0], [0.29 * s, 0.34 * s, 0.29 * s], null, true);
@@ -196,7 +262,7 @@ function signpost(batch) {
   batch.add(BOX, '#9a6638', [0.14, 0.6, 0.06], [0.24, 0.025, 0.01]);
 }
 
-/** A scarecrow in a conical palm-leaf hat. */
+/** A scarecrow in a straw hat. */
 function scarecrow(batch) {
   batch.add(BOX, WOOD, [0, 0.45, 0], [0.05, 0.9, 0.05]);
   batch.add(BOX, '#e86a5a', [0, 0.56, 0], [0.24, 0.28, 0.13]);
@@ -204,63 +270,29 @@ function scarecrow(batch) {
   for (const x of [-0.3, 0.3]) batch.add(new THREE.ConeGeometry(1, 1, 5), STRAW, [x, 0.64, 0], [0.05, 0.1, 0.05], [0, 0, Math.sign(x) * -Math.PI / 2]);
   batch.add(BOX, '#5a7fb5', [0, 0.38, 0], [0.22, 0.1, 0.12]);
   batch.add(BALL, '#f2d8a6', [0, 0.8, 0], 0.09);
-  batch.add(new THREE.ConeGeometry(1, 1, 14), '#ead49e', [0, 0.93, 0], [0.2, 0.13, 0.2]);
+  batch.add(CYL16, '#ead49e', [0, 0.87, 0], [0.17, 0.015, 0.17]);
+  batch.add(new THREE.ConeGeometry(1, 1, 14), '#ead49e', [0, 0.93, 0], [0.1, 0.12, 0.1]);
 }
 
-function bamboo(batch, rand, n = 9) {
-  const up = new THREE.Vector3(0, 1, 0);
-  const q = new THREE.Quaternion();
-  const e = new THREE.Euler();
-  for (let k = 0; k < n; k++) {
-    const a = (k / n) * TAU + rand();
-    const r = 0.04 + rand() * 0.16;
-    const h = 1.5 + rand() * 0.9;
-    const tilt = 0.05 + rand() * 0.14;
-    const d = new THREE.Vector3(Math.sin(tilt) * Math.cos(a), Math.cos(tilt), Math.sin(tilt) * Math.sin(a));
-    e.setFromQuaternion(q.setFromUnitVectors(up, d));
-    const base = new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r);
-    const mid = base.clone().addScaledVector(d, h / 2);
-    batch.add(cyl(0.028, 0.038, 5), k % 2 ? '#9bc24f' : '#86b043', [mid.x, mid.y, mid.z], [1, h, 1], [e.x, e.y, e.z], true);
-    for (let j = 0; j < 3; j++) {
-      const t = 0.55 + j * 0.17;
-      const p = base.clone().addScaledVector(d, h * t);
-      batch.add(ICO, j % 2 ? '#6dbb48' : '#5aa83f', [p.x + Math.cos(a) * 0.1, p.y, p.z + Math.sin(a) * 0.1], [0.2, 0.09, 0.2], [rand(), rand() * 3, rand()], true);
-    }
-  }
-}
+// Round trees (see trees.js) for the fruit trees, which take turns, and the cherry in blossom.
+let fruitTrees = null;
+let blossom = null;
 
-function banana(batch, rand) {
-  batch.add(cyl(0.05, 0.07, 6), '#a3b65a', [0, 0.32, 0], [1, 0.64, 1], null, true);
-  const leaf = new THREE.SphereGeometry(1, 6, 4);
-  for (let k = 0; k < 6; k++) {
-    const a = (k / 6) * TAU + rand() * 0.5;
-    batch.push(0, 0.62, 0, -a);
-    batch.add(leaf, k % 2 ? '#7ccf5a' : '#68bf4c', [0.3, 0.06, 0], [0.34, 0.025, 0.08], [0, 0, -0.45 - rand() * 0.3], true);
-    batch.pop();
-  }
-  batch.add(new THREE.SphereGeometry(1, 6, 5), '#b9d14f', [0.08, 0.5, 0.04], [0.06, 0.1, 0.06], null, true);
-}
-
-// Tree models (see trees.js) and their heights.
-const FRUIT_TREE = ['Type0 06', 1.2];
-const PALMS = [['Type7 02', 2.1], ['Type7 03', 1.9]];
-let fruitTreeGeometry = null;
-let palmGeometries = null;
-
-/** A round tree, turned `turn` from facing the camera, with seven fruits on the side the camera sees. */
-function fruitTree(batch, fruit, rand, turn) {
-  fruitTreeGeometry ||= treeGeometry(...FRUIT_TREE);
-  batch.add(fruitTreeGeometry, null, [0, 0, 0], 1, null, true);
+/** Fruit tree k, turned `turn` from facing the camera, with seven fruits on the side the camera sees. */
+function fruitTree(batch, k, fruit, rand, turn) {
+  fruitTrees ||= [5, 6, 7].map((seed) => roundTree(seed, 1.2));
+  const tree = fruitTrees[k % fruitTrees.length];
+  batch.add(tree.geometry, null, [0, 0, 0], 1, null, false);
   // Unturned, a placed tree's +z side faces the camera.
-  for (const [p, n] of leafSpots(...FRUIT_TREE, 7, rand, Math.PI / 2 + turn)) {
+  for (const [p, n] of fruitSpots(tree.puffs, 7, rand, Math.PI / 2 + turn)) {
     batch.add(BALL, fruit, [p.x + n.x * 0.03, p.y + n.y * 0.03 - 0.02, p.z + n.z * 0.03], 0.055);
   }
 }
 
-/** A coconut palm; the two models take turns. */
-function palm(batch, k) {
-  palmGeometries ||= PALMS.map(([name, height]) => treeGeometry(name, height));
-  batch.add(palmGeometries[k % palmGeometries.length], null, [0, 0, 0], 1, null, true);
+/** A cherry tree in pink blossom. */
+function blossomTree(batch) {
+  blossom ||= roundTree(2, 2.0, BLOSSOM);
+  batch.add(blossom.geometry, null, [0, 0, 0], 1, null, false);
 }
 
 /** Flowers and leafy plants along the front of the farmhouse, left of the porch, in the house's frame. */
@@ -278,17 +310,90 @@ function woodpile(batch) {
   addNature(batch, 'MUSH_01_RedSmall', [-0.24, 0, -0.08], 0.42);
 }
 
-/** Rice paddies: flooded plots with grassy dikes and rows of young rice. */
-function paddies(batch, rand, cells) {
-  for (const [x, z, w, d] of cells) {
-    batch.add(BOX, '#77bfae', [x, 0.01, z], [w, 0.02, d]);
-    for (const [px, pz, sw, sd] of [[x, z - d / 2, w + 0.14, 0.14], [x, z + d / 2, w + 0.14, 0.14], [x - w / 2, z, 0.14, d], [x + w / 2, z, 0.14, d]]) {
-      batch.add(BOX, '#8cc65a', [px, 0.04, pz], [sw, 0.08, sd]);
+/** A wooden water trough. */
+function trough(batch) {
+  for (const x of [-0.25, 0.25]) batch.add(BOX, WOOD, [x, 0.05, 0], [0.06, 0.1, 0.24]);
+  batch.add(BOX, PLANK, [0, 0.14, 0], [0.64, 0.09, 0.26]);
+  batch.add(BOX, '#5cc6f6', [0, 0.19, 0], [0.56, 0.01, 0.18]);
+  for (const z of [-0.11, 0.11]) batch.add(BOX, PLANK, [0, 0.21, z], [0.64, 0.06, 0.04]);
+  for (const x of [-0.3, 0.3]) batch.add(BOX, PLANK, [x, 0.21, 0], [0.04, 0.06, 0.26]);
+}
+
+function sunflower(batch, rand, x, z) {
+  const h = 0.6 + rand() * 0.25;
+  batch.add(CYL6, '#5a9a3a', [x, h / 2, z], [0.014, h, 0.014]);
+  for (const s of [-1, 1]) batch.add(ICO, '#6cb84a', [x + s * 0.06, h * (0.4 + s * 0.08), z], [0.08, 0.015, 0.035], [0, 0, s * 0.4], true);
+  // The head, turned to the camera and tipped up a little.
+  batch.push(x, h, z, FACE + (rand() - 0.5) * 0.6);
+  batch.add(CYL10, '#ffc21f', [0, 0, 0], [0.12, 0.02, 0.12], [Math.PI / 2 - 0.3, 0, 0]);
+  batch.add(CYL10, '#7a4a1f', [0, 0.005, 0.017], [0.06, 0.02, 0.06], [Math.PI / 2 - 0.3, 0, 0]);
+  batch.pop();
+}
+
+/**
+ * The fields over the bridge, in their own frame (sides along x and z, so they line up with the plots): beds of
+ * wheat at the back, cabbages and greens either side and white flowers at the front, inside a rail fence open
+ * towards the road, with a scarecrow at the back and sunflowers along the front right.
+ */
+function fields(batch, rand) {
+  const bed = 1.5;
+  const off = 0.95;
+  const edge = 2.05;
+  const jitter = (s) => (rand() - 0.5) * s;
+  const beds = { wheat: [-off, -off], cabbage: [-off, off], greens: [off, -off], flowers: [off, off] };
+  for (const [x, z] of Object.values(beds)) batch.add(BOX, '#8b5a3c', [x, 0.03, z], [bed, 0.06, bed]);
+  // Calls plant(x, z) for an n × n grid over a bed.
+  const grid = (name, n, plant) => {
+    const [cx, cz] = beds[name];
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) plant(cx + ((i + 0.5) / n - 0.5) * (bed - 0.12), cz + ((j + 0.5) / n - 0.5) * (bed - 0.12));
+  };
+  // Ripe wheat, each stalk with its ear.
+  grid('wheat', 11, (x, z) => {
+    const h = 0.34 + rand() * 0.1;
+    const px = x + jitter(0.04);
+    const pz = z + jitter(0.04);
+    const lean = [jitter(0.25), 0, jitter(0.25)];
+    batch.add(BOX, '#d9b04a', [px, 0.06 + h / 2, pz], [0.018, h, 0.018], lean);
+    batch.add(BOX, rand() < 0.5 ? '#f2cf5f' : '#e8c052', [px, 0.1 + h, pz], [0.04, 0.11, 0.04], lean);
+  });
+  // Cabbages: pale hearts in darker leaves.
+  grid('cabbage', 4, (x, z) => {
+    batch.add(ICO, '#5fb84a', [x, 0.12, z], [0.17, 0.08, 0.17], [0, rand() * 3, 0], true);
+    batch.add(ICO, '#a8dc6e', [x, 0.17, z], 0.1, [rand(), rand(), 0], true);
+  });
+  grid('greens', 4, (x, z) => addNature(batch, 'PLANT_10_BroadleafPlant', [x, 0.05, z], 0.22 + rand() * 0.05, rand() * TAU));
+  // White flowers: green clumps dotted with blooms.
+  grid('flowers', 5, (x, z) => {
+    batch.add(ICO, '#6cc152', [x, 0.1, z], [0.12, 0.07, 0.12], [0, rand() * 3, 0], true);
+    for (let k = 0; k < 4; k++) {
+      const a = (k / 4) * TAU + rand();
+      batch.add(ICO, k % 3 ? '#ffffff' : '#fff3c4', [x + Math.cos(a) * 0.07, 0.17 + rand() * 0.03, z + Math.sin(a) * 0.07], 0.035, null, true);
     }
-    for (let rz = z - d / 2 + 0.18; rz < z + d / 2 - 0.1; rz += 0.2) {
-      batch.add(BOX, rand() < 0.5 ? '#9ee05c' : '#8fd655', [x, 0.06, rz], [w - 0.24, 0.1, 0.06]);
-    }
+  });
+  // The fence, with a gate in the side along the road (+z, the front left on screen).
+  const v = (x, z) => new THREE.Vector3(x, 0, z);
+  for (const [a, b] of [[v(-edge, -edge), v(edge, -edge)], [v(edge, -edge), v(edge, edge)], [v(edge, edge), v(0.45, edge)], [v(-0.45, edge), v(-edge, edge)], [v(-edge, edge), v(-edge, -edge)]]) {
+    railFence(batch, a, b, FENCE, { height: 0.42 });
   }
+  batch.push(0, 0, -edge + 0.3, FACE);
+  scarecrow(batch);
+  batch.pop();
+  for (let z = -edge + 0.15; z < edge; z += 0.38) sunflower(batch, rand, edge + 0.3 + jitter(0.1), z);
+}
+
+/** A rail fence round the meadow's corners (world points), with a gate in the middle of the first side. */
+function meadowFence(batch, corners) {
+  corners.forEach((p, i) => {
+    const q = corners[(i + 1) % corners.length];
+    if (i > 0) {
+      railFence(batch, p, q, FENCE, { height: 0.44, broken: i === 2 ? [2] : [] });
+      return;
+    }
+    const mid = p.clone().lerp(q, 0.5);
+    const half = q.clone().sub(p).setY(0).normalize().multiplyScalar(0.45);
+    railFence(batch, p, mid.clone().sub(half), FENCE, { height: 0.44 });
+    railFence(batch, mid.clone().add(half), q, FENCE, { height: 0.44 });
+  });
 }
 
 /** Stones from the nature pack (see nature.js), each about 2s across. Takes seven values from rand per stone. */
@@ -299,12 +404,59 @@ function rocksAround(batch, rand, center, n, spread, groundY) {
     const s = 0.08 + rand() * 0.12;
     const name = rand() < 0.5 ? 'ROCK_01_Small' : 'ROCK_02_Medium';
     const tilt = [(rand() - 0.5) * 0.3, rand() * TAU, (rand() - 0.5) * 0.3];
-    batch.add(natureModel(name), null, [px, groundY(px, pz) - 0.01, pz], (s * 2) / natureSize(name).width, tilt, true);
+    putNature(batch, name, [px, groundY(px, pz) - 0.01, pz], (s * 2) / natureSize(name).width, tilt);
   }
 }
 
-/** Reeds along the river banks. */
-function reeds(batch, rand, river, riverHalf, groundY, from, to, every) {
+// Points along the river that are in view and clear of the bridges.
+const riverStretch = (river, bridges, from, every) => {
+  const out = [];
+  for (let i = from; i < river.pts.length; i += every) {
+    const p = river.pts[i];
+    if ((p.x - p.z) * Math.SQRT1_2 < -17) continue;
+    if (bridges.some(([a, b]) => p.distanceTo(a.clone().lerp(b, 0.5)) < 1.2)) continue;
+    out.push(i);
+  }
+  return out;
+};
+
+/** Grey boulders along both banks of the river, half in the water. */
+function riverRocks(batch, rand, { river, riverHalf, groundY, bridges, waterY }) {
+  const names = ['ROCK_03_BoulderLarge', 'ROCK_05_BoulderFlat', 'ROCK_06_BoulderMossy', 'ROCK_01_Small', 'ROCK_03_BoulderLarge'];
+  for (const i of riverStretch(river, bridges, 20, 3)) {
+    const { p, dir } = river.frame(i);
+    for (const s of [-1, 1]) {
+      // Most stretches of bank have a boulder, some a smaller stone beside it.
+      for (let n = rand() < 0.3 ? 0 : rand() < 0.6 ? 1 : 2; n > 0; n--) {
+        const off = s * (riverHalf(i) - 0.08 + rand() * 0.3);
+        const x = p.x - dir.z * off + (rand() - 0.5) * 0.2;
+        const z = p.z + dir.x * off + (rand() - 0.5) * 0.2;
+        const name = names[Math.floor(rand() * names.length)];
+        const size = n === 2 ? 0.08 + rand() * 0.07 : 0.14 + rand() * 0.2;
+        putNature(batch, name, [x, Math.max(groundY(x, z), waterY - 0.06) - 0.04, z], (size * 2) / natureSize(name).width, [(rand() - 0.5) * 0.3, rand() * TAU, (rand() - 0.5) * 0.3]);
+      }
+    }
+  }
+}
+
+/** Lily pads in the still water by the banks, some in flower. */
+function lilyPads(batch, rand, { river, riverHalf, bridges, waterY }) {
+  for (const i of riverStretch(river, bridges, 4, 10)) {
+    if (rand() < 0.55) continue;
+    const { p, dir } = river.frame(i);
+    const off = (rand() < 0.5 ? -1 : 1) * (riverHalf(i) - 0.2 - rand() * 0.12);
+    for (let k = 0; k < 3; k++) {
+      const x = p.x - dir.z * off + (rand() - 0.5) * 0.3;
+      const z = p.z + dir.x * off + (rand() - 0.5) * 0.3;
+      const r = 0.06 + rand() * 0.05;
+      batch.add(PAD, k % 2 ? '#5cb85a' : '#4fae52', [x, waterY + 0.012, z], [r, 0.01, r], [0, rand() * TAU, 0], true);
+      if (k === 0 && rand() < 0.6) batch.add(ICO, '#ff9cc8', [x, waterY + 0.035, z], [0.035, 0.025, 0.035], [0, rand(), 0], true);
+    }
+  }
+}
+
+/** Reeds along the river banks, standing in the shallows or on the bank. */
+function reeds(batch, rand, river, riverHalf, groundY, waterY, from, to, every) {
   const stalk = cyl(0.008, 0.012, 4);
   const head = new THREE.CapsuleGeometry(0.022, 0.08, 2, 5);
   for (let i = from; i < to; i += every) {
@@ -314,7 +466,7 @@ function reeds(batch, rand, river, riverHalf, groundY, from, to, every) {
       const off = s * (riverHalf(i) + 0.05 + rand() * 0.2);
       const x = p.x - dir.z * off;
       const z = p.z + dir.x * off;
-      const y = Math.max(-0.08, groundY(x, z));
+      const y = Math.max(waterY, groundY(x, z));
       for (let k = 0; k < 4; k++) {
         const h = 0.25 + rand() * 0.2;
         const px = x + (rand() - 0.5) * 0.14;
@@ -349,16 +501,17 @@ function smokePuffs(origin) {
 }
 
 /**
- * Puts the farm buildings around the field.
- * map: { layout, at(u, b, y), groundY(x, z), rand, bridges: [[a, b]], river, riverHalf }
+ * Puts the farm buildings round the ring road and the rest of what people made about the valley.
+ * map: { layout, at(u, b, y), groundY(x, z), rand, bridges: [[a, b]], river, riverHalf, waterY }
  * Returns the moving parts, the chicken yard (world centre, size, turn) and update(t, dt).
  */
-export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, river, riverHalf }) {
+export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, river, riverHalf, waterY }) {
   const group = new THREE.Group();
+  const glow = new Batch();
   const toWorld = (v) => v.clone().applyMatrix4(batch.origin);
-  const place = ([u, b, turn = 0], build) => {
+  const place = ([u, b, turn = 0], build, size = 1) => {
     const p = at(u, b);
-    batch.push(p.x, Math.max(0, groundY(p.x, p.z)), p.z, FACE + turn);
+    batch.push(p.x, Math.max(0, groundY(p.x, p.z)), p.z, FACE + turn, size);
     const out = build();
     batch.pop();
     return out;
@@ -368,23 +521,24 @@ export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, riv
     const chimney = toWorld(farmhouse(batch));
     frontGarden(batch);
     return chimney;
-  }));
+  }, SIZE.farmhouse));
   group.add(smoke.group);
-  place(L.silo, () => silo(batch));
-  place(L.cart, () => cart(batch));
-  for (const spot of L.bales) place(spot, () => hayBale(batch));
-  for (const [u, b, s] of L.haystacks) place([u, b, rand() * TAU], () => haystack(batch, s));
-  place(L.scarecrow, () => scarecrow(batch));
+  place(L.silo, () => silo(batch), SIZE.silo);
+  place(L.cart, () => cart(batch), SIZE.cart);
+  for (const spot of L.bales) place(spot, () => hayBale(batch), SIZE.hay);
+  for (const [u, b, s] of L.haystacks) place([u, b, rand() * TAU], () => haystack(batch, s), SIZE.hay);
   place(L.well, () => {
     well(batch);
     addNature(batch, 'PLANT_10_BroadleafPlant', [-0.48, 0, 0.05], 0.3, 0.8);
     addNature(batch, 'ROCK_01_Small', [0.42, 0, -0.18], 0.24, 2);
-  });
+  }, SIZE.well);
+  place([...L.cherry, 0], () => blossomTree(batch));
   place(L.woodpile, () => woodpile(batch));
-  // The buffalo's wallow, a sign where the road forks, and footpaths of stepping stones.
+  // The buffalo's wallow, a sign where the road to the waterfall leaves the ring, and footpaths of stepping stones.
   place(L.mud, () => addNature(batch, 'GROUND_02_MudPatch', [0, 0, 0], 0.36, 0, { Mud: '#8d6a47', Dirt: '#b08a5e' }));
   place(L.sign, () => addNature(batch, 'PROP_04_DirectionSign', [0, 0, 0], 0.34));
   for (const path of L.footpaths) steppingStones(batch, path.map(([u, b]) => at(u, b)), groundY);
+  for (const spot of L.benches) place(spot, () => addNature(batch, 'PROP_10_WoodenBench', [0, 0, 0], 0.36));
 
   const sails = place(L.windmill, () => {
     const blades = windmill(batch);
@@ -392,48 +546,46 @@ export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, riv
     batch.origin.clone().multiply(new THREE.Matrix4().makeTranslation(0, 1.62, 0.36)).decompose(hub.position, hub.quaternion, hub.scale);
     hub.add(blades);
     return hub;
-  });
+  }, SIZE.windmill);
   group.add(sails);
 
   const coopYard = place(L.coop, () => {
     const yard = coop(batch);
-    return { center: toWorld(new THREE.Vector3(yard.x, 0, yard.z)), w: yard.w, d: yard.d, turn: FACE + L.coop[2] };
-  });
+    return { center: toWorld(new THREE.Vector3(yard.x, 0, yard.z)), w: yard.w * SIZE.coop, d: yard.d * SIZE.coop, turn: FACE + L.coop[2] };
+  }, SIZE.coop);
+  place(L.hutch, () => coop(batch, false), SIZE.hutch);
 
-  for (const [u, b, fruit] of L.fruitTrees) {
+  L.fruitTrees.forEach(([u, b, fruit], k) => {
     const turn = rand() * TAU;
-    place([u, b, turn], () => fruitTree(batch, fruit, rand, turn));
-  }
-  for (const [u, b] of L.bananas) place([u, b, rand() * TAU], () => banana(batch, rand));
-  for (const [u, b] of L.bamboo) place([u, b, 0], () => bamboo(batch, rand));
-  L.palms.forEach((spot, k) => place(spot, () => palm(batch, k)));
+    place([u, b, turn], () => fruitTree(batch, k, fruit, rand, turn), SIZE.fruitTree);
+  });
 
   for (const [a, b] of bridges) bridge(batch, a, b);
   if (bridges.length) {
-    // A signpost where the main road comes off the bridge into the farm.
+    // A signpost where the road comes off the big bridge by the fields, and a lamp either side of its farm end.
     const [a, b] = bridges[0];
     const d = new THREE.Vector3().subVectors(b, a).setY(0).normalize();
-    const p = b.clone().addScaledVector(d, 0.35).add(new THREE.Vector3(-d.z, 0, d.x).multiplyScalar(0.62));
+    const side = new THREE.Vector3(-d.z, 0, d.x);
+    const p = b.clone().addScaledVector(d, 0.35).addScaledVector(side, 0.62);
     batch.push(p.x, 0, p.z, Math.atan2(-d.z, d.x) + Math.PI / 2);
     signpost(batch);
     batch.pop();
-    // Lanterns either side of that end of the bridge, their lamps hanging over the road.
-    const side = new THREE.Vector3(-d.z, 0, d.x);
-    for (const s of [1, -1]) {
-      const q = b.clone().addScaledVector(d, -0.05).addScaledVector(side, s * 0.6);
-      addNature(batch, 'PROP_12_LanternPost', [q.x, 0, q.z], 0.32, Math.atan2(s * side.z, -s * side.x));
-    }
+    for (const s of [1, -1]) streetLamp(batch, glow, a.clone().addScaledVector(d, 0.1).addScaledVector(side, s * 0.62).setY(0));
   }
 
-  paddies(batch, rand, L.paddies.map(([u, b]) => {
-    const p = at(u, b);
-    return [p.x, p.z, 1.9, 1.4];
-  }));
-  for (const [a, b, broken] of L.fences) railFence(batch, at(...a), at(...b), '#c98a4b', { height: 0.44, broken });
+  const fc = at(...L.fields);
+  batch.push(fc.x, Math.max(0, groundY(fc.x, fc.z)), fc.z);
+  fields(batch, rand);
+  batch.pop();
 
-  rocksAround(batch, rand, at(6.3, -2.6), 5, 1.2, groundY);
-  rocksAround(batch, rand, at(-1.6, -8.4), 6, 1.6, groundY);
-  reeds(batch, rand, river, riverHalf, groundY, 30, river.pts.length - 40, 9);
+  meadowFence(batch, L.meadow.map(([u, b]) => at(u, b)));
+  place(L.trough, () => trough(batch));
+
+  rocksAround(batch, rand, at(L.mud[0] + 0.5, L.mud[1] - 0.6), 5, 1.2, groundY);
+  riverRocks(batch, rand, { river, riverHalf, groundY, bridges, waterY });
+  lilyPads(batch, rand, { river, riverHalf, bridges, waterY });
+  reeds(batch, rand, river, riverHalf, groundY, waterY, 30, river.pts.length - 40, 9);
+  group.add(buildGlow(glow));
 
   const update = (t, dt) => {
     sails.children[0].rotation.z -= dt * 0.9;

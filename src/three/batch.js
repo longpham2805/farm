@@ -108,3 +108,27 @@ export function gableGeometry() {
   g.computeVertexNormals();
   return g;
 }
+
+const ROOF_BOX = new THREE.BoxGeometry(1, 1, 1);
+
+/**
+ * A gable roof laid in overlapping rows of tiles or shingles: its ridge along x, its eaves at height y and `depth`
+ * apart, rising `rise` to the ridge. The rows take turns among the colours in `tones`, and each lies a little flatter
+ * than the roof, so its lower edge stands proud of the row below.
+ */
+export function shingleRoof(batch, { y, width, depth, rise, tones, ridge, rows = 6 }) {
+  const d = depth / 2;
+  const slant = Math.hypot(d, rise) + 0.06;
+  const angle = Math.atan2(rise, d);
+  const step = slant / rows;
+  for (const s of [1, -1]) {
+    // From the middle of this side of the roof down towards its eave.
+    const down = new THREE.Vector3(0, -Math.sin(angle), s * Math.cos(angle));
+    const middle = new THREE.Vector3(0, y + rise / 2 + 0.03, (s * d) / 2);
+    for (let k = 0; k < rows; k++) {
+      const p = middle.clone().addScaledVector(down, slant / 2 - (k + 0.5) * step);
+      batch.add(ROOF_BOX, tones[k % tones.length], [p.x, p.y, p.z], [width, 0.06, step * 1.3], [s * (angle - 0.08), 0, 0]);
+    }
+  }
+  batch.add(ROOF_BOX, ridge, [0, y + rise + 0.04, 0], [width + 0.04, 0.08, 0.12]);
+}

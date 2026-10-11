@@ -36,7 +36,7 @@ export function natureSize(name) {
 
 /**
  * A model as a vertex-coloured geometry (position, normal, color), `scale` times its size as made.
- * Non-indexed, so every face keeps its own colour; draw it with flatShading. colors: replacements for PALETTE entries.
+ * Non-indexed, so every face keeps its own colour and normal. colors: replacements for PALETTE entries.
  */
 export function natureGeometry(name, scale = 1, colors = {}) {
   const { m, v, t, c } = NATURE_MODELS[name];
@@ -69,9 +69,18 @@ export function natureModel(name, colors = {}) {
   return made.get(key);
 }
 
+/**
+ * Adds a model to a Batch at p, scaled by s (a number or [x, y, z]) and turned by the Euler angles r. It goes in
+ * smooth-shaded, lit by its own face normals: flat shading works the normals out per pixel instead, and on the
+ * thinnest slivers of the flower heads that gives NaN, which the glow spreads into a white haze.
+ */
+export function putNature(batch, name, p, s = 1, r = null, colors) {
+  batch.add(natureModel(name, colors), null, p, s, r, false);
+}
+
 /** Adds a model to a Batch: standing at p, `s` times its size as made and turned `turn` about y. */
 export function addNature(batch, name, p, s = 1, turn = 0, colors) {
-  batch.add(natureModel(name, colors), null, p, s, [0, turn, 0], true);
+  putNature(batch, name, p, s, [0, turn, 0], colors);
 }
 
 /**
@@ -93,7 +102,7 @@ export function railFence(batch, from, to, color, { height = 0.5, broken = [] } 
     posts.push(p);
     if (i === n) break;
     const name = broken.includes(i) ? 'PROP_07_FenceBroken' : 'PROP_05_FenceStraight';
-    batch.add(natureModel(name, colors), null, [p.x, p.y, p.z], [dir.length() / n / 3, s, s], [0, Math.atan2(-dir.z, dir.x), 0], true);
+    putNature(batch, name, [p.x, p.y, p.z], [dir.length() / n / 3, s, s], [0, Math.atan2(-dir.z, dir.x), 0], colors);
   }
   return posts;
 }
@@ -108,7 +117,7 @@ export function steppingStones(batch, path, groundY = () => 0) {
     for (let j = i === 1 ? 0 : 1; j <= n; j++, k++) {
       // A little to either side by turns, and each turned its own way.
       const p = path[i - 1].clone().addScaledVector(dir, j / n).addScaledVector(side, (k % 2 ? 1 : -1) * 0.03);
-      batch.add(natureModel('ROCK_14_SteppingStone'), null, [p.x, groundY(p.x, p.z) - 0.012, p.z], 0.19 + (k % 3) * 0.015, [0, k * 2.1, 0], true);
+      putNature(batch, 'ROCK_14_SteppingStone', [p.x, groundY(p.x, p.z) - 0.012, p.z], 0.19 + (k % 3) * 0.015, [0, k * 2.1, 0]);
     }
   }
 }

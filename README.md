@@ -5,9 +5,11 @@ It is inspired by the farm minigame he loves: a 4×4 field where you plant, wate
 harvest everyday fruits and vegetables, and ripe plants can mutate into rare, glowing
 forms. Every crop also says which vitamins and minerals it has, in words a child understands.
 
-The field sits in a green valley under a smiling sun: dirt roads, a farmhouse, a barn, a silo
-and a windmill, hens, ducks, cows and a water buffalo, rice paddies, a river with a waterfall
-and a wooden bridge, and forests and mountains all around.
+The field sits in a green valley under a smiling sun. A dirt road runs round it, and inside the
+road a fence with lamps, benches, flower beds and fruit trees. Round the road stand a farmhouse,
+a barn, a silo and a windmill, with a meadow of cows and sheep on one side and fields of wheat,
+cabbages and sunflowers over the river on the other. There are hens, ducks, a pig and a water
+buffalo, a river with a waterfall and two wooden bridges, and forests and mountains all around.
 
 Everything is in Vietnamese by default; English can be picked in Settings.
 
@@ -110,22 +112,21 @@ candy crops become fruits of the same tier (see `RENAMED_CROPS`).
 | `src/game/cloud.js`, `src/game/sync.js` | Family-code sync through Firestore, and save codes |
 | `src/three/models.js` | Procedural 3D model for every crop, growth stage and mutation |
 | `src/three/scene.js` | Renderer, camera, lights, effects, picking, zoom and pan |
-| `src/three/farm.js` | The farm in the middle: plots, barn, fences and the frog's pond (recoloured for neighbours) |
+| `src/three/farm.js` | The farm in the middle: plots, barn, the fence with its lamps, benches and flower beds, the frog's pond (recoloured for neighbours), and the shape of the ring road round them |
 | `src/three/countryside.js` | The valley around it: the map, ground, river and waterfall, roads, forest, mountains, clouds |
-| `src/three/buildings.js`, `src/three/animals.js` | Farmhouse, silo, windmill, coop, well, bridge, paddies…; hens, ducks, cows, buffalo, birds |
+| `src/three/buildings.js`, `src/three/animals.js` | Farmhouse, silo, windmill, coops, well, bridges, fields, meadow…; hens, ducks, a pig, cows, sheep, buffalo, birds |
 | `src/three/batch.js` | Merges many small still parts into one mesh, so the valley draws in a few calls |
-| `src/three/trees.js`, `src/three/treeModels.js` | Trees, palms and the fruit trees' crowns from the Low Poly Tree Pack, recoloured in the game's greens; `dev/tree-models.cjs` makes `treeModels.js` from the pack's `.dae` files |
-| `src/three/nature.js`, `src/three/natureModels.js` | Grass, flowers, stones, stumps, logs, fences, the bench, lanterns and signs from Cenji's LowPoly Nature pack, in the game's colours; `dev/nature-models.cjs` makes `natureModels.js` from the pack's `.glb` files |
+| `src/three/trees.js` | Trees built in code: tiered pines, round trees with puffy crowns, birches and bushes, painted light on top and dark underneath |
+| `src/three/nature.js`, `src/three/natureModels.js` | Grass, flowers, stones, boulders, stumps, logs, fences, the bench and signs from Cenji's LowPoly Nature pack, in the game's colours; `dev/nature-models.cjs` makes `natureModels.js` from the pack's `.glb` files |
 | `src/ui/` | HUD, bottom bars and the menus (shop, barn, collection, quests, chests…) |
 | `src/i18n.js` | Vietnamese and English text |
 | `public/` | App manifest and icons; `vite.config.js` writes the offline service worker |
 | `dev/gallery.html` | Shows every crop model (`?mode=thumbs` lists all 148 looks) |
-| `dev/trees.html` | Shows the tree models (`?sheet=pack` in the pack's own colours) |
+| `dev/trees.html` | Shows the trees from `trees.js` |
 | `dev/nature.html` | Shows the nature models (`?pack` in the pack's own colours) |
 | `dev/icons.cjs` | Redraws the app icons from `dev/icon-svg.cjs` |
 | `docs/game-notes.md` | Notes taken from screenshots of the original game |
 
 ## Credits
 
-- Tree and palm models: Low Poly Tree Pack by [Broken Vector](https://twitter.com/Broken_vector).
-- Grass, flowers, stones, stumps, fences, the bench, lanterns and signs: LowPoly Nature Forest Mega Pack (free) by Cenji.
+- Grass, flowers, stones, stumps, fences, the bench and signs: LowPoly Nature Forest Mega Pack (free) by Cenji.

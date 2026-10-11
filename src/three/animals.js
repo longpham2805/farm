@@ -47,13 +47,21 @@ function duck(color, beak) {
   });
 }
 
-/** A Vietnamese water buffalo with curved horns, or a cow. The head nods and the tail swishes. */
-function bovine({ hide = '#5d6168', dark = '#464a50', muzzle = '#80848c', horns: hornSize = 0.13 } = {}) {
+/**
+ * A Vietnamese water buffalo with curved horns, or a cow; `patches` gives it black patches on a white hide.
+ * The head nods and the tail swishes.
+ */
+function bovine({ hide = '#5d6168', dark = '#464a50', muzzle = '#80848c', horns: hornSize = 0.13, patches = null } = {}) {
   const g = new THREE.Group();
   g.add(merged((b) => {
     b.add(BALL, hide, [0, 0.36, 0.02], [0.2, 0.17, 0.34]);
     b.add(BALL, hide, [0, 0.39, -0.17], [0.19, 0.16, 0.2]);
     for (const [x, z] of [[-0.11, 0.18], [0.11, 0.18], [-0.11, -0.22], [0.11, -0.22]]) b.add(CYL, dark, [x, 0.13, z], [0.045, 0.26, 0.045]);
+    if (patches) {
+      for (const [p, s] of [[[0.17, 0.38, 0.06], [0.04, 0.09, 0.13]], [[0.155, 0.34, -0.2], [0.04, 0.08, 0.09]], [[-0.17, 0.4, -0.04], [0.04, 0.08, 0.12]], [[0.03, 0.53, -0.12], [0.1, 0.025, 0.1]], [[-0.13, 0.3, 0.2], [0.04, 0.06, 0.07]]]) {
+        b.add(BALL, patches, p, s);
+      }
+    }
   }));
   const tail = new THREE.Group();
   tail.position.set(0, 0.44, -0.36);
@@ -76,6 +84,56 @@ function bovine({ hide = '#5d6168', dark = '#464a50', muzzle = '#80848c', horns:
   return g;
 }
 
+/** A woolly sheep with a dark face and legs. The head nods. */
+function sheep() {
+  const wool = '#fbf8f0';
+  const face = '#3d3a3a';
+  const g = new THREE.Group();
+  g.add(merged((b) => {
+    for (const [x, y, z, s] of [[0, 0.3, 0, 0.17], [0.09, 0.33, 0.1, 0.12], [-0.09, 0.33, 0.1, 0.12], [0.09, 0.33, -0.1, 0.12], [-0.09, 0.33, -0.1, 0.12], [0, 0.41, 0.02, 0.12], [0, 0.3, 0.17, 0.11], [0, 0.31, -0.17, 0.11]]) {
+      b.add(BALL, wool, [x, y, z], s);
+    }
+    for (const [x, z] of [[-0.07, 0.11], [0.07, 0.11], [-0.07, -0.11], [0.07, -0.11]]) b.add(CYL, face, [x, 0.09, z], [0.025, 0.18, 0.025]);
+  }));
+  const head = merged((b) => {
+    b.add(BALL, face, [0, 0, 0.06], [0.07, 0.08, 0.1]);
+    b.add(BALL, wool, [0, 0.065, 0.03], [0.075, 0.04, 0.065]);
+    for (const s of [-1, 1]) {
+      b.add(BALL, face, [s * 0.08, 0.02, 0.03], [0.045, 0.015, 0.025]);
+      b.add(BALL, '#ffffff', [s * 0.035, 0.02, 0.13], 0.014);
+    }
+  });
+  head.position.set(0, 0.38, 0.2);
+  g.add(head);
+  g.userData.head = head;
+  return g;
+}
+
+/** A pink pig with a curly tail. The head nods. */
+function pig() {
+  const pink = '#ffb3c1';
+  const deep = '#f29aac';
+  const g = new THREE.Group();
+  g.add(merged((b) => {
+    b.add(BALL, pink, [0, 0.2, 0], [0.15, 0.13, 0.22]);
+    for (const [x, z] of [[-0.08, 0.12], [0.08, 0.12], [-0.08, -0.12], [0.08, -0.12]]) b.add(CYL, deep, [x, 0.05, z], [0.03, 0.1, 0.03]);
+    b.add(new THREE.TorusGeometry(0.03, 0.01, 4, 8, Math.PI * 1.5), deep, [0, 0.25, -0.22], 1, [0, Math.PI / 2, 0]);
+  }));
+  const head = merged((b) => {
+    b.add(BALL, pink, [0, 0, 0.05], [0.11, 0.1, 0.1]);
+    b.add(CYL, '#ff9fb0', [0, -0.01, 0.15], [0.045, 0.04, 0.035], [Math.PI / 2, 0, 0]);
+    for (const s of [-1, 1]) {
+      b.add(BALL, '#5a2a3a', [s * 0.015, -0.01, 0.172], 0.008);
+      b.add(CONE, pink, [s * 0.06, 0.09, 0.03], [0.035, 0.06, 0.02], [0.3, 0, s * -0.4]);
+      b.add(BALL, '#1d1d2a', [s * 0.045, 0.03, 0.13], 0.012);
+    }
+  });
+  head.position.set(0, 0.24, 0.2);
+  g.add(head);
+  g.userData.head = head;
+  return g;
+}
+
 function bird() {
   const g = new THREE.Group();
   g.add(merged((b) => b.add(BALL, '#3d3d4a', [0, 0, 0], [0.04, 0.035, 0.09]), false));
@@ -94,10 +152,10 @@ function bird() {
 }
 
 /**
- * map: { layout, at(u, b, y), groundY(x, z), river, riverHalf, waterY, coopYard }
- * coopYard: { center, w, d, turn } of the chicken run in front of the coop.
+ * map: { layout, at(u, b, y), groundY(x, z), river, riverHalf, waterY, coopYard, bridges }
+ * coopYard: { center, w, d, turn } of the chicken run in front of the coop. bridges: [[a, b]] bank to bank.
  */
-export function addAnimals({ layout, at, groundY, river, riverHalf, waterY, coopYard }) {
+export function addAnimals({ layout, at, groundY, river, riverHalf, waterY, coopYard, bridges }) {
   const group = new THREE.Group();
 
   // Hens wander about the run, stopping to peck.
@@ -120,8 +178,8 @@ export function addAnimals({ layout, at, groundY, river, riverHalf, waterY, coop
     return h;
   });
 
-  // A mother duck and her ducklings paddle up and down the river above the bridge.
-  const bridgeAt = at(4.2, -5.0);
+  // A mother duck and her ducklings paddle up and down the river above the big bridge.
+  const bridgeAt = bridges.length ? bridges[0][0].clone().lerp(bridges[0][1], 0.5) : at(0, -8.5);
   const i0 = river.nearest(bridgeAt.x, bridgeAt.z).i;
   const swim = { from: Math.max(2, i0 - 42), to: Math.max(4, i0 - 9) };
   const ducks = [duck('#ffffff', '#ff9f2e'), duck('#ffe066', '#ff9f2e'), duck('#ffe066', '#ff9f2e'), duck('#ffe066', '#ff9f2e')];
@@ -137,15 +195,17 @@ export function addAnimals({ layout, at, groundY, river, riverHalf, waterY, coop
     return p.add(new THREE.Vector3(-dir.z, 0, dir.x).multiplyScalar(sway * riverHalf(i) * 0.4));
   };
 
-  // A water buffalo and her calf grazing by the river, and two cows in the meadow.
-  const cow = { hide: '#d29a5c', dark: '#a8713f', muzzle: '#f1dcc0', horns: 0.07 };
+  // A water buffalo and her calf grazing by the river, black and white cows and sheep in the meadow, and a pig in the farm.
+  const cow = { hide: '#ffffff', dark: '#3a3a40', muzzle: '#f4c0b8', horns: 0.06, patches: '#2b2b30' };
   const [bu, bb, bturn] = layout.buffalo;
   const herd = [
-    [{}, bu, bb, bturn, 1],
-    [{}, bu - 0.75, bb + 0.45, bturn + 0.9, 0.6],
-    ...layout.cows.map(([u, b, turn]) => [cow, u, b, turn, 0.92]),
-  ].map(([look, u, b, turn, size], k) => {
-    const h = bovine(look);
+    [() => bovine(), bu, bb, bturn, 1],
+    [() => bovine(), ...layout.calf, 0.6],
+    ...layout.cows.map(([u, b, turn]) => [() => bovine(cow), u, b, turn, 0.92]),
+    ...layout.sheep.map(([u, b, turn]) => [sheep, u, b, turn, 1]),
+    [pig, ...layout.pig, 1],
+  ].map(([make, u, b, turn, size], k) => {
+    const h = make();
     const p = at(u, b);
     h.position.set(p.x, Math.max(0, groundY(p.x, p.z)), p.z);
     h.rotation.y = Math.PI / 4 + turn;
@@ -156,7 +216,7 @@ export function addAnimals({ layout, at, groundY, river, riverHalf, waterY, coop
   });
 
   // Birds circling high over the hills behind the farm.
-  const centre = at(0, 8.5, 3.8);
+  const centre = at(0, 9.4, 3.8);
   const birds = [0, 1, 2].map((k) => {
     const b = bird();
     b.userData.phase = k * 0.5;
@@ -202,7 +262,7 @@ export function addAnimals({ layout, at, groundY, river, riverHalf, waterY, coop
     for (const h of herd) {
       const ph = h.userData.phase;
       h.userData.head.rotation.x = 0.35 + 0.38 * Math.sin(t * 0.55 + ph);
-      h.userData.tail.rotation.z = 0.35 * Math.sin(t * 2.1 + ph);
+      if (h.userData.tail) h.userData.tail.rotation.z = 0.35 * Math.sin(t * 2.1 + ph);
     }
 
     for (const b of birds) {

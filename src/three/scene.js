@@ -5,7 +5,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { buildFarm, plotCenter, SOIL_TOP, PLANT_SCALE, butterfly } from './farm.js';
-import { buildCountryside, VIEW_BOUNDS, at } from './countryside.js';
+import { buildCountryside, VIEW_BOUNDS, SHADOW_BOX, SUN_DIR, at } from './countryside.js';
 import { buildPlant } from './models.js';
 import { updateRainbow } from './materials.js';
 import { glowTexture, starTexture, skyTexture, ringTexture, sunRaysTexture, sunFaceTexture } from './textures.js';
@@ -25,7 +25,7 @@ const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 const easeInCubic = (t) => t * t * t;
 
 export const HOME_THEME = {
-  grass: '#86d460', grassDark: '#5fb346', fence: '#c98a4b', barn: '#ef6461', roof: '#8a4b3a',
+  grass: '#86d460', grassDark: '#5fb346', fence: '#c98a4b', barn: '#ef6461', roof: '#a35f3c',
 };
 
 export function npcTheme(npc) {
@@ -72,15 +72,17 @@ export class FarmScene {
     this.camera.position.copy(CAM_DIR).multiplyScalar(30);
     this.camera.lookAt(0, 0, 0);
 
-    scene.add(new THREE.HemisphereLight('#fff6dc', '#86a85a', 1.2));
-    const sun = new THREE.DirectionalLight('#fff0c4', 2.4);
-    sun.position.set(3.5, 9, -1.2);
+    // Cool light from the sky fills the shaded sides; the warm sun shines from the upper left, like the sun in the
+    // sky, so the sides of things facing right fall into shade and shadows fall to the right.
+    scene.add(new THREE.HemisphereLight('#e4eeff', '#7b9a4a', 0.8));
+    const sun = new THREE.DirectionalLight('#ffe2a4', 3.2);
+    sun.position.copy(SUN_DIR).multiplyScalar(12);
     sun.castShadow = true;
     // Shadows cover the farm and the buildings round it; the far valley does without.
-    sun.shadow.camera.left = -8;
-    sun.shadow.camera.right = 8;
-    sun.shadow.camera.top = 8;
-    sun.shadow.camera.bottom = -8;
+    sun.shadow.camera.left = -SHADOW_BOX;
+    sun.shadow.camera.right = SHADOW_BOX;
+    sun.shadow.camera.top = SHADOW_BOX;
+    sun.shadow.camera.bottom = -SHADOW_BOX;
     sun.shadow.camera.near = 1;
     sun.shadow.camera.far = 25;
     sun.shadow.bias = -0.0006;
@@ -151,7 +153,7 @@ export class FarmScene {
     this.quality = q;
     const high = q === 'high';
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, high ? 2 : 1.25));
-    // The shadow box is 16 units wide: this many texels keep shadow edges as crisp as on the old, smaller island.
+    // The shadow box is 20 units wide (SHADOW_BOX): about 150 texels a unit on "Đẹp", 75 on "Nhanh".
     const shadowSize = Math.min(high ? 3072 : 1536, this.renderer.capabilities.maxTextureSize);
     this.sun.shadow.mapSize.set(shadowSize, shadowSize);
     if (this.sun.shadow.map) {
@@ -199,7 +201,7 @@ export class FarmScene {
   viewSize() {
     const aspect = this.width / this.height;
     const portrait = aspect < 0.8;
-    const baseH = Math.max(8.0, (portrait ? 8.6 : 12.0) / aspect);
+    const baseH = Math.max(8.8, (portrait ? 8.6 : 12.0) / aspect);
     const viewH = baseH / this.zoom;
     return { aspect, baseH, viewH, viewW: viewH * aspect, shiftY: (portrait ? 0.03 : 0.05) * baseH };
   }
