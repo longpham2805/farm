@@ -14,7 +14,8 @@ is left to do, is in [docs/redesign.md](../../docs/redesign.md).
 | `layout-marks.json` | The layout's shapes in pixels: forest areas, ring road, roads, river, falls, building pads, rocks, and named marks with their map (u, b). |
 | `layout-annotated.png` | The layout (old colours) with a u grid and the named marks, for matching coordinates by eye. |
 | `prompt.txt` | How to ask an image model for the painting, and what to reply when it strays. |
-| `painted-v1.webp` | The first painting (1536×1024). The game loads it upscaled ×4 and cut into tiles, in `public/backdrop/`. |
+| `painted-v1.webp` | The first painting (1536×1024), as the image model made it. |
+| `painted-v1-fixed.webp` | The same, mended by `fix-v1.py` (the meadow and the small fall). The game loads it upscaled ×4 and cut into tiles, in `public/backdrop/`. |
 
 ## Coordinates
 
@@ -32,7 +33,11 @@ The scripts need Python 3 with numpy, scipy and Pillow. Run them from this folde
 1. **Layout.** `python3 recolor-layout.py` remakes `1-layout.png` from `layout-v1.png`. To keep a boulder cluster in
    the painting, add its index (in `layout-marks.json`'s `rocks`) to `KEEP_ROCKS`.
 2. **Painting.** Give the image model `1-layout.png` then `2-style-reference.png`, and paste the prompt from
-   `prompt.txt`. Save the result here as `painted-vN.webp`.
+   `prompt.txt`. Save the result here as `painted-vN.webp`. Mend what it got wrong in a script of its own, as
+   `fix-v1.py` does for v1 (`python3 fix-v1.py painted-v1.webp painted-v1-fixed.webp`), and use the mended picture
+   from here on. Where it painted things somewhere else than the layout, change `src/three/valleyMap.js` to follow
+   the painting: the 3D things are placed from it. `python3 map-overlay.py painted-vN.webp overlay.png [x0,y0,x1,y1]`
+   draws the map over the painting with a grid of map units, to check (run it after step 6, which sets `BACKDROP`).
 3. **Upscaling.** At 1536 px wide the painting has about 42 px per world unit, while a phone needs about 90 at zoom 1
    and a retina desktop about 200. Upscale it ×4 with the Upscayl app's "Digital Art" model (Real-ESRGAN; it kept the
    edges cleaner than "Standard" and "High Fidelity" on v1). The app has a command line inside; the result is too big
