@@ -8,6 +8,7 @@ import { worldMat } from './materials.js';
 import { Batch, gableGeometry, shingleRoof } from './batch.js';
 import { addNature, railFence, steppingStones } from './nature.js';
 import { seeded } from '../util.js';
+import { RING } from './valleyMap.js';
 
 export const SPACING = 1.32;
 export const PLOT = 1.16;
@@ -29,22 +30,24 @@ function m(geometry, material, p, s = 1, r = null, shadow = true) {
 }
 
 // ── The ring road ───────────────────────────────────────────────
-// countryside.js lays the road and the farm fences its inside. The ring is square to the plots, so on screen it
-// is a big diamond round them like a plot, with rounded corners at the back, the front and either side. The map
-// places things in units u across the screen and b up it (see xz in countryside.js).
-
-/** The ring road's middle line: a square `half` from the middle to each side, its corners rounded to `corner`. */
-export const RING = { half: 5.35, corner: 1.3 };
+// countryside.js lays the road and the farm fences its inside. The ring (RING in valleyMap.js) is square to the
+// plots, so on screen it is a big diamond round them like a plot; its back and front corners are rounded almost to
+// half circles, the left and right ones only a little. The map places things in units u across the screen and b up
+// it (see xz in countryside.js).
 
 const toWorld = (u, b) => [(u - b) * S, -(u + b) * S];
 const toMap = (x, z) => [(x - z) * S, -(x + z) * S];
 
+// The corner in each quarter of the world's x-z plane: back is -x -z (top of the screen), front +x +z, left -x +z.
+const cornerAt = (x, z) => RING.corners[x > 0 ? (z > 0 ? 'front' : 'right') : z > 0 ? 'left' : 'back'];
+
 /** How far a map point [u, b] is outside the ring road's middle line (negative inside). */
 export function ringDistance(u, b) {
   const [x, z] = toWorld(u, b);
-  const qx = Math.abs(x) - (RING.half - RING.corner);
-  const qz = Math.abs(z) - (RING.half - RING.corner);
-  return Math.hypot(Math.max(qx, 0), Math.max(qz, 0)) + Math.min(Math.max(qx, qz), 0) - RING.corner;
+  const r = cornerAt(x, z);
+  const qx = Math.abs(x) - (RING.half - r);
+  const qz = Math.abs(z) - (RING.half - r);
+  return Math.hypot(Math.max(qx, 0), Math.max(qz, 0)) + Math.min(Math.max(qx, qz), 0) - r;
 }
 
 /**
@@ -64,39 +67,43 @@ export function ringAt(a, inset = 0) {
 
 /** Points about `step` apart all round the ring `inset` in from the road's middle, as [u, b]. */
 export function ringPath(inset = 0, step = 0.3) {
-  const c = RING.half - RING.corner;
+  const { back, front, left, right } = RING.corners;
   const h = RING.half - inset;
-  const r = RING.corner - inset;
+  // Each corner's curve: its centre's distance out along both axes, and its radius.
+  const c = (r) => RING.half - r;
   const out = [];
   const line = (x0, z0, x1, z1) => {
     const n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, z1 - z0) / step));
     for (let k = 0; k < n; k++) out.push(toMap(x0 + ((x1 - x0) * k) / n, z0 + ((z1 - z0) * k) / n));
   };
-  // A quarter of a circle round (cx, cz), from angle a in the world's x-z plane on to a - π/2.
-  const arc = (cx, cz, a) => {
+  // A quarter of a circle of radius r0 - inset round (cx, cz), from angle a in the world's x-z plane on to a - π/2.
+  const arc = (cx, cz, r0, a) => {
+    const r = r0 - inset;
     const n = Math.max(2, Math.ceil((r * Math.PI) / 2 / step));
     for (let k = 0; k < n; k++) out.push(toMap(cx + r * Math.cos(a - (Math.PI / 2) * (k / n)), cz + r * Math.sin(a - (Math.PI / 2) * (k / n))));
   };
-  line(-h, -c, -h, c);
-  arc(-c, c, Math.PI);
-  line(-c, h, c, h);
-  arc(c, c, Math.PI / 2);
-  line(h, c, h, -c);
-  arc(c, -c, 0);
-  line(c, -h, -c, -h);
-  arc(-c, -c, -Math.PI / 2);
+  line(-h, -c(back), -h, c(left));
+  arc(-c(left), c(left), left, Math.PI);
+  line(-c(left), h, c(front), h);
+  arc(c(front), c(front), front, Math.PI / 2);
+  line(h, c(front), h, -c(right));
+  arc(c(right), -c(right), right, 0);
+  line(c(right), -h, -c(back), -h);
+  arc(-c(back), -c(back), back, -Math.PI / 2);
   return out;
 }
 
 /**
- * The ring's four straight sides `inset` in from the road's middle, each stopping `margin` short of the corners:
- * world [from, to] pairs, from the back left side (top left on screen) round by the front.
+ * The straight stretches of the ring's four sides `inset` in from the road's middle, each stopping `margin` short of
+ * the corners' curves: world [from, to] pairs, from the back left side (top left on screen) round by the front.
  */
 function ringSides(inset, margin) {
-  const e = RING.half - RING.corner - margin;
+  const { back, front, left, right } = RING.corners;
+  const e = (r) => RING.half - r - margin;
   const h = RING.half - inset;
-  return [[-h, -e, -h, e], [-e, h, e, h], [h, e, h, -e], [e, -h, -e, -h]]
-    .map(([x0, z0, x1, z1]) => [new THREE.Vector3(x0, 0, z0), new THREE.Vector3(x1, 0, z1)]);
+  return [[-h, -e(back), -h, e(left)], [-e(left), h, e(front), h], [h, e(front), h, -e(right)], [e(right), -h, -e(back), -h]]
+    .map(([x0, z0, x1, z1]) => [new THREE.Vector3(x0, 0, z0), new THREE.Vector3(x1, 0, z1)])
+    .filter(([from, to]) => from.distanceTo(to) > 0.6);
 }
 
 // The fence stands this far in from the road's middle, open at the four corners: each run stops GATE short of the
@@ -109,8 +116,8 @@ export const BARN_SPOT = [0, 8.3];
 const BARN_SIZE = 1.5;
 
 const BARN_AT = toWorld(...BARN_SPOT);
-// The frog's pond, just inside the front corner: world x, z.
-const POND = [3.65, 3.65];
+// The frog's pond, inside the front right side: world x, z.
+const POND = [3.58, 1.13];
 /** Where the pond and the barn stand: [x, z, radius] spots the valley's grass and flowers keep off. */
 export const FARM_CLEAR = [[POND[0], POND[1], 0.8], [BARN_AT[0], BARN_AT[1], 1.5]];
 
@@ -326,7 +333,10 @@ export function buildFarm(theme) {
   let color = FLOWER_COLORS[0];
   let k = 0;
   for (const [from, to] of ringSides(FENCE + 0.27, GATE + 0.2)) {
-    const inward = from.clone().add(to).normalize().negate();
+    // Square to the side, towards the plots.
+    const along = to.clone().sub(from).normalize();
+    const inward = new THREE.Vector3(along.z, 0, -along.x);
+    if (inward.dot(from) > 0) inward.negate();
     const n = Math.round(from.distanceTo(to) / 0.17);
     for (let j = 0; j <= n; j++, k++) {
       if (k % 4 === 0) color = FLOWER_COLORS[Math.floor(rand() * FLOWER_COLORS.length)];
@@ -374,11 +384,11 @@ export function buildFarm(theme) {
   addNature(flowers, 'PLANT_03_GrassTall', rim(5.0, 1.35), 0.32, 1);
   addNature(flowers, 'PLANT_03_GrassTall', rim(5.4, 1.4), 0.26, 2.5);
   addNature(flowers, 'FLOWER_04_BlueBells', rim(2.2, 1.45), 0.36, 2);
-  // Stepping stones from the pond out through the front corner to the road.
-  steppingStones(deco, [new THREE.Vector3(px + 0.42, 0, pz + 0.42), new THREE.Vector3(4.65, 0, 4.65)]);
+  // Stepping stones from the pond out to the road.
+  steppingStones(deco, [new THREE.Vector3(px + 0.55, 0, pz + 0.12), new THREE.Vector3(4.75, 0, pz + 0.3)]);
 
   // rocks about the grass, each with a tuft beside it
-  for (const [name, x, z, s, turn] of [['ROCK_07_ClusterSmall', 3.9, 1.3, 0.2, 0.6], ['ROCK_02_Medium', -3.95, 0.45, 0.2, 2.2], ['ROCK_01_Small', -0.9, -3.9, 0.32, 4.0]]) {
+  for (const [name, x, z, s, turn] of [['ROCK_07_ClusterSmall', 2.0, 3.95, 0.2, 0.6], ['ROCK_02_Medium', -3.95, 0.45, 0.2, 2.2], ['ROCK_01_Small', -0.9, -3.9, 0.32, 4.0]]) {
     addNature(deco, name, [x, 0, z], s, turn);
     tuft(x + 0.16, z + 0.08, 0.25);
   }

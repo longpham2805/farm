@@ -227,7 +227,8 @@ export class FarmScene {
   }
 
   setZoom(z) {
-    this.zoom = Math.min(2.4, Math.max(this.minZoom(), z));
+    // Past 1.6 the painted backdrop would show its pixels.
+    this.zoom = Math.min(1.6, Math.max(this.minZoom(), z));
     this.clampPan();
     this.applyView();
   }

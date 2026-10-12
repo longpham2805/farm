@@ -10,6 +10,8 @@ import { glowTexture } from './textures.js';
 import { pineTree, roundTree, birchTree, bush, LEAVES, YELLOW_LEAVES, DEEP_LEAVES, PINE_NEEDLES, FRESH_PINE } from './trees.js';
 import { putNature, natureSize, railFence } from './nature.js';
 import { seeded } from '../util.js';
+import { buildBackdrop, backdropBounds } from './backdrop.js';
+import { RIVER as RIVER_MAP, WATER_Y as MAP_WATER_Y, CHANNEL, ROCKY_BANKS, LAND, FOREST, WATERFALLS } from './valleyMap.js';
 
 const S = Math.SQRT1_2;
 const TAU = Math.PI * 2;
@@ -25,8 +27,8 @@ export const at = (u, b, y = 0) => {
 };
 const toUB = (x, z) => [(x - z) * S, -(x + z) * S];
 
-/** How far the player can look around, in screen units: u across, up the screen. */
-export const VIEW_BOUNDS = { left: -17, right: 17, bottom: -13.5, top: 16.5 };
+/** How far the player can look around, in screen units: u across, up the screen. It is the painted backdrop's frame. */
+export const VIEW_BOUNDS = backdropBounds();
 
 /** Where the sun shines from: up and to the left on screen, a little towards the camera. */
 export const SUN_DIR = new THREE.Vector3(-0.414, 1.11, 0.91).normalize();
@@ -62,14 +64,8 @@ const smooth = (e0, e1, x) => {
 // Everything is placed in (u, b) map units. The plots are the diamond |u| + |b| < 3.7; the ring road round them
 // (RING in farm.js) is square to them, so it makes a bigger diamond with rounded corners about 7 out.
 
-// From the waterfall at the foot of the mountains, past the ring road's right corner, along its front right side
-// and round its front corner, then away to the left.
-const RIVER = [
-  [9.42, 10.12], [9.4, 7.56], [9.82, 5.02], [10.33, 2.12], [9.9, 0], [8.84, -2.05], [6.52, -4.4], [4.59, -6.29],
-  [2.02, -8.38], [-0.21, -9.12], [-2.7, -9.2], [-6.42, -9.92], [-9.62, -11.32], [-12.82, -13.42], [-15.82, -16.22],
-  [-19.42, -18.92], [-26.42, -21.92], [-34.85, -24],
-];
-const RIVER_HALF = 0.8;
+// The river's course, from the foot of the waterfall to where it leaves the valley (RIVER in valleyMap.js).
+const RIVER = RIVER_MAP.map(([u, b]) => [u, b]);
 
 // The roads off the ring road, each from where it leaves the ring (see ringAt in farm.js).
 const ROADS = [
@@ -82,6 +78,10 @@ const ROADS = [
   // From its front left side down along the river.
   [ringAt(-2.85), [-7.42, -3.02], [-9.42, -4.82], [-11.62, -7.02], [-13.92, -9.82], [-17.92, -14.32]],
 ];
+
+// While the valley is rebuilt step by step to the reference design, the old scenery is switched off here. Each step
+// that rewrites a part turns it back on (or deletes the old code and its flag).
+const STAGE = { forest: false, groundCover: false, roadside: false, riverRocks: false, painted: true };
 
 const FACE_SIDE = Math.PI / 4; // added to the face-the-camera angle, turns a front to face the ring's back left side
 
@@ -175,14 +175,17 @@ function farmEdge(u, b) {
 // ── Paths ───────────────────────────────────────────────────────
 
 class Path {
-  /** closed: the path comes back round to its start, whose point it repeats at the end of pts. */
-  constructor(points, step = 0.15, closed = false) {
+  /**
+   * closed: the path comes back round to its start, whose point it repeats at the end of pts.
+   * cell: nearest() is exact up to this far from the path.
+   */
+  constructor(points, step = 0.15, closed = false, cell = 3) {
     this.closed = closed;
     this.curve = new THREE.CatmullRomCurve3(points.map(([u, b]) => at(u, b)), closed, 'centripetal');
     this.length = this.curve.getLength();
     this.pts = this.curve.getSpacedPoints(Math.ceil(this.length / step));
     this.step = this.length / (this.pts.length - 1);
-    this.cell = 3;
+    this.cell = cell;
     this.grid = new Map();
     this.pts.forEach((p, i) => {
       const k = this.key(Math.floor(p.x / this.cell), Math.floor(p.z / this.cell));
@@ -195,7 +198,7 @@ class Path {
     return cx * 10007 + cz;
   }
 
-  /** Nearest sample to (x, z): { d, i }. Exact up to 3 units away; farther returns d = Infinity. */
+  /** Nearest sample to (x, z): { d, i }. Exact up to `cell` away; farther may return d = Infinity. */
   nearest(x, z) {
     let best = Infinity;
     let bi = -1;
@@ -227,9 +230,37 @@ class Path {
   }
 }
 
-const river = new Path(RIVER);
-// Wider at the waterfall's pool.
-const riverHalf = (i) => RIVER_HALF + 0.55 * smooth(14, 0, i) + 0.08 * Math.sin(i * 0.05);
+const river = new Path(RIVER, 0.15, false, 5);
+// Half the river's width at each sample, eased between the widths the map gives at its points.
+const riverHalves = river.pts.map((p) => {
+  const [u, b] = toUB(p.x, p.z);
+  let best = Infinity;
+  let half = RIVER_MAP[0][2];
+  for (let k = 1; k < RIVER_MAP.length; k++) {
+    const [u0, b0, w0] = RIVER_MAP[k - 1];
+    const [u1, b1, w1] = RIVER_MAP[k];
+    const du = u1 - u0;
+    const db = b1 - b0;
+    const t = Math.max(0, Math.min(1, ((u - u0) * du + (b - b0) * db) / (du * du + db * db)));
+    const d = Math.hypot(u - u0 - du * t, b - b0 - db * t);
+    if (d < best) {
+      best = d;
+      half = w0 + (w1 - w0) * smooth(0, 1, t);
+    }
+  }
+  return half;
+});
+const riverHalf = (i) => riverHalves[i] + 0.05 * Math.sin(i * 0.05);
+
+/** Which bank of the river world point (x, z) is on, as seen from sample i: 1 or -1, the way bank offsets go. */
+function riverSide(i, x, z) {
+  const { p, dir } = river.frame(i);
+  return (z - p.z) * dir.x - (x - p.x) * dir.z >= 0 ? 1 : -1;
+}
+/** Height of the grassy lip of bank s at sample i, wandering between the bounds in CHANNEL. */
+const lipHeight = (i, s) => CHANNEL.lip[0] + (CHANNEL.lip[1] - CHANNEL.lip[0]) * smooth(0.25, 0.75, noise(i * 0.035 + (s > 0 ? 11 : 37), 2.1));
+/** How far the lip of bank s is from the river's middle at sample i. */
+const lipOffset = (i, s) => riverHalf(i) + CHANNEL.face + (noise(i * 0.05 + s * 5.3, 7.7) - 0.5) * 0.3;
 // The ring road round the farm first, then the roads off it.
 const roads = [
   new Path(ringPath(0, 0.35), 0.2, true),
@@ -238,56 +269,106 @@ const roads = [
 
 // ── Ground ──────────────────────────────────────────────────────
 
-const GRID = { u0: -23, u1: 23, b0: -30, b1: 13.5, step: 0.33 };
+const GRID = { u0: -23, u1: 23, b0: -30, b1: 27, step: 0.25 };
 const NU = Math.round((GRID.u1 - GRID.u0) / GRID.step) + 1;
 const NB = Math.round((GRID.b1 - GRID.b0) / GRID.step) + 1;
-const WATER_Y = -0.32;
+const WATER_Y = MAP_WATER_Y;
 
-// Behind the farm the land climbs in two steps with steep rocky faces, each wavering along its length:
-// [how far back its face is, how high it climbs, how much it wavers].
-const RISES = [[10.07, 0.75, 1], [11.57, 0.7, 1.4]];
-const riseWave = (u, k) => (noise(u * 0.3 + 3, 1.7) - 0.5) * 0.9 * k;
-
-/** Height of the land before the river is cut in. */
-function landHeight(u, b) {
-  const out = farmEdge(u, b);
-  let h = out > 0 ? smooth(0, 6, out) * (0.25 + 1.3 * fbm(u * 0.15 + 3, b * 0.15 + 7)) : 0;
-  // The feet of the mountains.
-  h += smooth(11.8, 14.5, b) * (1.2 + 1.0 * fbm(u * 0.2, b * 0.2));
-  for (const [cu, cb, r] of CLEARINGS) {
-    const d = Math.abs(u - cu) + Math.abs(b - cb);
-    if (d < r + 2.5) h *= smooth(r, r + 2.5, Math.hypot(u - cu, b - cb));
+/** Whether map point (u, b) is inside a [[u, b], …] polygon. */
+function inPoly(poly, u, b) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [ui, bi] = poly[i];
+    const [uj, bj] = poly[j];
+    if (bi > b !== bj > b && u < ((uj - ui) * (b - bi)) / (bj - bi) + ui) inside = !inside;
   }
-  for (const [face, rise, k] of RISES) h += rise * smooth(face - 0.1, face + 0.1, b + riseWave(u, k));
+  return inside;
+}
+
+/** How far map point (u, b) is from the nearest edge of a polygon. */
+function polyEdge(poly, u, b) {
+  let best = Infinity;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [u0, b0] = poly[j];
+    const du = poly[i][0] - u0;
+    const db = poly[i][1] - b0;
+    const t = Math.max(0, Math.min(1, ((u - u0) * du + (b - b0) * db) / (du * du + db * db)));
+    best = Math.min(best, Math.hypot(u - u0 - du * t, b - b0 - db * t));
+  }
+  return best;
+}
+
+/** How far inside any of the polygons (u, b) is: 0 outside them. */
+const depthIn = (polys, u, b) => Math.max(0, ...polys.map((poly) => (inPoly(poly, u, b) ? polyEdge(poly, u, b) : 0)));
+
+/** 1 on top of the cliff round the waterfall, easing to 0 at the foot of its face. */
+function onCliff(u, b) {
+  const { poly, edge, height, wobble } = LAND.cliff;
+  const d = (inPoly(poly, u, b) ? -1 : 1) * polyEdge(poly, u, b) + (noise(u * 0.7 + height * 5, b * 0.7 + 1.3) - 0.5) * 2 * wobble;
+  return 1 - smooth(0, edge, d);
+}
+
+/**
+ * Height of the land before the river is cut in (LAND in valleyMap.js): level round the farm, climbing into hills at
+ * the back, the left and the front, rolling in low mounds under the forest, with the cliff round the waterfall and a
+ * low ledge along the far bank.
+ */
+function landHeight(u, b) {
+  let h = 0;
+  for (const L of Object.values(LAND)) {
+    if (L.kind === 'ramp') {
+      const [a, o] = L.along === 'b' ? [b, u] : [u, b];
+      // Fading out over a few steps past either end of its stretch.
+      const span = smooth(L.within[0] - 3, L.within[0], o) * smooth(L.within[1] + 3, L.within[1], o);
+      if (span <= 0) continue;
+      // The foot of each slope wanders, and the hills swell and dip along it.
+      const t = smooth(L.from, L.to, a + (noise(o * 0.22 + L.from, 3.3) - 0.5) * 2.4);
+      if (t <= 0 && L.h0 > 0) continue;
+      h = Math.max(h, (L.h0 + (L.h1 - L.h0) * t) * span * (0.8 + 0.45 * fbm(u * 0.18 + 2, b * 0.18 + 5)));
+    } else {
+      // The edge wanders in and out, so the shelf does not look cut with a ruler.
+      const wobble = (noise(u * 0.7 + L.height * 5, b * 0.7 + 1.3) - 0.5) * 2 * L.wobble;
+      const d = (inPoly(L.poly, u, b) ? -1 : 1) * polyEdge(L.poly, u, b) + wobble;
+      h = Math.max(h, L.height * (1 - smooth(0, L.edge, d)));
+    }
+  }
+  h += smooth(0, 3, depthIn(FOREST.dense, u, b)) * 0.6 * fbm(u * 0.35 + 9, b * 0.35 + 4);
+  h += smooth(0, 2, depthIn(FOREST.medium, u, b)) * 0.3 * fbm(u * 0.4 + 1, b * 0.4 + 8);
   return h;
 }
 
 /**
- * Cuts the river's bed into the land: level grass right to the water's edge, a sheer drop there (faced with earth by
- * buildBanks) and the bed shelving deeper.
+ * Cuts the river's channel into the land (CHANNEL in valleyMap.js). Outside the lip of each bank the ground dips gently
+ * towards it; inside, under the steep face that buildBankFaces stands there, it drops away to the bed. The farm inside
+ * the ring and the cliff round the waterfall stand untouched.
+ * Returns the height and how close the point is to a bank's lip (1 at the lip): the ground there stays grassy, as its
+ * steep drop is hidden under the bank's face.
  */
-function cutRiver(h, x, z) {
+function cutRiver(h, u, b) {
+  const [x, z] = xz(u, b);
   const { d, i } = river.nearest(x, z);
-  if (d === Infinity) return { h, wet: 0 };
-  const w = riverHalf(i);
-  const out = d - w; // from the water's edge, outwards
-  const bank = 0.6 * Math.max(0, out - 0.1) - 0.42 * smooth(0.1, -0.02, out) - 0.15 * smooth(-0.1, -0.6, out);
-  return { h: Math.min(h, bank), wet: smooth(w + 0.3, w + 0.1, d) };
+  if (d === Infinity) return { h, lip: 0 };
+  const s = riverSide(i, x, z);
+  const top = lipHeight(i, s);
+  const out = d - lipOffset(i, s); // from the lip, outwards
+  let cut;
+  if (out >= 0) cut = Math.min(h, top + 0.1 * out + 0.05 * out * out);
+  else if (out > -0.25) cut = top + (top - WATER_Y) * 1.8 * out; // just under the face's top, below it
+  else cut = WATER_Y - CHANNEL.bed;
+  cut = Math.min(h, cut);
+  const keep = Math.max(smooth(0.5, 0.9, onCliff(u, b)), smooth(-0.4, -1.2, ringDistance(u, b)));
+  return { h: cut + (h - cut) * keep, lip: smooth(0.45, 0, Math.abs(out)) };
 }
 
-/** Whether a map point is on or near the face of one of the rises, `margin` either side of it. */
-const onRise = (u, b, margin) => RISES.some(([face, , k]) => Math.abs(b + riseWave(u, k) - face) < margin);
-
 const heights = new Float32Array(NU * NB);
-const wetness = new Float32Array(NU * NB);
+const lipness = new Float32Array(NU * NB);
 for (let j = 0; j < NB; j++) {
   for (let i = 0; i < NU; i++) {
     const u = GRID.u0 + i * GRID.step;
     const b = GRID.b0 + j * GRID.step;
-    const [x, z] = xz(u, b);
-    const r = cutRiver(landHeight(u, b), x, z);
+    const r = cutRiver(landHeight(u, b), u, b);
     heights[j * NU + i] = r.h;
-    wetness[j * NU + i] = r.wet;
+    lipness[j * NU + i] = r.lip;
   }
 }
 
@@ -304,6 +385,9 @@ export function groundY(x, z) {
   if (tu + tb <= 1) return h(0, 0) + (h(1, 0) - h(0, 0)) * tu + (h(0, 1) - h(0, 0)) * tb;
   return h(1, 1) + (h(0, 1) - h(1, 1)) * (1 - tu) + (h(1, 0) - h(1, 1)) * (1 - tb);
 }
+
+/** How steep the drawn ground is at world (x, z): rise over run. */
+const slopeAt = (x, z) => Math.hypot(groundY(x + 0.2, z) - groundY(x - 0.2, z), groundY(x, z + 0.2) - groundY(x, z - 0.2)) / 0.4;
 
 /** Builds the ground, darkened in [x, z, radius] spots under the trees. */
 function buildGround(shadeSpots) {
@@ -325,16 +409,19 @@ function buildGround(shadeSpots) {
       }
     }
   }
-  const light = new THREE.Color('#8ad25a');
-  const deep = new THREE.Color('#6cbd4a');
-  const meadow = new THREE.Color('#b4d85c');
-  const hill = new THREE.Color('#559e42');
-  const sand = new THREE.Color('#e3c98f');
-  const mud = new THREE.Color('#a98d5f');
-  const under = new THREE.Color('#3b7a33');
-  const rock = new THREE.Color('#a29d93');
+  // The design's greens: bright round the farm, plainer out on the meadows, forest green up the hills and darker
+  // still on the forest floor, with sunny yellow-green patches in the open.
+  const farm = new THREE.Color('#91cd45');
+  const meadow = new THREE.Color('#75b936');
+  const sunny = new THREE.Color('#a4d84d');
+  const hill = new THREE.Color('#5a9d30');
+  const floor = new THREE.Color('#367d35');
+  const under = new THREE.Color('#2f6d2e');
+  const trodden = new THREE.Color('#c2b46a');
+  const mud = new THREE.Color('#9c8458');
+  const rock = new THREE.Color('#a4a098');
   const earth = new THREE.Color('#9b8261');
-  const trodden = new THREE.Color('#b9b56a');
+  const dark = new THREE.Color('#625f53');
   const cliff = new THREE.Color();
   const c = new THREE.Color();
   for (let j = 0; j < NB; j++) {
@@ -344,25 +431,26 @@ function buildGround(shadeSpots) {
       const b = GRID.b0 + j * GRID.step;
       const [x, z] = xz(u, b);
       const h = heights[k];
-      // How steep the ground is here: the faces of the rises and the river banks show bare rock and earth.
+      // How steep the ground is here: the cliff, the ledge and the river banks show bare rock and earth.
       const hu = heights[j * NU + Math.min(NU - 1, i + 1)] - heights[j * NU + Math.max(0, i - 1)];
       const hb = heights[Math.min(NB - 1, j + 1) * NU + i] - heights[Math.max(0, j - 1) * NU + i];
       const slope = Math.hypot(hu, hb) / (2 * GRID.step);
       pos[k * 3] = x;
       pos[k * 3 + 1] = h;
       pos[k * 3 + 2] = z;
-      // Patches of deeper green and of sunny yellow-green grass.
-      c.copy(light).lerp(deep, smooth(0.35, 0.75, fbm(u * 0.22 + 11, b * 0.22 + 2)));
-      c.lerp(meadow, smooth(0.5, 0.78, fbm(u * 0.15 + 47, b * 0.15 + 13)) * 0.75);
-      c.lerp(hill, smooth(0.2, 2.2, h) * 0.8);
-      c.lerp(under, shade[k] * 0.75);
+      const ring = ringDistance(u, b);
+      c.copy(farm).lerp(meadow, smooth(1, 4.5, ring));
+      c.lerp(sunny, smooth(0.55, 0.8, fbm(u * 0.16 + 47, b * 0.16 + 13)) * 0.55 * smooth(0.5, 3, ring));
+      c.lerp(hill, smooth(0.15, 1.6, h) * 0.8);
+      c.lerp(hill, smooth(0, 1.5, depthIn(FOREST.medium, u, b)) * 0.6);
+      c.lerp(floor, smooth(0, 2.5, depthIn(FOREST.dense, u, b)) * 0.85);
+      c.lerp(under, shade[k] * 0.6);
       // Trodden grass either side of the roads, so they fade into it.
       const road = Math.min(...roads.map((r) => r.nearest(x, z).d));
       c.lerp(trodden, smooth(0.75, 0.35, road) * 0.45);
-      c.lerp(sand, wetness[k] * 0.6);
-      cliff.copy(rock).lerp(earth, smooth(0.3, 0.7, fbm(u * 0.6 + 5, b * 0.6 + 2)));
-      c.lerp(cliff, smooth(0.55, 1.2, slope) * 0.9);
-      c.lerp(mud, smooth(-0.22, -0.4, h));
+      cliff.copy(rock).lerp(earth, smooth(0.3, 0.7, fbm(u * 0.6 + 5, b * 0.6 + 2)) * 0.6).lerp(dark, smooth(2, 5, slope) * 0.5);
+      c.lerp(cliff, smooth(1.1, 2.0, slope) * 0.9 * (1 - lipness[k]));
+      c.lerp(mud, smooth(WATER_Y + 0.02, WATER_Y - 0.12, h));
       col[k * 3] = c.r;
       col[k * 3 + 1] = c.g;
       col[k * 3 + 2] = c.b;
@@ -481,74 +569,106 @@ function rockBlock(seed) {
 }
 
 /**
- * Rock walls along the faces of the rises behind the farm, so they stand up as cliffs, with moss on some tops and
- * fallen stones at their feet; the river's gorge and the waterfall's cliff are left open.
+ * The cliff round the waterfall (LAND.cliff in valleyMap.js): pillars of warm grey rock stood shoulder to shoulder
+ * along its face, some short of the top so it climbs in steps, with moss on some tops and a gap for the fall.
  */
-function buildCliffs(batch, rand) {
-  const lump = new THREE.DodecahedronGeometry(1, 0);
-  const greys = ['#a3a7a8', '#9a9fa2', '#b0b4b5', '#959a9c'];
-  for (const [face, , k] of RISES) {
-    for (let u = VIEW_BOUNDS.left - 2; u < VIEW_BOUNDS.right + 2;) {
-      const w = 0.8 + rand() * 0.7;
-      const mid = u + w / 2;
-      u += w * 0.8;
-      // Here and there a grassy break in the cliff.
-      if (rand() < 0.16) continue;
-      // Points along the face, and on the low and high ground either side of it.
-      const line = (du, db = 0) => xz(mid + du, face - riseWave(mid + du, k) + db);
-      const [x, z] = line(0);
-      const rv = river.nearest(x, z);
-      if (rv.d - riverHalf(rv.i) < 1.3 || Math.hypot(mid - RIVER[0][0], face - riseWave(mid, k) - RIVER[0][1]) < 2.4) continue;
-      const [x0, z0] = line(-0.4);
-      const [x1, z1] = line(0.4);
-      const turn = Math.atan2(-(z1 - z0), x1 - x0);
-      const low = groundY(...line(0, -0.35));
-      const high = groundY(...line(0, 0.35));
-      const h = high - low + 0.02 + rand() * 0.26;
-      const depth = 0.34 + rand() * 0.2;
-      // Some stand forward of the face and some back, so the cliff does not run like a wall.
-      const [cx, cz] = line(0, (rand() - 0.5) * 0.2);
-      batch.add(rockBlock(Math.floor(rand() * 1000)), greys[Math.floor(rand() * greys.length)], [cx, low - 0.08 + h / 2, cz], [w, h, depth], [0, turn + (rand() - 0.5) * 0.25, 0], true);
-      if (rand() < 0.5) batch.add(lump, '#5fa64c', [x, low - 0.06 + h, z], [w * 0.38, 0.06, depth * 0.45], [0, turn, 0], true);
-      if (rand() < 0.45) {
-        const [fx, fz] = line((rand() - 0.5) * w, -0.4 - rand() * 0.2);
-        const name = OUTCROPS[Math.floor(rand() * OUTCROPS.length)];
-        const size = 0.1 + rand() * 0.12;
-        putNature(batch, name, [fx, groundY(fx, fz) - 0.03, fz], (size * 2) / natureSize(name).width, [rand() * 0.3, rand() * TAU, 0]);
-      }
+function buildCliffFaces(batch, rand) {
+  const { poly, height } = LAND.cliff;
+  const greys = ['#b3aa9a', '#a4a098', '#9b9385', '#c2b8a5', '#aaa294'];
+  const moss = new THREE.DodecahedronGeometry(1, 0);
+  const fall = WATERFALLS.main.at;
+  for (let e = 0; e < poly.length; e++) {
+    const [u0, b0] = poly[e];
+    const [u1, b1] = poly[(e + 1) % poly.length];
+    const len = Math.hypot(u1 - u0, b1 - b0);
+    // Outwards, away from the cliff top: the polygon runs counter-clockwise on the map.
+    const nu = (b1 - b0) / len;
+    const nb = -(u1 - u0) / len;
+    for (let t = 0; t < len;) {
+      const w = 0.6 + rand() * 0.5;
+      const mu = u0 + ((u1 - u0) * (t + w / 2)) / len;
+      const mb = b0 + ((b1 - b0) * (t + w / 2)) / len;
+      t += w * 0.75;
+      if (Math.hypot(mu - fall[0], mb - fall[1] - 0.5) < WATERFALLS.main.width * 0.55 + 0.2) continue;
+      const out = 0.15 + rand() * 0.15;
+      const [x, z] = xz(mu + nu * out, mb + nb * out);
+      const low = groundY(...xz(mu + nu * 0.7, mb + nb * 0.7));
+      if (height - low < 0.4) continue;
+      // Most reach the top; some stop short and some stand a little proud of it.
+      const top = height + (rand() < 0.3 ? -0.5 - rand() * 0.9 : (rand() - 0.3) * 0.35);
+      const h = top - low + 0.15;
+      const [ax, az] = xz(u0, b0);
+      const [bx, bz] = xz(u1, b1);
+      const turn = Math.atan2(-(bz - az), bx - ax) + (rand() - 0.5) * 0.3;
+      batch.add(rockBlock(Math.floor(rand() * 1000)), greys[Math.floor(rand() * greys.length)], [x, low - 0.15 + h / 2, z], [w * 1.15, h, 0.55 + rand() * 0.25], [0, turn, 0], true);
+      if (rand() < 0.35) batch.add(moss, '#5a9d30', [x, low - 0.15 + h + 0.02, z], [w * 0.45, 0.07, 0.25], [0, turn, 0], true);
     }
   }
 }
 
-/** Earth banks standing out of the water along both sides of the river, so the land reads as higher than it. */
-function buildBanks() {
+/**
+ * The river's banks: a steep, faceted face down each side from the grassy lip into the water, bare earth or, along
+ * the ROCKY_BANKS stretches, grey rock with boulders at its foot. The ground's own triangles drop away beneath it
+ * (see cutRiver), so this is what the camera sees of the channel.
+ */
+function buildBankFaces(batch) {
   const pos = [];
   const col = [];
-  const top = new THREE.Color('#8f7250');
-  const foot = new THREE.Color('#5c4834');
-  const bottom = WATER_Y - 0.08;
-  const quad = (a, b, inward) => {
-    const corners = [[a, a.y, top], [b, b.y, top], [b, bottom, foot], [a, a.y, top], [b, bottom, foot], [a, bottom, foot]];
-    // Face the water: flip the winding when the first triangle faces away from it.
-    const ab = new THREE.Vector3(b.x - a.x, b.y - a.y, b.z - a.z);
-    const ad = new THREE.Vector3(b.x - a.x, bottom - a.y, b.z - a.z);
-    if (ab.cross(ad).dot(inward) < 0) [corners[1], corners[2], corners[4], corners[5]] = [corners[2], corners[1], corners[5], corners[4]];
-    for (const [p, y, c] of corners) {
-      pos.push(p.x, y, p.z);
-      col.push(c.r, c.g, c.b);
-    }
-  };
+  // One flat colour to each band of facets, lip to water: dry earth, darker earth, wet earth (or rock).
+  const soil = ['#b08455', '#916a44', '#6d5036'].map((h) => new THREE.Color(h));
+  const stone = ['#b3ada1', '#9c968a', '#7a756b'].map((h) => new THREE.Color(h));
+  // Rows across the face: [fraction of the way from the water's edge out to the lip, fraction of the way up to it].
+  const ROWS = [[1.06, 1.0], [0.62, 0.9], [0.2, 0.5], [-0.25, -0.35]];
+  const rocky = (u, b) => Math.max(0, ...ROCKY_BANKS.map(([cu, cb, r]) => smooth(r, r * 0.45, Math.hypot(u - cu, b - cb))));
+  const rand = seeded(4242);
+  const lump = new THREE.DodecahedronGeometry(1, 0);
+  const tri = new THREE.Vector3();
+  const e1 = new THREE.Vector3();
+  const e2 = new THREE.Vector3();
   for (const s of [-1, 1]) {
-    let prev = null;
-    river.pts.forEach((p, i) => {
-      const { dir } = river.frame(i);
-      // In and out a little, so the bank is not drawn with a ruler.
-      const off = s * (riverHalf(i) + 0.05 + (hash(i * 0.37, s * 3.1) - 0.5) * 0.06);
-      const q = new THREE.Vector3(p.x - dir.z * off, 0, p.z + dir.x * off);
-      q.y = Math.max(groundY(q.x, q.z), WATER_Y + 0.03) + 0.005;
-      if (prev) quad(prev, q, new THREE.Vector3(p.x - q.x, 0, p.z - q.z));
-      prev = q;
-    });
+    // Every third sample, so the face breaks into broad low-poly facets.
+    const rows = [];
+    for (let i = 0; i < river.pts.length; i += 3) {
+      const { p, dir } = river.frame(i);
+      const [u, b] = toUB(p.x, p.z);
+      const w = riverHalf(i);
+      const lip = lipOffset(i, s);
+      const top = lipHeight(i, s);
+      const nx = -dir.z * s;
+      const nz = dir.x * s;
+      const rk = rocky(u, b);
+      rows.push(ROWS.map(([f, g], r) => {
+        const inner = r === 1 || r === 2;
+        const off = w + (lip - w) * f + (inner ? (hash(i * 0.31 + r, s * 7.7) - 0.5) * 0.1 : 0);
+        const y = WATER_Y + (top - WATER_Y) * g + (inner ? (hash(i * 0.53, r + s * 3) - 0.5) * 0.08 : 0) + (r === 0 ? 0.012 : 0);
+        return { v: new THREE.Vector3(p.x + nx * off, y, p.z + nz * off), rk, inward: new THREE.Vector3(-nx, 0, -nz) };
+      }));
+      // Boulders along the rocky stretches, and now and then a stone at the waterline elsewhere.
+      if (rand() < 0.15 + 0.75 * rk) {
+        const off = w + (lip - w) * (rand() * 0.75) - 0.05;
+        const r = (0.1 + rand() * 0.2) * (0.6 + 0.6 * rk);
+        const shade = stone[Math.floor(rand() * 3)];
+        batch.add(lump, `#${shade.getHexString()}`, [p.x + nx * off, WATER_Y + (top - WATER_Y) * rand() * 0.45, p.z + nz * off], [r, r * 0.75, r * 0.9], [rand() * 3, rand() * 3, rand() * 3], true);
+      }
+    }
+    for (let k = 1; k < rows.length; k++) {
+      for (let r = 0; r < ROWS.length - 1; r++) {
+        const tris = [[rows[k - 1][r], rows[k][r], rows[k][r + 1]], [rows[k - 1][r], rows[k][r + 1], rows[k - 1][r + 1]]];
+        tris.forEach(([a, b2, c], t) => {
+          // Each facet a little lighter or darker than its neighbours.
+          const color = soil[r].clone().lerp(stone[r], (a.rk + b2.rk + c.rk) / 3).multiplyScalar(0.9 + 0.2 * hash(k * 1.7 + t, r * 3.1 + s));
+          // Face the water.
+          e1.subVectors(b2.v, a.v);
+          e2.subVectors(c.v, a.v);
+          tri.crossVectors(e1, e2);
+          const corners = tri.dot(a.inward) + tri.y * 0.2 >= 0 ? [a, b2, c] : [a, c, b2];
+          for (const q of corners) {
+            pos.push(q.v.x, q.v.y, q.v.z);
+            col.push(color.r, color.g, color.b);
+          }
+        });
+      }
+    }
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -556,43 +676,31 @@ function buildBanks() {
   g.computeVertexNormals();
   const mesh = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }));
   mesh.receiveShadow = true;
+  mesh.castShadow = true;
   return mesh;
 }
 
-/** The waterfall pours over a rocky cliff at the foot of the mountains into the river's pool. */
+/** The main waterfall (WATERFALLS.main in valleyMap.js) pours from a gap in the cliff into the river's pool. */
 function buildWaterfall(batch) {
-  const start = river.frame(0);
-  const back = start.dir.clone().negate();
+  const { at: [fu, fb], drop, width } = WATERFALLS.main;
+  // Into the cliff: up the map.
+  const back = at(0, 1).normalize();
   const side = new THREE.Vector3(-back.z, 0, back.x);
   const turn = Math.atan2(back.x, back.z);
-  const top = 3.0;
-  const base = start.p.clone().addScaledVector(back, 0.75);
+  const top = WATER_Y + drop;
+  const base = at(fu, fb + 0.15);
   const rock = new THREE.DodecahedronGeometry(1, 0);
   const rand = seeded(31);
-  // The cliff face, with lower steps either side.
-  const wall = (offBack, offSide, w, h, d, color, seed) => {
-    const p = base.clone().addScaledVector(back, offBack).addScaledVector(side, offSide);
-    batch.add(rockBlock(seed), color, [p.x, h / 2 - 0.3, p.z], [w, h, d], [0, turn, 0], true);
-  };
-  wall(0.75, 0, 1.9, top + 0.3, 1.4, '#9a9fa2', 1);
-  wall(0.65, -1.45, 1.3, 2.8, 1.3, '#aab0b2', 2);
-  wall(0.65, 1.45, 1.3, 2.6, 1.3, '#8f9598', 3);
-  wall(0.5, -2.4, 1.0, 1.8, 1.1, '#9a9fa2', 4);
-  wall(0.5, 2.35, 1.0, 1.6, 1.1, '#aab0b2', 5);
-  // Boulders at its feet and moss on top.
-  for (const [bk, sd, y, r] of [[-0.15, -1.1, 0.05, 0.36], [-0.3, 1.15, 0.0, 0.32], [0.05, -1.75, 0.1, 0.42], [0.0, 1.8, 0.05, 0.38], [-0.55, -0.85, -0.05, 0.22]]) {
+  // Boulders where it lands.
+  for (const [bk, sd, y, r] of [[-0.15, -0.95, 0.0, 0.34], [-0.3, 1.0, -0.05, 0.3], [0.05, -1.5, 0.05, 0.4], [0.0, 1.55, 0.0, 0.36], [-0.55, -0.8, -0.1, 0.22]]) {
     const p = base.clone().addScaledVector(back, bk).addScaledVector(side, sd);
-    batch.add(rock, '#a3a7a8', [p.x, y, p.z], [r, r * 0.8, r], [rand() * 3, rand() * 3, rand() * 3], true);
-  }
-  for (const [bk, sd, y, w] of [[0.9, -0.7, top + 0.02, 0.5], [0.8, 0.75, top - 0.02, 0.45], [0.7, -1.5, 2.52, 0.45], [0.7, 1.45, 2.32, 0.45]]) {
-    const p = base.clone().addScaledVector(back, bk).addScaledVector(side, sd);
-    batch.add(rock, '#5fa64c', [p.x, y, p.z], [w, 0.12, w * 0.8], [0, rand() * 3, 0], true);
+    batch.add(rock, '#a4a098', [p.x, y, p.z], [r, r * 0.8, r], [rand() * 3, rand() * 3, rand() * 3], true);
   }
 
   // Falling water: a gently curved sheet whose stripes scroll down.
   const tex = fallTexture();
   tex.repeat.set(1, 1.8);
-  const sheet = new THREE.PlaneGeometry(0.8, 1, 1, 10);
+  const sheet = new THREE.PlaneGeometry(width * 0.8, 1, 1, 10);
   const p = sheet.attributes.position;
   for (let k = 0; k < p.count; k++) {
     const t = 0.5 - p.getY(k); // 0 at the lip, 1 at the pool
@@ -611,7 +719,7 @@ function buildWaterfall(batch) {
   const ball = new THREE.SphereGeometry(1, 10, 6);
   for (let k = 0; k < 6; k++) {
     const f = new THREE.Mesh(ball, foamMat);
-    const q = base.clone().addScaledVector(side, (k / 5 - 0.5) * 1.1).addScaledVector(back, -0.3 - (k % 2) * 0.22);
+    const q = base.clone().addScaledVector(side, (k / 5 - 0.5) * width).addScaledVector(back, -0.3 - (k % 2) * 0.22);
     f.position.set(q.x, WATER_Y + 0.02, q.z);
     f.userData.base = 0.12 + (k % 3) * 0.03;
     f.userData.phase = k * 1.7;
@@ -634,7 +742,8 @@ const DIRT = new THREE.Color('#cf9d66');
 const WORN = new THREE.Color('#e0b987');
 const GRASSY = new THREE.Color('#a3c35e');
 
-const inWater = (p) => groundY(p.x, p.z) < -0.02;
+// Down in the river's channel: the roads cross it on bridges.
+const inWater = (p) => groundY(p.x, p.z) < WATER_Y + 0.1;
 
 /** Across road ri at sample i: [offset, colour] from its left verge to its right, the edges wandering in and out. */
 function roadSection(ri, i) {
@@ -666,7 +775,7 @@ function buildRoads(batch, plants, rand) {
       const [off, color] = sections[i][k];
       const [x, z] = edge(frames[i], off);
       // The verges' outer edges lie down on the grass.
-      pos.push(x, Math.max(0, groundY(x, z)) + (k === 0 || k === 4 ? 0.004 : lift), z);
+      pos.push(x, groundY(x, z) + (k === 0 || k === 4 ? 0.004 : lift), z);
       col.push(color.r, color.g, color.b);
     };
     for (let i = 1; i < frames.length; i++) {
@@ -693,12 +802,12 @@ function buildRoads(batch, plants, rand) {
         for (let n = name.startsWith('ROCK') ? 2 + Math.floor(rand() * 2) : 1; n > 0; n--) {
           const px = x + (rand() - 0.5) * 0.12;
           const pz = z + (rand() - 0.5) * 0.12;
-          putNature(name.startsWith('ROCK') ? batch : plants, name, [px, Math.max(0, groundY(px, pz)), pz], scale * (0.75 + rand() * 0.5), [0, rand() * TAU, 0]);
+          putNature(name.startsWith('ROCK') ? batch : plants, name, [px, groundY(px, pz), pz], scale * (0.75 + rand() * 0.5), [0, rand() * TAU, 0]);
         }
       }
       if (rand() < 0.12) {
         const [x, z] = edge(frames[i], (rand() - 0.5) * ROAD_HALF);
-        putNature(batch, 'ROCK_01_Small', [x, Math.max(0, groundY(x, z)) + lift - 0.01, z], 0.05 + rand() * 0.03, [0, rand() * TAU, 0]);
+        putNature(batch, 'ROCK_01_Small', [x, groundY(x, z) + lift - 0.01, z], 0.05 + rand() * 0.03, [0, rand() * TAU, 0]);
       }
     }
   });
@@ -716,7 +825,7 @@ function roadFences(batch) {
     for (let i = Math.round(from * last); i <= Math.round(to * last); i += step) {
       const { p, dir } = road.frame(i);
       const q = new THREE.Vector3(p.x - dir.z * side * 0.7, 0, p.z + dir.x * side * 0.7);
-      q.y = Math.max(0, groundY(q.x, q.z));
+      q.y = groundY(q.x, q.z);
       if (prev) railFence(batch, prev, q, '#c98a4b', { height: 0.42 });
       prev = q;
     }
@@ -732,7 +841,9 @@ function bridgeSpans() {
       const wet = inWater(p);
       if (wet && first < 0) first = i;
       if (!wet && first >= 0) {
-        spans.push([road.pts[Math.max(0, first - 2)].clone(), road.pts[Math.min(road.pts.length - 1, i + 1)].clone()]);
+        const ends = [road.pts[Math.max(0, first - 2)].clone(), road.pts[Math.min(road.pts.length - 1, i + 1)].clone()];
+        for (const e of ends) e.y = groundY(e.x, e.z);
+        spans.push(ends);
         first = -1;
       }
     });
@@ -771,10 +882,8 @@ function buildForest(rand, extra) {
     for (const [cu, cb, r] of CLEARINGS) if (Math.hypot(u - cu, b - cb) < r + 0.3) return false;
     if (bank(x, z) < 0.55) return false;
     for (const road of roads) if (road.nearest(x, z).d < 0.75) return false;
-    // Not on the faces of the rises or near their edges, nor anywhere else too steep to stand on.
-    if (onRise(u, b, 0.7)) return false;
-    const slope = Math.hypot(groundY(x + 0.2, z) - groundY(x - 0.2, z), groundY(x, z + 0.2) - groundY(x, z - 0.2)) / 0.4;
-    return slope < 0.45;
+    // Not on the cliff's face nor anywhere else too steep to stand on.
+    return slopeAt(x, z) < 0.45;
   };
   // Just past what the view can reach (VIEW_BOUNDS): the lowest screen edge sees the ground 23.5 to the front.
   const cell = 0.95;
@@ -920,7 +1029,7 @@ function buildGroundCover(trees) {
       const bank = rv.d - riverHalf(rv.i);
       if (bank < 0.3) continue;
       const road = Math.min(...roads.map((r) => r.nearest(x, z).d));
-      if (road < 0.5 || onRise(pu, pb, 0.45)) continue;
+      if (road < 0.5 || slopeAt(x, z) > 0.6) continue;
       // Thickest by the roads, the water and the trees, in patches elsewhere.
       const nearby = Math.max(smooth(1.3, 0.55, road), smooth(1.4, 0.4, bank), smooth(-2.2, 0, edge));
       const patch = smooth(0.45, 0.72, fbm(pu * 0.5 + 21, pb * 0.5 + 4));
@@ -953,76 +1062,6 @@ function buildGroundCover(trees) {
   return { group, plants };
 }
 
-// ── Mountains ───────────────────────────────────────────────────
-
-const SLOPE_GREEN = ['#4c9a48', '#58a64e', '#4a9145'];
-
-/** One jagged low-poly mountain, coloured by height: forest, then grass, then bare rock. */
-function mountain(x, y, z, radius, height, haze, seed) {
-  const g = new THREE.ConeGeometry(1, 1, 9, 5, true).toNonIndexed();
-  const p = g.attributes.position;
-  for (let k = 0; k < p.count; k++) {
-    const vx = p.getX(k);
-    const vy = p.getY(k) + 0.5; // 0 at the foot, 1 at the top
-    const vz = p.getZ(k);
-    // Same jitter for the copies of a shared corner, so the faces still meet.
-    const n = hash(Math.round(vx * 1000) + seed, Math.round(vz * 1000) + Math.round(vy * 100));
-    const n2 = hash(Math.round(vz * 1000) - seed, Math.round(vx * 1000) + 7);
-    const r = vy > 0.99 ? 0 : 1 + (n - 0.5) * 0.28;
-    const dy = vy > 0.02 && vy < 0.99 ? (n2 - 0.5) * 0.12 : 0;
-    p.setXYZ(k, vx * r * radius + x, (vy + dy) * height + y, vz * r * radius + z);
-  }
-  g.deleteAttribute('uv');
-  g.computeVertexNormals();
-  const colors = new Float32Array(p.count * 3);
-  const c = new THREE.Color();
-  const sky = new THREE.Color('#a9cbe6');
-  for (let k = 0; k < p.count; k += 3) {
-    const f = ((p.getY(k) + p.getY(k + 1) + p.getY(k + 2)) / 3 - y) / height;
-    const pick = hash(k, seed);
-    if (f > 0.84) c.set(pick < 0.5 ? '#a39d8a' : '#938d7c');
-    else if (f > 0.6) c.set(pick < 0.4 ? '#7aa75a' : '#6c9e51');
-    else c.set(SLOPE_GREEN[Math.floor(pick * 3)]);
-    c.lerp(sky, haze);
-    for (let v = 0; v < 3; v++) colors.set([c.r, c.g, c.b], (k + v) * 3);
-  }
-  g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  return g;
-}
-
-/** Near range: green with forested slopes. Far range: lower and hazy blue behind it. */
-function buildMountains(rand) {
-  const batch = new Batch();
-  const trees = [];
-  const ray = new THREE.Raycaster();
-  const down = new THREE.Vector3(0, -1, 0);
-  for (let u = -27; u <= 27; u += 3.6 + rand() * 1.4) {
-    const b = 12.5 + rand() * 1.6 + (Math.abs(u - RIVER[0][0]) < 3 ? 0.8 : 0);
-    const [x, z] = xz(u, b);
-    const radius = 3.2 + rand() * 1.4;
-    const height = 3.4 + rand() * 2.2 + (Math.abs(u) > 12 ? 0.8 : 0);
-    const g = mountain(x, -0.4, z, radius, height, 0, Math.floor(rand() * 1000));
-    // Pines dotted over the slopes facing the camera, dropped onto the faces.
-    const probe = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
-    for (let k = 0; k < 16; k++) {
-      const a = Math.PI / 4 + (rand() - 0.5) * 2.4;
-      const r = radius * (0.38 + rand() * 0.55);
-      const px = x + Math.cos(a) * r;
-      const pz = z + Math.sin(a) * r;
-      ray.set(new THREE.Vector3(px, height + 2, pz), down);
-      const hit = ray.intersectObject(probe)[0];
-      if (hit && hit.point.y < height * 0.6) trees.push(['pine', px, hit.point.y - 0.08, pz, 0.8 + rand() * 0.5, rand() * TAU, rand()]);
-    }
-    batch.addRaw(g, true);
-  }
-  for (let u = -30; u <= 30; u += 4.2 + rand() * 1.6) {
-    const b = 17.4 + rand() * 2;
-    const [x, z] = xz(u, b);
-    batch.addRaw(mountain(x, -3, z, 4.6 + rand() * 1.8, 6.2 + rand() * 1.8, 0.55, Math.floor(rand() * 1000)), true);
-  }
-  return { group: batch.build({ castShadow: false }), trees };
-}
-
 // ── Clouds ──────────────────────────────────────────────────────
 
 const CLOUDS = [
@@ -1048,26 +1087,32 @@ export function buildCountryside() {
   const batch = new Batch();
   const fall = buildWaterfall(batch);
   group.add(fall.group);
-  buildCliffs(batch, rand);
+  buildCliffFaces(batch, rand);
+  group.add(buildBankFaces(batch));
   roadFences(batch);
-  group.add(buildBanks());
   const bridges = bridgeSpans();
-  const built = addBuildings(batch, { layout: LAYOUT, at, groundY, rand, bridges, river, riverHalf, waterY: WATER_Y });
+  const built = addBuildings(batch, { layout: LAYOUT, at, groundY, rand, bridges, river, riverHalf, waterY: WATER_Y, riverRocks: STAGE.riverRocks });
   group.add(built.group);
   group.add(batch.build());
 
-  const mountains = buildMountains(rand);
-  group.add(mountains.group);
-  const forest = buildForest(rand, mountains.trees);
+  const forest = STAGE.forest ? buildForest(rand, []) : { group: new THREE.Group(), shade: [] };
   group.add(forest.group);
   group.add(buildGround(forest.shade));
-  const cover = buildGroundCover(forest.shade);
+  const cover = STAGE.groundCover ? buildGroundCover(forest.shade) : { group: new THREE.Group(), plants: new THREE.Group() };
+  if (!STAGE.groundCover) cover.group.add(cover.plants);
   // The roadside grass and flowers go with the rest of the plants, which the fast setting hides.
-  cover.plants.add(roadside.build({ castShadow: false }));
+  if (STAGE.roadside) cover.plants.add(roadside.build({ castShadow: false }));
   group.add(cover.group);
 
   const animals = addAnimals({ layout: LAYOUT, at, groundY, river, riverHalf, waterY: WATER_Y, coopYard: built.coopYard, bridges });
   group.add(animals.group);
+
+  // Trying out a painted backdrop: it stands in for everything built above, which is kept out of view.
+  const backdrop = STAGE.painted ? buildBackdrop() : null;
+  if (backdrop) {
+    for (const child of [...group.children]) group.remove(child);
+    group.add(backdrop.mesh);
+  }
 
   const clouds = CLOUDS.map(([u, b, h, s]) => {
     const c = cloud(s);
@@ -1086,6 +1131,7 @@ export function buildCountryside() {
     fall.mist.material.opacity = 0.35 + 0.12 * Math.sin(t * 2.3);
     built.update(t, dt);
     animals.update(t, dt);
+    backdrop?.update(t);
     for (const c of clouds) {
       // Drift to the right across the screen and come back round from the left.
       c.position.x += dt * 0.1;

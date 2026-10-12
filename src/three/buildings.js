@@ -232,7 +232,9 @@ function bridge(batch, a, b) {
   const dir = new THREE.Vector3().subVectors(b, a).setY(0);
   const len = dir.length() + 0.3;
   const mid = a.clone().add(b).multiplyScalar(0.5);
-  batch.push(mid.x, 0, mid.z, Math.atan2(-dir.z, dir.x));
+  // Level with the higher of the two banks' tops.
+  const deck = Math.max(a.y, b.y);
+  batch.push(mid.x, deck, mid.z, Math.atan2(-dir.z, dir.x));
   const n = Math.round(len / 0.17);
   const arch = (x) => 0.1 + 0.3 * (1 - ((2 * x) / len) ** 2);
   const slope = (x) => Math.atan((0.3 * -8 * x) / (len * len));
@@ -251,7 +253,11 @@ function bridge(batch, a, b) {
       batch.add(BOX, PLANK, [(x + px) / 2, (y + py) / 2, z], [Math.hypot(x - px, y - py) + 0.04, 0.045, 0.05], [0, 0, Math.atan2(y - py, x - px)]);
     });
   }
-  for (const x of [-len / 2, len / 2]) batch.add(BOX, '#b5ad9e', [x, 0.04, 0], [0.42, 0.18, 1.04], null, true);
+  // Stone footings at either end, reaching down to the bank below.
+  for (const [x, y] of [[-len / 2, a.y], [len / 2, b.y]]) {
+    const foot = Math.min(0, y - deck) - 0.12;
+    batch.add(BOX, '#b5ad9e', [x, (foot + 0.13) / 2, 0], [0.42, 0.13 - foot, 1.04], null, true);
+  }
   batch.pop();
 }
 
@@ -505,7 +511,7 @@ function smokePuffs(origin) {
  * map: { layout, at(u, b, y), groundY(x, z), rand, bridges: [[a, b]], river, riverHalf, waterY }
  * Returns the moving parts, the chicken yard (world centre, size, turn) and update(t, dt).
  */
-export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, river, riverHalf, waterY }) {
+export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, river, riverHalf, waterY, riverRocks: withRocks = true }) {
   const group = new THREE.Group();
   const glow = new Batch();
   const toWorld = (v) => v.clone().applyMatrix4(batch.origin);
@@ -581,10 +587,12 @@ export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, riv
   meadowFence(batch, L.meadow.map(([u, b]) => at(u, b)));
   place(L.trough, () => trough(batch));
 
-  rocksAround(batch, rand, at(L.mud[0] + 0.5, L.mud[1] - 0.6), 5, 1.2, groundY);
-  riverRocks(batch, rand, { river, riverHalf, groundY, bridges, waterY });
-  lilyPads(batch, rand, { river, riverHalf, bridges, waterY });
-  reeds(batch, rand, river, riverHalf, groundY, waterY, 30, river.pts.length - 40, 9);
+  if (withRocks) {
+    rocksAround(batch, rand, at(L.mud[0] + 0.5, L.mud[1] - 0.6), 5, 1.2, groundY);
+    riverRocks(batch, rand, { river, riverHalf, groundY, bridges, waterY });
+    lilyPads(batch, rand, { river, riverHalf, bridges, waterY });
+  }
+  if (withRocks) reeds(batch, rand, river, riverHalf, groundY, waterY, 30, river.pts.length - 40, 9);
   group.add(buildGlow(glow));
 
   const update = (t, dt) => {
