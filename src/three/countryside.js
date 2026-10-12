@@ -1142,5 +1142,7 @@ export function buildCountryside() {
       }
     }
   };
-  return { group, update, plants: cover.plants };
+  // The painting's tiles load for the sharp or the fast setting.
+  const setDetail = (high) => backdrop?.setDetail(high);
+  return { group, update, plants: cover.plants, setDetail };
 }

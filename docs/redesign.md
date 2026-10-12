@@ -30,8 +30,16 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   so its upper right no longer matches the painting (see the next steps).
 - The art pipeline in `art/backdrop/` (see its README): layout image, prompt, and scripts to recolour the layout, fit
   a painting to the game and make the water map.
-- The first painting, `painted-v1.webp`, in the game as `public/backdrop-painted.webp`. Away from the upper right its
-  roads lie within a pixel of the layout's once fitted (`BACKDROP` in `backdrop.js`).
+- The first painting, `painted-v1.webp`, in the game. Away from the upper right its roads lie within a pixel of the
+  layout's once fitted (`BACKDROP` in `backdrop.js`).
+- Upscaled ×4 with Upscayl's "Digital Art" model (6144×4096; sharper edges than "Standard" and "High Fidelity") and
+  cut by `tile-backdrop.py` into `public/backdrop/`: four 3104×2080 tiles that overlap by 32 px, for the sharp
+  setting ("Đẹp"), and one 3072×2048 picture for the fast one ("Nhanh"). The tiles still take about 140 MB of GPU
+  memory with mipmaps, the half-size picture a quarter of that, which is why the fast setting gets its own. The
+  backdrop loads the set for the setting (`setDetail`, called from `FarmScene.setQuality`) and keeps the old one up
+  until the new one has loaded. Checked in the game: no seam shows where the tiles meet, even across the river, and
+  the water still flows. Fitted again on the sharper picture, the layout's roads lie 0.5 px from the painted ones on
+  average (at the layout's size), against 0.9 px before.
 - Flowing water: `water-map.py` makes `public/backdrop-water.png` and `public/water-noise.png`; the shader is in
   `backdrop.js`. Checked in the game: the falls stream down and the river drifts.
 - The view pans and zooms over exactly the painting (`VIEW_BOUNDS` comes from the backdrop); zoom stops at 1.6.
@@ -47,29 +55,27 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
 - The meadow is a see-through rectangle with hard edges.
 - A white square sits on top of the small waterfall (copied from the layout).
 - The olive areas came out as bright rolling grass, not dark woodland floor. Fine under 3D trees.
-- 1536 px wide is too small: blurry when zoomed in until it is upscaled.
 
 ## Next steps
 
 In this order:
 
-1. **Upscale** painted-v1 ×4 with Real-ESRGAN (the Upscayl app runs on the Mac mini). Try its "Digital Art" and
-   "Standard" models. Phones may not load a texture over 4096 px, so cut the result into four 3072×2048 tiles, as WebP,
-   and scale `BACKDROP` up ×4 (`fit-backdrop.py` does it for an upscaled painting). The water map can stay 1536 wide.
-2. **Follow the painting in the upper right** (option A, chosen over asking the model to repaint it): re-trace in
+1. **Follow the painting in the upper right** (option A, chosen over asking the model to repaint it): re-trace in
    `valleyMap.js` the river's course, the main waterfall, the cliff and the road on the far bank. Move the small bridge
    up by the waterfall's pool, from the road along the left bank to the road on the far bank (it gets longer); the
    lower end of the left-bank road becomes a landing by the small waterfall. Fix the meadow and the white square in
-   the image.
-3. **Bring back the 3D on top of the painting**, placed from `valleyMap.js`: buildings, bridges, animals and fences
+   the image (in `painted-v1.webp`, then upscale and tile it again: steps 3 and 6 of `art/backdrop/README.md`).
+2. **Bring back the 3D on top of the painting**, placed from `valleyMap.js`: buildings, bridges, animals and fences
    (`addBuildings`, `addAnimals` and the `STAGE` flags in `countryside.js`), and spray and mist at the foot of each
    painted fall (`buildWaterfall` has them, at the old fall's place).
-4. **3D trees that sway** gently (wind in the vertex shader) in the olive areas and round the farm; bushes, flowers,
+3. **3D trees that sway** gently (wind in the vertex shader) in the olive areas and round the farm; bushes, flowers,
    rocks and reeds.
-5. **Shadows on the painting**: the backdrop is unlit, so it needs a shadow-only plane over it for the 3D things'
+4. **Shadows on the painting**: the backdrop is unlit, so it needs a shadow-only plane over it for the 3D things'
    shadows.
-6. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
-   the offline cache, and the old 3D scenery's code either removed or kept behind its flags.
+5. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
+   the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
+   of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
+   code either removed or kept behind its flags.
 
 ## Known bug
 
@@ -80,7 +86,7 @@ becomes NaN in `FarmScene.resize` → `setZoom`, and the valley stays blank unti
 
 - Run the game with `npm run dev`. In the Claude desktop app, the preview "farm-dev" (`.claude/launch.json`) serves it
   on port 5174.
-- `src/three/backdrop.js`: the painting, where it sits, and the water shader.
+- `src/three/backdrop.js`: the painting, where it sits, its tiles, and the water shader.
 - `src/three/valleyMap.js`: where everything in the valley is, in map units.
 - `src/three/countryside.js`: builds the valley from the map; `STAGE` says which parts are on.
 - `src/three/farm.js`: the ring road's shape and the farm inside it.

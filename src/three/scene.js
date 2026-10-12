@@ -170,6 +170,7 @@ export class FarmScene {
     this.bloom.enabled = high;
     // The valley's grass and flowers are tens of thousands of small triangles; the fast setting goes without them.
     this.countryside.plants.visible = high;
+    this.countryside.setDetail(high);
     // Smooth edges with MSAA: 4 samples, or 2 where pixels are already small (Retina), which keeps memory near
     // what the old antialiased canvas used.
     const gl = this.renderer.getContext();
