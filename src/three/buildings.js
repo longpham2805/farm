@@ -15,13 +15,14 @@ import { windmill } from './buildings/windmill.js';
 import { stoneShed } from './buildings/stoneShed.js';
 import { henYard } from './buildings/coop.js';
 import { well } from './buildings/well.js';
+import { cart, hayBale, haystack } from './buildings/hay.js';
 import { flock } from './animals/chicken.js';
 
 // A lily pad: a disc with a notch cut out.
 const PAD = new THREE.CylinderGeometry(1, 1, 1, 12, 1, false, 0.35, TAU - 0.35);
 
 // How much bigger than as modelled the buildings stand, now that they line the ring road.
-const SIZE = { coop: 1.15, hutch: 0.8, cart: 1.15, hay: 1.2, fruitTree: 1.25 };
+const SIZE = { coop: 1.15, hutch: 0.8, fruitTree: 1.25 };
 
 /** A hen house on legs; with `yard`, a little fenced run in front, whose middle and size it returns. */
 function coop(batch, yard = true) {
@@ -47,30 +48,6 @@ function coop(batch, yard = true) {
   batch.add(BOX, WOOD, [-0.45, 0.06, 1.05], [0.42, 0.08, 0.13]);
   batch.add(BOX, '#e8cf7a', [-0.45, 0.1, 1.05], [0.36, 0.02, 0.08]);
   return { x: 0, z: 0.95, w: 1.6, d: 1.05 };
-}
-
-/** A haystack: a dome of straw round a pole. */
-function haystack(batch, s = 1) {
-  batch.add(new THREE.SphereGeometry(1, 9, 6), STRAW, [0, 0.28 * s, 0], [0.42 * s, 0.56 * s, 0.42 * s], null, true);
-  batch.add(new THREE.ConeGeometry(1, 1, 9), '#d9b24a', [0, 0.9 * s, 0], [0.29 * s, 0.34 * s, 0.29 * s], null, true);
-  batch.add(CYL6, '#7a4f32', [0, 1.1 * s, 0], [0.02, 0.36 * s, 0.02]);
-}
-
-function hayBale(batch) {
-  batch.add(CYL16, '#e6c65e', [0, 0.2, 0], [0.2, 0.32, 0.2], [0, 0, Math.PI / 2]);
-  for (const x of [-0.162, 0.162]) batch.add(CYL16, '#d4b04a', [x, 0.2, 0], [0.185, 0.01, 0.185], [0, 0, Math.PI / 2]);
-}
-
-function cart(batch) {
-  batch.add(BOX, '#b07a48', [0, 0.3, 0], [0.7, 0.07, 0.44]);
-  for (const z of [-0.2, 0.2]) batch.add(BOX, '#9a6638', [0, 0.4, z], [0.7, 0.14, 0.04]);
-  for (const x of [-0.35, 0.35]) batch.add(BOX, '#9a6638', [x, 0.4, 0], [0.04, 0.14, 0.44]);
-  for (const z of [-0.26, 0.26]) {
-    batch.add(CYL16, '#6b4a2a', [0.02, 0.18, z], [0.18, 0.05, 0.18], [Math.PI / 2, 0, 0]);
-    batch.add(CYL10, '#c9a06a', [0.02, 0.18, z * 1.12], [0.04, 0.04, 0.04], [Math.PI / 2, 0, 0]);
-  }
-  for (const z of [-0.15, 0.15]) batch.add(BOX, '#9a6638', [0.6, 0.26, z], [0.5, 0.035, 0.035], [0, 0, -0.18]);
-  batch.add(new THREE.SphereGeometry(1, 8, 5), STRAW, [0, 0.45, 0], [0.32, 0.14, 0.19], null, true);
 }
 
 /** An arched plank bridge from bank to bank (world points a and b). */
@@ -343,9 +320,9 @@ export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, riv
   const smoke = smokePuffs(place(L.farmhouse, () => farmhouse(batch)));
   group.add(smoke.group);
   group.add(place(L.silo, () => silo(batch)));
-  place(L.cart, () => cart(batch), SIZE.cart);
-  for (const spot of L.bales) place(spot, () => hayBale(batch), SIZE.hay);
-  for (const [u, b, s] of L.haystacks) place([u, b, rand() * TAU], () => haystack(batch, s), SIZE.hay);
+  group.add(place(L.cart, () => cart(batch)));
+  for (const spot of L.bales) group.add(place(spot, () => hayBale(batch)));
+  for (const [u, b] of L.haystacks) group.add(place([u, b, rand() * TAU], () => haystack(batch)));
   group.add(place(L.well, () => well(batch)).group);
   place([...L.cherry, 0], () => blossomTree(batch));
   place(L.woodpile, () => woodpile(batch));
@@ -426,8 +403,9 @@ export function placeBuildings({ at }) {
   place(PLACES.stoneShed, () => stoneShed(batch));
   const hens = flock(place(PLACES.henYard, () => henYard(batch)), PLACES.henYard.hens);
   const wellParts = place(PLACES.well, () => well(batch));
+  const hay = [place(PLACES.cart, () => cart(batch)), place(PLACES.bale, () => hayBale(batch)), place(PLACES.haystack, () => haystack(batch))];
   const group = new THREE.Group();
-  group.add(batch.build(), smoke.group, siloParts, sails, hens.group, wellParts.group);
+  group.add(batch.build(), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay);
   const update = (t, dt) => {
     smoke.update(t);
     sails.children[0].rotation.z = -t * 0.9;

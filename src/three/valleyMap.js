@@ -140,12 +140,15 @@ export const PLACES = {
   // The hens' place on its pad of two lobes, turned 37° from facing the camera: a fenced yard with the hen house
   // at its back and the small coop on its left, and `hens`, the breeds (animals/chicken.js) let loose in it.
   henYard: { at: [-3.9, 6.04], turn: 0.65, hens: ['white', 'white', 'brown', 'gold', 'speckled', 'rooster', 'chick', 'chick'] },
-  cart: { at: [-1.8, 7.0] },
+  // The hay cart on its pad beside the hen yard, its shafts out to the back right.
+  cart: { at: [-1.6, 6.6], turn: 0.6 },
   // Just behind the ring's back corner, its doors turned 18° left of facing the camera, so its right side shows.
   barn: { at: [0.8, 6.9], size: [1.9, 1.9], turn: -0.32 },
-  bale: { at: [1.9, 6.1] },
+  // A round bale at the barn's front right corner, lying across the way the barn faces, forward of its shadow.
+  bale: { at: [2.2, 5.75], turn: 0.4 },
   silo: { at: [3.3, 6.3], radius: 0.55, height: 2.75 },
-  haystack: { at: [4.7, 6.3] },
+  // On the right of the pad it shares with the silo, forward of the silo's shadow.
+  haystack: { at: [4.75, 5.9] },
   // Sharing a pad: the windmill, turned a little left of facing the camera, and the stone shed on its left.
   windmill: { at: [6.4, 4.5], turn: -0.3 },
   stoneShed: { at: [5.0, 4.4], turn: -0.2 },

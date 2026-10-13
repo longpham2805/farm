@@ -119,6 +119,14 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   `placeBuildings`). Flowers at its foot are left for the small things to come. On its pad by the ring road's front
   left side (`PLACES.well`), turned 54°. `dev/buildings.html?t=9` holds what moves at that moment (there, the bucket
   pouring), to look at it.
+- **Hay** (`buildings/hay.js`, in `placeBuildings`): a cart of planks with flared sides on two big spoked wheels, its
+  shafts out behind and a leg under its front, heaped with hay, on its pad beside the hen yard; a round bale lying at
+  the barn's front right corner, rings on its ends and twine round it; and a haystack of two faceted tiers round a
+  pole on the right of the silo's pad. The hay is drawn as straw: a canvas texture of hundreds of strands, also used
+  as a bump map, lying down the stack, round the bale and every which way on the cart; loose straws stick out of it,
+  and scraps of straw lie on the ground round each (`strawScraps`, for anywhere else hay lies about). The bale and the
+  haystack stand forward of the barn's and the silo's shadows, which turned them olive (`PLACES.cart`, `bale`,
+  `haystack`).
 - **Animals apart from where they live**: the chickens are `src/three/animals/chicken.js`, breeds in `CHICKENS`
   (white, brown, gold, black and speckled hens, a rooster, a chick), and `flock(area, breeds)` lets them loose to
   wander and peck in any polygon. The hen yard has a flock (`henYard` returns where, `PLACES.henYard.hens` which);
@@ -141,11 +149,12 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
 In this order:
 
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
-   building at a time as above. Done: the farmhouse, the barn, the silo, the windmill and the stone shed, the hen
-   house and coop with their yard and hens, the well. Next, in this order: the cart and the hay. Then bridges, the
-   other animals (each in `animals/` like the chickens) and fences (`addAnimals`, the old `LAYOUT` in
-   `countryside.js` giving way to `PLACES`), the landing by the small fall, and spray and mist at the foot of each
-   painted fall (`buildWaterfall` has them; put them at `WATERFALLS`).
+   building at a time as above. Done: every building along the back of the ring road (farmhouse, hen yard and hens,
+   cart, barn, bale, silo, haystack, windmill and stone shed) and the well. Next: the bridges, the other animals
+   (each in `animals/` like the chickens: the buffalo, cows and sheep, the pig, ducks, birds) and fences (`addAnimals`,
+   the old `LAYOUT` in `countryside.js` giving way to `PLACES`), the fields over the big bridge with the scarecrow,
+   the meadow's fence and trough, the landing by the small fall, and spray and mist at the foot of each painted fall
+   (`buildWaterfall` has them; put them at `WATERFALLS`).
 2. **3D trees that sway** gently (wind in the vertex shader) in the olive areas and round the farm; bushes, flowers,
    rocks and reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
