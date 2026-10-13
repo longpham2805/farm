@@ -146,8 +146,9 @@ export const PLACES = {
   bale: { at: [1.9, 6.1] },
   silo: { at: [3.3, 6.3], radius: 0.55, height: 2.75 },
   haystack: { at: [4.7, 6.3] },
-  windmill: { at: [6.1, 4.8] },
-  stoneShed: { at: [4.9, 4.6] },
+  // Sharing a pad: the windmill, turned a little left of facing the camera, and the stone shed on its left.
+  windmill: { at: [6.4, 4.5], turn: -0.3 },
+  stoneShed: { at: [5.0, 4.4], turn: -0.2 },
   well: { at: [-6.0, -3.8] },
   buffalo: { at: [6.3, -2.6] },
   // The fenced fields over the big bridge: square to the plots, `half` along each of their sides.

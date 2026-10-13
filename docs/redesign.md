@@ -92,6 +92,12 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   round, with a grey cap; a round concrete footing and flowers at its foot. The drum and the dome are meshes of
   their own, a little glossy (`Batch.build` takes a roughness and metalness), where the rest of the valley is matt.
   It stands on the left of the pad it shares with the haystack (`PLACES.silo`), its ladder to the camera.
+- **Windmill** (`buildings/windmill.js`) and **stone shed** (`buildings/stoneShed.js`), in `placeBuildings`: a
+  tapering eight-sided tower of cream plaster with patches of stone showing through (more of them low down), on a
+  stone plinth, a wooden door up two stone steps and small windows; a wooden cap roofed in shingles; four lattice
+  sails of brown frames and cream canvas, turning (`update` in `placeBuildings`). Beside it a little shed of grey
+  stones in courses under two broad slabs, with a low door and moss. They share one pad: the windmill in its middle,
+  turned a little left of facing the camera, the shed in the bulge on its left (`PLACES`, moved to the pad).
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`). Only things inside the sun's shadow box
   (`SHADOW_BOX`, 10 units round the middle) cast them; the fields over the big bridge are outside it.
@@ -109,9 +115,9 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
 In this order:
 
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
-   building at a time as above. Done: the farmhouse, the barn and the silo. Next, in this order: the windmill with
-   the stone shed (no model yet), the coop and hen house with their run (the old `coop` and `hutch` are one hut
-   twice; the reference has two), the well, the cart and the hay. Then bridges, animals and fences (`addAnimals`,
+   building at a time as above. Done: the farmhouse, the barn, the silo, the windmill and the stone shed. Next, in
+   this order: the coop and hen house with their run (the old `coop` and `hutch` are one hut twice; the reference
+   has two), the well, the cart and the hay. Then bridges, animals and fences (`addAnimals`,
    the old `LAYOUT` in `countryside.js` giving way to `PLACES`), the landing by the small fall, and spray and mist
    at the foot of each painted fall (`buildWaterfall` has them; put them at `WATERFALLS`).
 2. **3D trees that sway** gently (wind in the vertex shader) in the olive areas and round the farm; bushes, flowers,

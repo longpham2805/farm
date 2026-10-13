@@ -8,40 +8,17 @@ import { roundTree, fruitSpots, BLOSSOM } from './trees.js';
 import { addNature, putNature, natureSize, railFence, steppingStones } from './nature.js';
 import { streetLamp, buildGlow } from './farm.js';
 import { PLACES } from './valleyMap.js';
-import { TAU, FACE, BOX, GABLE, BALL, ICO, cyl, CYL6, CYL10, CYL16, WOOD, PLANK, STONE, TRIM, STRAW, FENCE, stoneCourses, windowAt, smokePuffs } from './buildings/parts.js';
+import { TAU, FACE, BOX, GABLE, BALL, ICO, cyl, CYL6, CYL10, CYL16, WOOD, PLANK, STRAW, FENCE, stoneCourses, smokePuffs } from './buildings/parts.js';
 import { farmhouse } from './buildings/farmhouse.js';
 import { silo } from './buildings/silo.js';
+import { windmill } from './buildings/windmill.js';
+import { stoneShed } from './buildings/stoneShed.js';
 
 // A lily pad: a disc with a notch cut out.
 const PAD = new THREE.CylinderGeometry(1, 1, 1, 12, 1, false, 0.35, TAU - 0.35);
 
 // How much bigger than as modelled the buildings stand, now that they line the ring road.
-const SIZE = { windmill: 1.3, coop: 1.15, hutch: 0.8, cart: 1.15, well: 1.15, hay: 1.2, fruitTree: 1.25 };
-
-/** The windmill's tower goes into the batch; its sails are a separate mesh that turns. */
-function windmill(batch) {
-  batch.add(cyl(0.46, 0.5, 8), STONE, [0, 0.06, 0], [1, 0.12, 1], null, true);
-  batch.add(cyl(0.27, 0.42, 8), '#f6ead0', [0, 0.87, 0], [1, 1.5, 1], null, true);
-  batch.add(cyl(0.3, 0.3, 8), '#c98a4b', [0, 1.62, 0], [1, 0.06, 1], null, true);
-  batch.add(new THREE.ConeGeometry(0.36, 1, 8), '#8a4b3a', [0, 1.9, 0], [1, 0.5, 1], null, true);
-  // Courses of stone round the foot of the tower, a framed door and a window.
-  stoneCourses(batch, 4, 0.19, 0.12, 14, (y) => (0.42 - (0.15 * (y - 0.12)) / 1.5) * Math.cos(Math.PI / 8) + 0.012);
-  batch.add(BOX, TRIM, [0, 0.31, 0.402], [0.25, 0.39, 0.03]);
-  batch.add(BOX, WOOD, [0, 0.3, 0.41], [0.2, 0.34, 0.04]);
-  windowAt(batch, 0, 1.05, 0.335, 0.13, 0.15);
-  const sails = new Batch();
-  sails.add(BALL, '#6b4a2a', [0, 0, 0.02], 0.075);
-  // Turns (x, y) by angle a in the sails' plane.
-  const turn = (x, y, a) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
-  for (let k = 0; k < 4; k++) {
-    const a = (k * Math.PI) / 2;
-    const part = (x, y, z, size, color) => sails.add(BOX, color, [...turn(x, y, a), z], size, [0, 0, a]);
-    part(0, 0.5, 0.03, [0.05, 0.98, 0.04], '#7a4f32');
-    part(0.13, 0.58, 0.04, [0.22, 0.74, 0.02], '#fff3dc');
-    for (let y = 0.3; y < 0.95; y += 0.16) part(0.13, y, 0.055, [0.23, 0.02, 0.01], '#c98a4b');
-  }
-  return sails.build();
-}
+const SIZE = { coop: 1.15, hutch: 0.8, cart: 1.15, well: 1.15, hay: 1.2, fruitTree: 1.25 };
 
 /** A hen house on legs; with `yard`, a little fenced run in front, whose middle and size it returns. */
 function coop(batch, yard = true) {
@@ -391,13 +368,7 @@ export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, riv
   for (const path of L.footpaths) steppingStones(batch, path.map(([u, b]) => at(u, b)), groundY);
   for (const spot of L.benches) place(spot, () => addNature(batch, 'PROP_10_WoodenBench', [0, 0, 0], 0.36));
 
-  const sails = place(L.windmill, () => {
-    const blades = windmill(batch);
-    const hub = new THREE.Group();
-    batch.origin.clone().multiply(new THREE.Matrix4().makeTranslation(0, 1.62, 0.36)).decompose(hub.position, hub.quaternion, hub.scale);
-    hub.add(blades);
-    return hub;
-  }, SIZE.windmill);
+  const sails = place(L.windmill, () => windmill(batch));
   group.add(sails);
 
   const coopYard = place(L.coop, () => {
@@ -463,7 +434,13 @@ export function placeBuildings({ at }) {
   };
   const smoke = smokePuffs(place(PLACES.farmhouse, () => farmhouse(batch)));
   const siloParts = place(PLACES.silo, () => silo(batch));
+  const sails = place(PLACES.windmill, () => windmill(batch));
+  place(PLACES.stoneShed, () => stoneShed(batch));
   const group = new THREE.Group();
-  group.add(batch.build(), smoke.group, siloParts);
-  return { group, update: (t) => smoke.update(t) };
+  group.add(batch.build(), smoke.group, siloParts, sails);
+  const update = (t) => {
+    smoke.update(t);
+    sails.children[0].rotation.z = -t * 0.9;
+  };
+  return { group, update };
 }
