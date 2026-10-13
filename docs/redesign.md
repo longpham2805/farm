@@ -98,6 +98,17 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   sails of brown frames and cream canvas, turning (`update` in `placeBuildings`). Beside it a little shed of grey
   stones in courses under two broad slabs, with a low door and moss. They share one pad: the windmill in its middle,
   turned a little left of facing the camera, the shed in the bulge on its left (`PLACES`, moved to the pad).
+- **Hen yard** (`henYard` in `buildings/coop.js`, in `placeBuildings`): one square unit, as the reference draws
+  it, not following the pad's curves: a yard fenced on all four sides with short sections (posts at most 0.3 apart,
+  two rails), the hen house at its back on the right (boards on short legs, a shingled roof, a door with a ramp and
+  a white sign), the small coop on its left (a round window in its gable, straw in its doorway), bales of straw
+  stacked between them and straw strewn about, a feeder and a water dish, and grass round the fence, thicker at the
+  corners. It stands on the pad of two lobes (`PLACES.henYard`), turned 37° from facing the camera.
+- **Animals apart from where they live**: the chickens are `src/three/animals/chicken.js`, breeds in `CHICKENS`
+  (white, brown, gold, black and speckled hens, a rooster, a chick), and `flock(area, breeds)` lets them loose to
+  wander and peck in any polygon. The hen yard has a flock (`henYard` returns where, `PLACES.henYard.hens` which);
+  the same birds can be let loose anywhere. `dev/animals.html` shows every breed close up. The old `hen` in
+  `animals.js` belongs to the old 3D valley.
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`). Only things inside the sun's shadow box
   (`SHADOW_BOX`, 10 units round the middle) cast them; the fields over the big bridge are outside it.
@@ -115,11 +126,11 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
 In this order:
 
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
-   building at a time as above. Done: the farmhouse, the barn, the silo, the windmill and the stone shed. Next, in
-   this order: the coop and hen house with their run (the old `coop` and `hutch` are one hut twice; the reference
-   has two), the well, the cart and the hay. Then bridges, animals and fences (`addAnimals`,
-   the old `LAYOUT` in `countryside.js` giving way to `PLACES`), the landing by the small fall, and spray and mist
-   at the foot of each painted fall (`buildWaterfall` has them; put them at `WATERFALLS`).
+   building at a time as above. Done: the farmhouse, the barn, the silo, the windmill and the stone shed, the hen
+   house and coop with their yard and hens. Next, in this order: the well, the cart and the hay. Then bridges, the
+   other animals (each in `animals/` like the chickens) and fences (`addAnimals`, the old `LAYOUT` in
+   `countryside.js` giving way to `PLACES`), the landing by the small fall, and spray and mist at the foot of each
+   painted fall (`buildWaterfall` has them; put them at `WATERFALLS`).
 2. **3D trees that sway** gently (wind in the vertex shader) in the olive areas and round the farm; bushes, flowers,
    rocks and reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in

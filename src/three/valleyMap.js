@@ -137,9 +137,9 @@ export const PLACES = {
   // Turned 30° from facing the camera, so its porch faces the ring's back left side.
   farmhouse: { at: [-6.4, 4.45], size: [2.6, 1.8], turn: Math.PI / 6 },
   cherry: { at: [-8.0, 2.7] },
-  coop: { at: [-4.4, 6.3] },
-  henHouse: { at: [-3.5, 7.0] },
-  chickenRun: { at: [-3.6, 5.8], radius: 1.0 },
+  // The hens' place on its pad of two lobes, turned 37° from facing the camera: a fenced yard with the hen house
+  // at its back and the small coop on its left, and `hens`, the breeds (animals/chicken.js) let loose in it.
+  henYard: { at: [-3.9, 6.04], turn: 0.65, hens: ['white', 'white', 'brown', 'gold', 'speckled', 'rooster', 'chick', 'chick'] },
   cart: { at: [-1.8, 7.0] },
   // Just behind the ring's back corner, its doors turned 18° left of facing the camera, so its right side shows.
   barn: { at: [0.8, 6.9], size: [1.9, 1.9], turn: -0.32 },

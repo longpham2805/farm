@@ -104,7 +104,7 @@ renderer.setAnimationLoop(() => {
   clock.update();
   const t = clock.getElapsed();
   backdrop.update(t);
-  placed.update(t);
+  placed.update(t, clock.getDelta());
   renderer.render(scene, camera);
   window.__ready = true;
 });

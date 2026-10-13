@@ -1134,7 +1134,7 @@ export function buildCountryside() {
     built.update(t, dt);
     animals.update(t, dt);
     backdrop?.update(t);
-    placed?.update(t);
+    placed?.update(t, dt);
     for (const c of clouds) {
       // Drift to the right across the screen and come back round from the left.
       c.position.x += dt * 0.1;

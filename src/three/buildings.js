@@ -13,6 +13,8 @@ import { farmhouse } from './buildings/farmhouse.js';
 import { silo } from './buildings/silo.js';
 import { windmill } from './buildings/windmill.js';
 import { stoneShed } from './buildings/stoneShed.js';
+import { henYard } from './buildings/coop.js';
+import { flock } from './animals/chicken.js';
 
 // A lily pad: a disc with a notch cut out.
 const PAD = new THREE.CylinderGeometry(1, 1, 1, 12, 1, false, 0.35, TAU - 0.35);
@@ -419,9 +421,10 @@ export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, riv
 }
 
 /**
- * The buildings redone for the painted valley, each on its pad in the painting (PLACES in valleyMap.js). They join
- * one at a time as each is redone (docs/redesign.md); until then addBuildings keeps the old ones for the 3D valley.
- * at(u, b) is the map's point in the world. Returns the group and update(t).
+ * The buildings redone for the painted valley, each on its pad in the painting (PLACES in valleyMap.js), and the
+ * animals that live in them. They join one at a time as each is redone (docs/redesign.md); until then addBuildings
+ * keeps the old ones for the 3D valley. at(u, b) is the map's point in the world. Returns the group and
+ * update(t, dt).
  */
 export function placeBuildings({ at }) {
   const batch = new Batch();
@@ -436,11 +439,13 @@ export function placeBuildings({ at }) {
   const siloParts = place(PLACES.silo, () => silo(batch));
   const sails = place(PLACES.windmill, () => windmill(batch));
   place(PLACES.stoneShed, () => stoneShed(batch));
+  const hens = flock(place(PLACES.henYard, () => henYard(batch)), PLACES.henYard.hens);
   const group = new THREE.Group();
-  group.add(batch.build(), smoke.group, siloParts, sails);
-  const update = (t) => {
+  group.add(batch.build(), smoke.group, siloParts, sails, hens.group);
+  const update = (t, dt) => {
     smoke.update(t);
     sails.children[0].rotation.z = -t * 0.9;
+    hens.update(t, dt);
   };
   return { group, update };
 }
