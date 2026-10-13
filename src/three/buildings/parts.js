@@ -87,10 +87,11 @@ export function windowAt(batch, x, y, z, w = 0.26, h = 0.21, side = false) {
 /**
  * Tiles or shingles on a slope from its top edge (height y0 at z0) down to its bottom edge (y1 at z1), w across in
  * x: staggered rows of them, `tile` wide (varied by up to `jitter`) and `thick` thick, in colours picked from
- * `tones`, each `tilt` flatter than the slope so its lower edge stands proud and tipped at random by up to `wobble`,
- * on an underlay of colour `under` that shows between them.
+ * `tones`, each `tilt` flatter than the slope so its lower edge stands proud, tipped at random by up to `wobble` and
+ * lifted off the slope by up to `rise`, so no two lie quite level, on an underlay of colour `under` that shows
+ * between them.
  */
-export function tiledSlope(batch, rand, { w, z0, y0, z1, y1, rows, tones, under, tile = 0.15, jitter = 0, thick = 0.035, tilt = 0.07, wobble = 0 }) {
+export function tiledSlope(batch, rand, { w, z0, y0, z1, y1, rows, tones, under, tile = 0.15, jitter = 0, thick = 0.035, tilt = 0.07, wobble = 0, rise = 0 }) {
   const dz = z1 - z0;
   const dy = y1 - y0;
   const len = Math.hypot(dz, dy);
@@ -114,7 +115,8 @@ export function tiledSlope(batch, rand, { w, z0, y0, z1, y1, rows, tones, under,
       if (right - left < 0.04) continue;
       const color = tones[Math.floor(rand() * tones.length)];
       const tip = () => (wobble ? (rand() - 0.5) * wobble : 0);
-      batch.add(BOX, color, [(left + right) / 2, y, z], [right - left - 0.014, thick, step * 1.3], [s * (a - tilt) + tip(), tip(), tip()]);
+      const up = rise ? rand() * rise : 0;
+      batch.add(BOX, color, [(left + right) / 2, y + out[1] * up, z + out[0] * up], [right - left - 0.014, thick, step * 1.3], [s * (a - tilt) + tip(), tip(), tip()]);
     }
   }
 }

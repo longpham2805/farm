@@ -149,7 +149,8 @@ export const PLACES = {
   // Sharing a pad: the windmill, turned a little left of facing the camera, and the stone shed on its left.
   windmill: { at: [6.4, 4.5], turn: -0.3 },
   stoneShed: { at: [5.0, 4.4], turn: -0.2 },
-  well: { at: [-6.0, -3.8] },
+  // On its pad by the ring road's front left side, turned 54° so its left gable and its mouth show.
+  well: { at: [-5.9, -3.65], turn: 0.94 },
   buffalo: { at: [6.3, -2.6] },
   // The fenced fields over the big bridge: square to the plots, `half` along each of their sides.
   fields: { at: [11.0, -6.7], half: [2.25, 2.8] },

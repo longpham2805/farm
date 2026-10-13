@@ -15,9 +15,10 @@
 <body>
 <!-- One building beside the reference design, to model it to the design and check where it stands: ?b=farmhouse
      (a name in PLACES). Left, the reference as drawn; right, the game's view of the building where it stands on the
-     painting, with the farm in the middle (the barn among it), in the game's light, at the same scale. The slider lays the reference over the game's view.
-     ?span=5 sets how many world units the views take across, ?up=0.7 how far up the screen from the building's spot
-     they are centred. -->
+     painting, with the farm in the middle (the barn among it), in the game's light, at the same scale. The slider
+     lays the reference over the game's view. ?span=4 (the default) sets how many world units the views take across,
+     ?up=0.7 how far up the screen from the building's spot they are centred, ?t=6.3 holds what moves at that
+     moment. -->
 <main>
   <figure><figcaption>Thiết kế</figcaption><canvas id="ref"></canvas></figure>
   <figure><figcaption>Trong game</figcaption><canvas id="game"></canvas><canvas id="over"></canvas></figure>
@@ -41,7 +42,7 @@ const CAM_DIR = new THREE.Vector3(1, 0.95, 1).normalize(); // as in FarmScene
 
 const params = new URLSearchParams(location.search);
 const name = params.get('b') || 'farmhouse';
-const span = Number(params.get('span') || 5);
+const span = Number(params.get('span') || 4);
 const up = Number(params.get('up') || 0.7);
 const [u, b] = PLACES[name].at;
 
@@ -100,9 +101,11 @@ camera.position.copy(spot).addScaledVector(CAM_DIR, 30);
 camera.lookAt(spot);
 
 const clock = new THREE.Timer();
+// ?t=6.3 holds the moving parts still at that moment, to look at it.
+const still = params.has('t') ? Number(params.get('t')) : null;
 renderer.setAnimationLoop(() => {
   clock.update();
-  const t = clock.getElapsed();
+  const t = still ?? clock.getElapsed();
   backdrop.update(t);
   placed.update(t, clock.getDelta());
   renderer.render(scene, camera);

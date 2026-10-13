@@ -8,19 +8,20 @@ import { roundTree, fruitSpots, BLOSSOM } from './trees.js';
 import { addNature, putNature, natureSize, railFence, steppingStones } from './nature.js';
 import { streetLamp, buildGlow } from './farm.js';
 import { PLACES } from './valleyMap.js';
-import { TAU, FACE, BOX, GABLE, BALL, ICO, cyl, CYL6, CYL10, CYL16, WOOD, PLANK, STRAW, FENCE, stoneCourses, smokePuffs } from './buildings/parts.js';
+import { TAU, FACE, BOX, GABLE, BALL, ICO, cyl, CYL6, CYL10, CYL16, WOOD, PLANK, STRAW, FENCE, smokePuffs } from './buildings/parts.js';
 import { farmhouse } from './buildings/farmhouse.js';
 import { silo } from './buildings/silo.js';
 import { windmill } from './buildings/windmill.js';
 import { stoneShed } from './buildings/stoneShed.js';
 import { henYard } from './buildings/coop.js';
+import { well } from './buildings/well.js';
 import { flock } from './animals/chicken.js';
 
 // A lily pad: a disc with a notch cut out.
 const PAD = new THREE.CylinderGeometry(1, 1, 1, 12, 1, false, 0.35, TAU - 0.35);
 
 // How much bigger than as modelled the buildings stand, now that they line the ring road.
-const SIZE = { coop: 1.15, hutch: 0.8, cart: 1.15, well: 1.15, hay: 1.2, fruitTree: 1.25 };
+const SIZE = { coop: 1.15, hutch: 0.8, cart: 1.15, hay: 1.2, fruitTree: 1.25 };
 
 /** A hen house on legs; with `yard`, a little fenced run in front, whose middle and size it returns. */
 function coop(batch, yard = true) {
@@ -46,18 +47,6 @@ function coop(batch, yard = true) {
   batch.add(BOX, WOOD, [-0.45, 0.06, 1.05], [0.42, 0.08, 0.13]);
   batch.add(BOX, '#e8cf7a', [-0.45, 0.1, 1.05], [0.36, 0.02, 0.08]);
   return { x: 0, z: 0.95, w: 1.6, d: 1.05 };
-}
-
-function well(batch) {
-  batch.add(cyl(0.3, 0.33, 10), '#b8b0a0', [0, 0.17, 0], [1, 0.34, 1], null, true);
-  batch.add(CYL10, '#a39b8c', [0, 0.36, 0], [0.33, 0.05, 0.33], null, true);
-  batch.add(CYL10, '#3b7fae', [0, 0.37, 0], [0.25, 0.02, 0.25]);
-  for (const x of [-0.28, 0.28]) batch.add(BOX, WOOD, [x, 0.62, 0], [0.06, 0.62, 0.06]);
-  batch.add(CYL6, '#7a4f32', [0, 0.78, 0], [0.03, 0.62, 0.03], [0, 0, Math.PI / 2]);
-  shingleRoof(batch, { y: 0.93, width: 0.78, depth: 0.56, rise: 0.26, tones: ['#d9573f', '#c94d36', '#e56a4d'], ridge: '#a8402c', rows: 3 });
-  stoneCourses(batch, 2, 0.09, 0.15, 10, (y) => 0.335 - y * 0.09, 0.13);
-  batch.add(BOX, '#d9c4a0', [0, 0.66, 0], [0.012, 0.24, 0.012]);
-  batch.add(cyl(0.07, 0.055, 8), WOOD, [0, 0.5, 0], [1, 0.11, 1]);
 }
 
 /** A haystack: a dome of straw round a pole. */
@@ -357,11 +346,7 @@ export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, riv
   place(L.cart, () => cart(batch), SIZE.cart);
   for (const spot of L.bales) place(spot, () => hayBale(batch), SIZE.hay);
   for (const [u, b, s] of L.haystacks) place([u, b, rand() * TAU], () => haystack(batch, s), SIZE.hay);
-  place(L.well, () => {
-    well(batch);
-    addNature(batch, 'PLANT_10_BroadleafPlant', [-0.48, 0, 0.05], 0.3, 0.8);
-    addNature(batch, 'ROCK_01_Small', [0.42, 0, -0.18], 0.24, 2);
-  }, SIZE.well);
+  group.add(place(L.well, () => well(batch)).group);
   place([...L.cherry, 0], () => blossomTree(batch));
   place(L.woodpile, () => woodpile(batch));
   // The buffalo's wallow, a sign where the road to the waterfall leaves the ring, and footpaths of stepping stones.
@@ -440,12 +425,14 @@ export function placeBuildings({ at }) {
   const sails = place(PLACES.windmill, () => windmill(batch));
   place(PLACES.stoneShed, () => stoneShed(batch));
   const hens = flock(place(PLACES.henYard, () => henYard(batch)), PLACES.henYard.hens);
+  const wellParts = place(PLACES.well, () => well(batch));
   const group = new THREE.Group();
-  group.add(batch.build(), smoke.group, siloParts, sails, hens.group);
+  group.add(batch.build(), smoke.group, siloParts, sails, hens.group, wellParts.group);
   const update = (t, dt) => {
     smoke.update(t);
     sails.children[0].rotation.z = -t * 0.9;
     hens.update(t, dt);
+    wellParts.update(t);
   };
   return { group, update };
 }

@@ -104,6 +104,21 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   a white sign), the small coop on its left (a round window in its gable, straw in its doorway), bales of straw
   stacked between them and straw strewn about, a feeder and a water dish, and grass round the fence, thicker at the
   corners. It stands on the pad of two lobes (`PLACES.henYard`), turned 37° from facing the camera.
+- **Well** (`buildings/well.js`, in `placeBuildings`): a round wall of pale stones with rounded edges, five staggered
+  courses of uneven stones outside and darker ones lining the shaft inside from below the water (`course`, each stone
+  a little wider outside than in so a ring closes up), mortar only in the joints, under a rim of broad flat stones
+  reaching out over the wall and a little in over the shaft; bright, glossy water well below the rim, the wall's core
+  of mortar stopping under it (soft light wavering over it in a shader, a slow bob, and now and then a ripple from a
+  drip); clumps of moss on the rim, along the joints and round the foot, and ivy climbing two sides; two wooden posts
+  (turned with the roof and the winch so the one nearer the camera stands in the middle of a rim stone) holding a roof
+  of thick orange clay tiles, no two quite level (`rise` in `tiledSlope`), with boarded gables (seams up the boards, a
+  small iron hook under the ridge); and a winch with a twisted rope wound round it down to a bucket of wooden staves
+  and iron hoops. The bucket works slowly, on a loop of about thirteen seconds: let down into the water while the
+  winch turns, a ripple as it dips, wound up full to just under the winch (so it does not hide the water), tipped to
+  pour the water back down the well (a stream, and a ripple where it lands), and upright again (`update` in
+  `placeBuildings`). Flowers at its foot are left for the small things to come. On its pad by the ring road's front
+  left side (`PLACES.well`), turned 54°. `dev/buildings.html?t=9` holds what moves at that moment (there, the bucket
+  pouring), to look at it.
 - **Animals apart from where they live**: the chickens are `src/three/animals/chicken.js`, breeds in `CHICKENS`
   (white, brown, gold, black and speckled hens, a rooster, a chick), and `flock(area, breeds)` lets them loose to
   wander and peck in any polygon. The hen yard has a flock (`henYard` returns where, `PLACES.henYard.hens` which);
@@ -127,7 +142,7 @@ In this order:
 
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
    building at a time as above. Done: the farmhouse, the barn, the silo, the windmill and the stone shed, the hen
-   house and coop with their yard and hens. Next, in this order: the well, the cart and the hay. Then bridges, the
+   house and coop with their yard and hens, the well. Next, in this order: the cart and the hay. Then bridges, the
    other animals (each in `animals/` like the chickens) and fences (`addAnimals`, the old `LAYOUT` in
    `countryside.js` giving way to `PLACES`), the landing by the small fall, and spray and mist at the foot of each
    painted fall (`buildWaterfall` has them; put them at `WATERFALLS`).

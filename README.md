@@ -115,7 +115,7 @@ candy crops become fruits of the same tier (see `RENAMED_CROPS`).
 | `src/three/farm.js` | The farm in the middle: plots, barn, the fence with its lamps, benches and flower beds, the frog's pond (recoloured for neighbours), and the shape of the ring road round them |
 | `src/three/countryside.js` | The valley around it: the map, ground, river and waterfall, roads, forest, mountains, clouds |
 | `src/three/buildings.js`, `src/three/animals.js` | Farmhouse, silo, windmill, coops, well, bridges, fields, meadow…; hens, ducks, a pig, cows, sheep, buffalo, birds |
-| `src/three/buildings/` | The buildings redone for the painted valley, one file each (farmhouse, barn, silo, windmill, stone shed, hen house and coop so far), and the parts they share |
+| `src/three/buildings/` | The buildings redone for the painted valley, one file each (farmhouse, barn, silo, windmill, stone shed, hen yard and well so far), and the parts they share |
 | `src/three/animals/` | Animals for the painted valley, apart from where they live: chickens of several breeds, and a flock that wanders any patch of ground |
 | `src/three/batch.js` | Merges many small still parts into one mesh, so the valley draws in a few calls |
 | `src/three/trees.js` | Trees built in code: tiered pines, round trees with puffy crowns, birches and bushes, painted light on top and dark underneath |
