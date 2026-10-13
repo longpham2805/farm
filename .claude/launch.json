@@ -3,9 +3,10 @@
   "configurations": [
     {
       "name": "farm-dev",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["vite", "--port", "5174", "--strictPort"],
-      "port": 5174
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "npx vite --port ${PORT:-5174} --strictPort"],
+      "port": 5174,
+      "autoPort": true
     }
   ]
 }

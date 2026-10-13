@@ -14,9 +14,9 @@
 </style></head>
 <body>
 <!-- One building beside the reference design, to model it to the design and check where it stands: ?b=farmhouse
-     (a name in PLACES). Left, the reference as drawn; right, the game's view of the building where it stands on the
-     painting, with the farm in the middle (the barn among it), in the game's light, at the same scale. The slider
-     lays the reference over the game's view. ?span=4 (the default) sets how many world units the views take across,
+     (a name in PLACES, or in BRIDGES). Left, the reference as drawn; right, the game's view of the building where it
+     stands on the painting, with the farm in the middle (the barn among it), in the game's light, at the same scale.
+     The slider lays the reference over the game's view. ?span=4 (the default) sets how many world units the views take across,
      ?up=0.7 how far up the screen from the building's spot they are centred, ?t=6.3 holds what moves at that
      moment. -->
 <main>
@@ -26,10 +26,10 @@
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <script type="module">
 import * as THREE from 'three';
-import { at, SUN_DIR, SHADOW_BOX } from '../src/three/countryside.js';
+import { at, SUN_DIR, SHADOW_BOX, SHADOW_GROUND } from '../src/three/countryside.js';
 import { buildBackdrop, shadowCatcher } from '../src/three/backdrop.js';
 import { placeBuildings } from '../src/three/buildings.js';
-import { PLACES } from '../src/three/valleyMap.js';
+import { PLACES, BRIDGES } from '../src/three/valleyMap.js';
 import { buildFarm } from '../src/three/farm.js';
 import { HOME_THEME } from '../src/three/scene.js';
 
@@ -44,7 +44,9 @@ const params = new URLSearchParams(location.search);
 const name = params.get('b') || 'farmhouse';
 const span = Number(params.get('span') || 4);
 const up = Number(params.get('up') || 0.7);
-const [u, b] = PLACES[name].at;
+// A bridge (?b=main or small, a name in BRIDGES) is looked at round its middle; ?at=11.4,10.9 looks at that spot.
+const [u, b] = params.has('at') ? params.get('at').split(',').map(Number)
+  : PLACES[name]?.at ?? BRIDGES[name].ends.reduce(([u0, b0], [u1, b1]) => [(u0 + u1) / 2, (b0 + b1) / 2]);
 
 const width = Math.min(640, Math.floor((window.innerWidth - 24) / 2));
 const height = Math.round(width * 0.75);
@@ -81,16 +83,16 @@ renderer.shadowMap.type = THREE.PCFShadowMap;
 const scene = new THREE.Scene();
 scene.add(new THREE.HemisphereLight('#e4eeff', '#7b9a4a', 0.8));
 const sun = new THREE.DirectionalLight('#ffe2a4', 3.2);
-sun.position.copy(SUN_DIR).multiplyScalar(12);
+sun.position.copy(SUN_DIR).multiplyScalar(15);
 sun.castShadow = true;
 sun.shadow.mapSize.set(3072, 3072);
-Object.assign(sun.shadow.camera, { left: -SHADOW_BOX, right: SHADOW_BOX, top: SHADOW_BOX, bottom: -SHADOW_BOX, near: 1, far: 25 });
+Object.assign(sun.shadow.camera, SHADOW_BOX, { near: 1, far: 30 });
 sun.shadow.bias = -0.0006;
 sun.shadow.normalBias = 0.02;
 scene.add(sun);
 
 const backdrop = buildBackdrop();
-scene.add(backdrop.mesh, shadowCatcher(SHADOW_BOX * 3));
+scene.add(backdrop.mesh, shadowCatcher(SHADOW_GROUND));
 await backdrop.setDetail(true);
 const placed = placeBuildings({ at });
 scene.add(placed.group, buildFarm(HOME_THEME).group);

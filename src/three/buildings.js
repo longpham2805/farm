@@ -7,7 +7,7 @@ import { Batch, shingleRoof } from './batch.js';
 import { roundTree, fruitSpots, BLOSSOM } from './trees.js';
 import { addNature, putNature, natureSize, railFence, steppingStones } from './nature.js';
 import { streetLamp, buildGlow } from './farm.js';
-import { PLACES } from './valleyMap.js';
+import { PLACES, BRIDGES } from './valleyMap.js';
 import { TAU, FACE, BOX, GABLE, BALL, ICO, cyl, CYL6, CYL10, CYL16, WOOD, PLANK, STRAW, FENCE, smokePuffs } from './buildings/parts.js';
 import { farmhouse } from './buildings/farmhouse.js';
 import { silo } from './buildings/silo.js';
@@ -16,6 +16,7 @@ import { stoneShed } from './buildings/stoneShed.js';
 import { henYard } from './buildings/coop.js';
 import { well } from './buildings/well.js';
 import { cart, hayBale, haystack } from './buildings/hay.js';
+import { bridge as plankBridge } from './buildings/bridge.js';
 import { flock } from './animals/chicken.js';
 
 // A lily pad: a disc with a notch cut out.
@@ -404,8 +405,19 @@ export function placeBuildings({ at }) {
   const hens = flock(place(PLACES.henYard, () => henYard(batch)), PLACES.henYard.hens);
   const wellParts = place(PLACES.well, () => well(batch));
   const hay = [place(PLACES.cart, () => cart(batch)), place(PLACES.bale, () => hayBale(batch)), place(PLACES.haystack, () => haystack(batch))];
+  // The bridges, each turned to run between its ends: the big one with a lamp at its farm end, the small one with
+  // lanterns on its corners.
+  const glow = new Batch();
+  for (const [name, { ends, arch, width }] of Object.entries(BRIDGES)) {
+    const [a, b] = ends.map(([u, v]) => at(u, v));
+    const dir = b.clone().sub(a);
+    const mid = a.clone().add(b).multiplyScalar(0.5);
+    batch.push(mid.x, 0, mid.z, Math.atan2(-dir.z, dir.x));
+    plankBridge(batch, glow, { span: dir.length(), width, arch, lamp: name === 'main', lanterns: name === 'small' });
+    batch.pop();
+  }
   const group = new THREE.Group();
-  group.add(batch.build(), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay);
+  group.add(batch.build(), buildGlow(glow), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay);
   const update = (t, dt) => {
     smoke.update(t);
     sails.children[0].rotation.z = -t * 0.9;

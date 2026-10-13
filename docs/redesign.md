@@ -127,14 +127,26 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   and scraps of straw lie on the ground round each (`strawScraps`, for anywhere else hay lies about). The bale and the
   haystack stand forward of the barn's and the silo's shadows, which turned them olive (`PLACES.cart`, `bale`,
   `haystack`).
+- **Bridges** (`buildings/bridge.js`, in `placeBuildings`, each turned to run between its `BRIDGES` ends): a deck of
+  wide planks laid across, arching from end to end, each a little off from the next in length, colour and lie, over a
+  dark floor that shows between them, on a deep beam down each side; a railing of square posts about 0.55 apart under
+  a round rail that follows the arch, with thicker, taller posts at the corners; and footings of pale stones at each
+  end, a slab reaching out onto the road and a block under each corner post. The big bridge has a lamp post of two
+  lanterns behind its farm end, as the reference draws it; the small one, under the main fall, a lantern on each of
+  its back corner posts (their glass glows, like the farm's lamps). `dev/buildings.html?b=main` (or `small`, names in
+  `BRIDGES`) shows one; `?at=u,b` looks at any spot of the map. The old `bridge` in `buildings.js` belongs to the old
+  3D valley.
 - **Animals apart from where they live**: the chickens are `src/three/animals/chicken.js`, breeds in `CHICKENS`
   (white, brown, gold, black and speckled hens, a rooster, a chick), and `flock(area, breeds)` lets them loose to
   wander and peck in any polygon. The hen yard has a flock (`henYard` returns where, `PLACES.henYard.hens` which);
   the same birds can be let loose anywhere. `dev/animals.html` shows every breed close up. The old `hen` in
   `animals.js` belongs to the old 3D valley.
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
-  (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`). Only things inside the sun's shadow box
-  (`SHADOW_BOX`, 10 units round the middle) cast them; the fields over the big bridge are outside it.
+  (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
+  sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
+  the small bridge's shadow in half, and is now fitted round everything in `PLACES` and `BRIDGES` (the small bridge
+  at its top, the fields over the big bridge at its right), 22 × 25 units, so a little less sharp. Something placed
+  outside it later needs the box widened.
 
 ### Loose ends
 
@@ -150,7 +162,7 @@ In this order:
 
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
    building at a time as above. Done: every building along the back of the ring road (farmhouse, hen yard and hens,
-   cart, barn, bale, silo, haystack, windmill and stone shed) and the well. Next: the bridges, the other animals
+   cart, barn, bale, silo, haystack, windmill and stone shed), the well and the bridges. Next: the other animals
    (each in `animals/` like the chickens: the buffalo, cows and sheep, the pig, ducks, birds) and fences (`addAnimals`,
    the old `LAYOUT` in `countryside.js` giving way to `PLACES`), the fields over the big bridge with the scarecrow,
    the meadow's fence and trough, the landing by the small fall, and spray and mist at the foot of each painted fall
@@ -170,7 +182,7 @@ becomes NaN in `FarmScene.resize` → `setZoom`, and the valley stays blank unti
 ## Picking it up
 
 - Run the game with `npm run dev`. In the Claude desktop app, the preview "farm-dev" (`.claude/launch.json`) serves it
-  on port 5174.
+  on port 5174, or on a free port the app picks when another session already has 5174.
 - `src/three/backdrop.js`: the painting, where it sits, its tiles, and the water shader.
 - `src/three/valleyMap.js`: where everything in the valley is, in map units, as the painting shows it.
 - `src/three/countryside.js`: builds the valley from the map; `STAGE` says which parts are on.

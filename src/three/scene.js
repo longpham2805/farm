@@ -76,15 +76,10 @@ export class FarmScene {
     // sky, so the sides of things facing right fall into shade and shadows fall to the right.
     scene.add(new THREE.HemisphereLight('#e4eeff', '#7b9a4a', 0.8));
     const sun = new THREE.DirectionalLight('#ffe2a4', 3.2);
-    sun.position.copy(SUN_DIR).multiplyScalar(12);
+    sun.position.copy(SUN_DIR).multiplyScalar(15);
     sun.castShadow = true;
-    // Shadows cover the farm and the buildings round it; the far valley does without.
-    sun.shadow.camera.left = -SHADOW_BOX;
-    sun.shadow.camera.right = SHADOW_BOX;
-    sun.shadow.camera.top = SHADOW_BOX;
-    sun.shadow.camera.bottom = -SHADOW_BOX;
-    sun.shadow.camera.near = 1;
-    sun.shadow.camera.far = 25;
+    // Shadows cover the farm and everything 3D round it; the far valley does without.
+    Object.assign(sun.shadow.camera, SHADOW_BOX, { near: 1, far: 30 });
     sun.shadow.bias = -0.0006;
     sun.shadow.normalBias = 0.02;
     scene.add(sun);
@@ -153,7 +148,7 @@ export class FarmScene {
     this.quality = q;
     const high = q === 'high';
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, high ? 2 : 1.25));
-    // The shadow box is 20 units wide (SHADOW_BOX): about 150 texels a unit on "Đẹp", 75 on "Nhanh".
+    // The shadow box is 22 × 25 units (SHADOW_BOX): about 125 texels a unit on "Đẹp", 60 on "Nhanh".
     const shadowSize = Math.min(high ? 3072 : 1536, this.renderer.capabilities.maxTextureSize);
     this.sun.shadow.mapSize.set(shadowSize, shadowSize);
     if (this.sun.shadow.map) {

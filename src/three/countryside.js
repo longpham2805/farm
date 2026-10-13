@@ -33,9 +33,17 @@ export const VIEW_BOUNDS = backdropBounds();
 /** Where the sun shines from: up and to the left on screen, a little towards the camera. */
 export const SUN_DIR = new THREE.Vector3(-0.414, 1.11, 0.91).normalize();
 
-/** Half the width of the sun's shadow box (see FarmScene): only things this close to the middle cast shadows. */
-export const SHADOW_BOX = 10;
-const SHADOW_REACH = SHADOW_BOX + 0.5;
+/**
+ * The sun's shadow box (see FarmScene): how far it reaches left, right, down and up from the middle of the plots, in
+ * world units as the sun sees them. Only things inside it cast shadows. It is fitted round everything 3D that stands
+ * on the painting (PLACES and BRIDGES in valleyMap.js), the small bridge under the falls at its top and the fields
+ * over the big bridge at its right, with their shadows.
+ */
+export const SHADOW_BOX = { left: -8, right: 14, bottom: -12.5, top: 12.5 };
+/** How wide a square round the middle the ground under the shadow box takes, for the plane that shows the shadows. */
+export const SHADOW_GROUND = 44;
+// The old 3D valley's trees and stones cast shadows this close to the middle.
+const SHADOW_REACH = 10.5;
 
 function hash(x, z) {
   const s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453;
@@ -1113,7 +1121,7 @@ export function buildCountryside() {
   const placed = backdrop ? placeBuildings({ at }) : null;
   if (backdrop) {
     for (const child of [...group.children]) group.remove(child);
-    group.add(backdrop.mesh, shadowCatcher(SHADOW_BOX * 3), placed.group);
+    group.add(backdrop.mesh, shadowCatcher(SHADOW_GROUND), placed.group);
   }
 
   const clouds = CLOUDS.map(([u, b, h, s]) => {
