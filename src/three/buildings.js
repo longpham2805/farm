@@ -10,28 +10,13 @@ import { streetLamp, buildGlow } from './farm.js';
 import { PLACES } from './valleyMap.js';
 import { TAU, FACE, BOX, GABLE, BALL, ICO, cyl, CYL6, CYL10, CYL16, WOOD, PLANK, STONE, TRIM, STRAW, FENCE, stoneCourses, windowAt, smokePuffs } from './buildings/parts.js';
 import { farmhouse } from './buildings/farmhouse.js';
+import { silo } from './buildings/silo.js';
 
 // A lily pad: a disc with a notch cut out.
 const PAD = new THREE.CylinderGeometry(1, 1, 1, 12, 1, false, 0.35, TAU - 0.35);
 
 // How much bigger than as modelled the buildings stand, now that they line the ring road.
-const SIZE = { silo: 1.3, windmill: 1.3, coop: 1.15, hutch: 0.8, cart: 1.15, well: 1.15, hay: 1.2, fruitTree: 1.25 };
-
-function silo(batch) {
-  batch.add(CYL16, STONE, [0, 0.04, 0], [0.42, 0.08, 0.42]);
-  batch.add(CYL16, '#dfe5ec', [0, 0.68, 0], [0.34, 1.2, 0.34]);
-  for (const y of [0.35, 0.68, 1.01]) batch.add(CYL16, '#b9c3cf', [0, y, 0], [0.352, 0.035, 0.352]);
-  batch.add(new THREE.SphereGeometry(1, 16, 8, 0, TAU, 0, Math.PI / 2), '#ef6461', [0, 1.28, 0], 0.35);
-  batch.add(new THREE.ConeGeometry(1, 1, 10), '#c9c2b4', [0, 1.66, 0], [0.07, 0.1, 0.07]);
-  for (const x of [-0.07, 0.07]) batch.add(BOX, '#8f9aa6', [x, 0.7, 0.36], [0.025, 1.2, 0.025]);
-  for (let y = 0.2; y < 1.25; y += 0.14) batch.add(BOX, '#8f9aa6', [0, y, 0.36], [0.16, 0.02, 0.02]);
-  // The ribs of its corrugated sheets, and a darker band where the dome sits.
-  for (let k = 0; k < 20; k++) {
-    const a = (k / 20) * TAU;
-    batch.add(BOX, '#c6cfd9', [Math.sin(a) * 0.343, 0.68, Math.cos(a) * 0.343], [0.016, 1.2, 0.016], [0, a, 0]);
-  }
-  batch.add(CYL16, '#c94e4b', [0, 1.29, 0], [0.356, 0.04, 0.356]);
-}
+const SIZE = { windmill: 1.3, coop: 1.15, hutch: 0.8, cart: 1.15, well: 1.15, hay: 1.2, fruitTree: 1.25 };
 
 /** The windmill's tower goes into the batch; its sails are a separate mesh that turns. */
 function windmill(batch) {
@@ -389,7 +374,7 @@ export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, riv
 
   const smoke = smokePuffs(place(L.farmhouse, () => farmhouse(batch)));
   group.add(smoke.group);
-  place(L.silo, () => silo(batch), SIZE.silo);
+  group.add(place(L.silo, () => silo(batch)));
   place(L.cart, () => cart(batch), SIZE.cart);
   for (const spot of L.bales) place(spot, () => hayBale(batch), SIZE.hay);
   for (const [u, b, s] of L.haystacks) place([u, b, rand() * TAU], () => haystack(batch, s), SIZE.hay);
@@ -477,7 +462,8 @@ export function placeBuildings({ at }) {
     return out;
   };
   const smoke = smokePuffs(place(PLACES.farmhouse, () => farmhouse(batch)));
+  const siloParts = place(PLACES.silo, () => silo(batch));
   const group = new THREE.Group();
-  group.add(batch.build(), smoke.group);
+  group.add(batch.build(), smoke.group, siloParts);
   return { group, update: (t) => smoke.update(t) };
 }

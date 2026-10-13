@@ -86,6 +86,12 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   nearly square to the camera yet shows its right side, and 18° is where the side's windows clear the eaves. The
   home farm's barn is a deeper red and its roof a lighter wood (`HOME_THEME`). The reference lights the roof's
   right slope; the game's sun, from the upper left, lights the left one.
+- **Silo** (`buildings/silo.js`, in `placeBuildings`): a drum of grey corrugated sheet in courses (real ridges in
+  the geometry, so each facet takes the light its own way), riveted bands with a few streaks below them, a ladder up
+  its front, and a red dome of painted panels with raised seams and rivets round its foot, a little taller than
+  round, with a grey cap; a round concrete footing and flowers at its foot. The drum and the dome are meshes of
+  their own, a little glossy (`Batch.build` takes a roughness and metalness), where the rest of the valley is matt.
+  It stands on the left of the pad it shares with the haystack (`PLACES.silo`), its ladder to the camera.
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`). Only things inside the sun's shadow box
   (`SHADOW_BOX`, 10 units round the middle) cast them; the fields over the big bridge are outside it.
@@ -103,7 +109,7 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
 In this order:
 
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
-   building at a time as above. Done: the farmhouse and the barn. Next, in this order: the silo, the windmill with
+   building at a time as above. Done: the farmhouse, the barn and the silo. Next, in this order: the windmill with
    the stone shed (no model yet), the coop and hen house with their run (the old `coop` and `hutch` are one hut
    twice; the reference has two), the well, the cart and the hay. Then bridges, animals and fences (`addAnimals`,
    the old `LAYOUT` in `countryside.js` giving way to `PLACES`), the landing by the small fall, and spray and mist

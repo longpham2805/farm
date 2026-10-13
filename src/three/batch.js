@@ -71,14 +71,15 @@ export class Batch {
     this.parts[flat ? 'flat' : 'smooth'].push(g);
   }
 
-  build({ castShadow = true, receiveShadow = true } = {}) {
+  /** Merges the parts into meshes of vertex-coloured standard material, as rough and as metallic as asked. */
+  build({ castShadow = true, receiveShadow = true, roughness = 0.85, metalness = 0 } = {}) {
     const group = new THREE.Group();
     for (const kind of ['smooth', 'flat']) {
       const list = this.parts[kind];
       if (!list.length) continue;
       const geometry = mergeGeometries(list, false);
       for (const g of list) g.dispose();
-      const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, flatShading: kind === 'flat' }));
+      const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ vertexColors: true, roughness, metalness, flatShading: kind === 'flat' }));
       mesh.castShadow = castShadow;
       mesh.receiveShadow = receiveShadow;
       mesh.userData.ownMaterial = true;
