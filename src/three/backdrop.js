@@ -68,6 +68,17 @@ const WATER_FRAGMENT = /* glsl */ `
 `;
 
 /**
+ * The painting is unlit, so the 3D things' shadows fall on this instead: a square `size` across, just over the
+ * painting, that draws nothing but the shadows, darkening the painting under them.
+ */
+export function shadowCatcher(size) {
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(size, size).rotateX(-Math.PI / 2), new THREE.ShadowMaterial({ color: '#1f3a22', opacity: 0.36 }));
+  mesh.position.y = 0.002;
+  mesh.receiveShadow = true;
+  return mesh;
+}
+
+/**
  * Builds the backdrop: planes on the ground, one per tile, whose every point shows the pixel the camera sees it at.
  * Returns the group, setDetail(high), which loads the tiles for the sharp or the fast setting (nothing shows until it
  * is called), and update(t), which moves the water.

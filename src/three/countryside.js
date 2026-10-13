@@ -4,13 +4,13 @@
 import * as THREE from 'three';
 import { Batch } from './batch.js';
 import { cloud, FARM_CLEAR, BARN_SPOT, ringAt, ringDistance, ringPath } from './farm.js';
-import { addBuildings } from './buildings.js';
+import { addBuildings, placeBuildings } from './buildings.js';
 import { addAnimals } from './animals.js';
 import { glowTexture } from './textures.js';
 import { pineTree, roundTree, birchTree, bush, LEAVES, YELLOW_LEAVES, DEEP_LEAVES, PINE_NEEDLES, FRESH_PINE } from './trees.js';
 import { putNature, natureSize, railFence } from './nature.js';
 import { seeded } from '../util.js';
-import { buildBackdrop, backdropBounds } from './backdrop.js';
+import { buildBackdrop, backdropBounds, shadowCatcher } from './backdrop.js';
 import { RIVER as RIVER_MAP, WATER_Y as MAP_WATER_Y, CHANNEL, ROCKY_BANKS, LAND, FOREST, WATERFALLS } from './valleyMap.js';
 
 const S = Math.SQRT1_2;
@@ -1108,10 +1108,12 @@ export function buildCountryside() {
   group.add(animals.group);
 
   // Trying out a painted backdrop: it stands in for everything built above, which is kept out of view.
+  // The buildings redone for it stand on it, and shadows fall on it wherever the sun works them out (SHADOW_BOX).
   const backdrop = STAGE.painted ? buildBackdrop() : null;
+  const placed = backdrop ? placeBuildings({ at }) : null;
   if (backdrop) {
     for (const child of [...group.children]) group.remove(child);
-    group.add(backdrop.mesh);
+    group.add(backdrop.mesh, shadowCatcher(SHADOW_BOX * 3), placed.group);
   }
 
   const clouds = CLOUDS.map(([u, b, h, s]) => {
@@ -1132,6 +1134,7 @@ export function buildCountryside() {
     built.update(t, dt);
     animals.update(t, dt);
     backdrop?.update(t);
+    placed?.update(t);
     for (const c of clouds) {
       // Drift to the right across the screen and come back round from the left.
       c.position.x += dt * 0.1;

@@ -62,9 +62,22 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   - `LAND.cliff` and `rightLedge`, `ROCKY_BANKS`, and the `ROCKS` along the river and at the back, moved to match.
   Checked by drawing all of it over the painting. The old 3D scenery still reads these, so with `STAGE.painted` off
   it no longer lines up with its own buildings and bridges (`LAYOUT` and `ROADS` in `countryside.js`).
-- With `STAGE.painted` on (as now), the valley shows only the painting and the clouds: the old 3D terrain, river,
-  buildings, animals and bridges are taken out. The farm itself (`src/three/farm.js`: plots, fences, lamps, pond,
-  barn) still stands on top and lines up with the painted ring road.
+- With `STAGE.painted` on (as now), the valley shows only the painting, the clouds and the buildings redone so far
+  (`placeBuildings` in `buildings.js`); the old 3D terrain, river, buildings, animals and bridges are taken out. The
+  farm itself (`src/three/farm.js`: plots, fences, lamps, pond, barn) still stands on top and lines up with the
+  painted ring road.
+- Buildings are redone one at a time, each in its own file under `src/three/buildings/` (shared parts in
+  `parts.js`), modelled beside the reference in `dev/buildings.html?b=<name in PLACES>`: left the reference, right
+  the game's view of the building on the painting at the same scale, with a slider to lay one over the other. The
+  page's `REF` (where the reference's plots are, about 55 px a world unit) was measured on the reference's plots.
+  Once it looks right it goes into `placeBuildings` at its `PLACES` spot and is checked in the game.
+- **Farmhouse** (`buildings/farmhouse.js`): walls of weatherboards painted cream on a stone footing, a big roof of
+  orange clay tiles laid tile by tile, a smoking brick chimney, blue shutters, a window box, a long wooden planter of
+  flowers in front, and a porch with its own tiled roof, a door, railings and steps. The reference draws it turned more towards the camera than the game's 45°, so it stands turned
+  30° (`PLACES.farmhouse.turn`), which also fits its painted pad, and in its middle (`[-6.4, 4.45]`, measured).
+- Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
+  (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`). Only things inside the sun's shadow box
+  (`SHADOW_BOX`, 10 units round the middle) cast them; the fields over the big bridge are outside it.
 
 ### Loose ends
 
@@ -78,15 +91,16 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
 
 In this order:
 
-1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`):
-   buildings, bridges, animals and fences (`addBuildings`, `addAnimals` and the `STAGE` flags in `countryside.js`,
-   whose `LAYOUT` should give way to `PLACES`), the landing by the small fall, and spray and mist at the foot of each
+1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
+   building at a time as above. Done: the farmhouse. Next, in this order: the barn (it stands at `BARN_SPOT` in
+   `farm.js`, behind its painted pad; `PLACES.barn` is on the pad), the silo, the windmill with the stone shed (no
+   model yet), the coop and hen house with their run (the old `coop` and `hutch` are one hut twice; the reference
+   has two), the well, the cart and the hay. Then bridges, animals and fences (`addAnimals`, the old `LAYOUT` in
+   `countryside.js` giving way to `PLACES`), the landing by the small fall, and spray and mist at the foot of each
    painted fall (`buildWaterfall` has them; put them at `WATERFALLS`).
 2. **3D trees that sway** gently (wind in the vertex shader) in the olive areas and round the farm; bushes, flowers,
    rocks and reeds.
-3. **Shadows on the painting**: the backdrop is unlit, so it needs a shadow-only plane over it for the 3D things'
-   shadows.
-4. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
+3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
    code either removed or kept behind its flags.

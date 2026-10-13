@@ -3,126 +3,19 @@
 // lamps and benches, and the stones and lily pads along the river. Only the windmill's sails and the
 // chimney smoke move; they come back as their own objects.
 import * as THREE from 'three';
-import { Batch, gableGeometry, shingleRoof } from './batch.js';
-import { glowTexture } from './textures.js';
+import { Batch, shingleRoof } from './batch.js';
 import { roundTree, fruitSpots, BLOSSOM } from './trees.js';
 import { addNature, putNature, natureSize, railFence, steppingStones } from './nature.js';
 import { streetLamp, buildGlow } from './farm.js';
-import { seeded } from '../util.js';
+import { PLACES } from './valleyMap.js';
+import { TAU, FACE, BOX, GABLE, BALL, ICO, cyl, CYL6, CYL10, CYL16, WOOD, PLANK, STONE, TRIM, STRAW, FENCE, stoneCourses, windowAt, smokePuffs } from './buildings/parts.js';
+import { farmhouse } from './buildings/farmhouse.js';
 
-const TAU = Math.PI * 2;
-const FACE = Math.PI / 4; // turned to face the camera
-
-const BOX = new THREE.BoxGeometry(1, 1, 1);
-const GABLE = gableGeometry();
-const BALL = new THREE.SphereGeometry(1, 10, 7);
-const ICO = new THREE.IcosahedronGeometry(1, 0);
-const cyl = (top, bottom, seg) => new THREE.CylinderGeometry(top, bottom, 1, seg);
-const CYL6 = cyl(1, 1, 6);
-const CYL10 = cyl(1, 1, 10);
-const CYL16 = cyl(1, 1, 16);
 // A lily pad: a disc with a notch cut out.
 const PAD = new THREE.CylinderGeometry(1, 1, 1, 12, 1, false, 0.35, TAU - 0.35);
 
-const WOOD = '#8a5a3a';
-const PLANK = '#b98450';
-const STONE = '#c9c2b4';
-const TRIM = '#fff8ef';
-const GLASS = '#a9dcff';
-const STRAW = '#ecc95c';
-const FENCE = '#c98a4b';
-
 // How much bigger than as modelled the buildings stand, now that they line the ring road.
-const SIZE = { farmhouse: 1.35, silo: 1.3, windmill: 1.3, coop: 1.15, hutch: 0.8, cart: 1.15, well: 1.15, hay: 1.2, fruitTree: 1.25 };
-
-const GREYS = ['#c9c2b4', '#b8b0a0', '#d6d0c2', '#aaa292'];
-
-/** A footing of rough stones of a few greys round a w × d base, about h tall. */
-function stoneFooting(batch, w, d, h, rand) {
-  // Lays stones along a side `len` long; place(t, width, colour, height) puts one centred t along it.
-  const lay = (len, place) => {
-    for (let t = -len / 2; t < len / 2 - 0.02;) {
-      const sw = Math.min(0.1 + rand() * 0.1, len / 2 - t);
-      place(t + sw / 2, sw, GREYS[Math.floor(rand() * GREYS.length)], h * (0.8 + rand() * 0.4));
-      t += sw + 0.008;
-    }
-  };
-  for (const s of [-1, 1]) {
-    lay(w, (t, sw, c, sh) => batch.add(BOX, c, [t, sh / 2, (s * d) / 2], [sw, sh, 0.06]));
-    lay(d, (t, sw, c, sh) => batch.add(BOX, c, [(s * w) / 2, sh / 2, t], [0.06, sh, sw]));
-  }
-}
-
-/** Courses of stones round a round wall: `rows` rings from y0 up, `step` apart, `n` stones a ring, radius r(y). */
-function stoneCourses(batch, rows, y0, step, n, r, height = step - 0.02) {
-  for (let row = 0; row < rows; row++) {
-    const y = y0 + row * step;
-    const rr = r(y);
-    for (let k = 0; k < n; k++) {
-      const a = ((k + (row % 2) * 0.5) / n) * TAU;
-      batch.add(BOX, GREYS[(k * 3 + row) % GREYS.length], [Math.sin(a) * rr, y, Math.cos(a) * rr], [((TAU * rr) / n) * 0.92, height, 0.03], [0, a, 0]);
-    }
-  }
-}
-
-function windowAt(batch, x, y, z, w = 0.26, h = 0.21, side = false) {
-  const [fw, fd] = side ? [0.03, w + 0.06] : [w + 0.06, 0.03];
-  const [gw, gd] = side ? [0.02, w] : [w, 0.02];
-  const out = side ? Math.sign(x) * 0.01 : 0;
-  const zo = side ? 0 : 0.01;
-  batch.add(BOX, TRIM, [x, y, z], [fw, h + 0.06, fd]);
-  batch.add(BOX, GLASS, [x + out, y, z + zo], [gw, h, gd]);
-}
-
-// A cosy country house: cream walls on a footing of stones, timber corners, a tiled roof, a porch with railings
-// and a smoking chimney.
-function farmhouse(batch) {
-  const wall = '#fbe1a2';
-  const rand = seeded(3);
-  batch.add(BOX, STONE, [0, 0.05, 0], [1.56, 0.1, 1.06]);
-  stoneFooting(batch, 1.58, 1.08, 0.13, rand);
-  batch.add(BOX, wall, [0, 0.45, 0], [1.5, 0.7, 1.0]);
-  batch.add(GABLE, wall, [0, 0.8, 0], [1.5, 0.5, 1.0]);
-  for (const x of [-0.75, 0.75]) for (const z of [-0.5, 0.5]) batch.add(BOX, WOOD, [x, 0.46, z], [0.06, 0.72, 0.06]);
-  for (const z of [-0.51, 0.51]) batch.add(BOX, WOOD, [0, 0.79, z], [1.56, 0.05, 0.03]);
-  shingleRoof(batch, { y: 0.8, width: 1.8, depth: 1.32, rise: 0.52, tones: ['#e0673f', '#d35a35', '#ea7d52'], ridge: '#b84f2f', rows: 7 });
-  batch.add(BOX, TRIM, [0.3, 0.35, 0.505], [0.34, 0.54, 0.03]);
-  batch.add(BOX, WOOD, [0.3, 0.33, 0.515], [0.26, 0.47, 0.03]);
-  batch.add(BALL, '#ffd36b', [0.39, 0.33, 0.535], 0.018);
-  windowAt(batch, -0.35, 0.52, 0.505);
-  for (const x of [-0.56, -0.14]) batch.add(BOX, '#5fa8d3', [x, 0.52, 0.51], [0.07, 0.27, 0.03]);
-  for (const s of [-1, 1]) {
-    // A shuttered window in each end wall, and a small one up in each gable.
-    windowAt(batch, s * 0.755, 0.52, -s * 0.1, 0.26, 0.21, true);
-    for (const z of [-0.21, 0.21]) batch.add(BOX, '#5fa8d3', [s * 0.765, 0.52, -s * 0.1 + z], [0.03, 0.27, 0.07]);
-    windowAt(batch, s * 0.755, 1.0, 0, 0.14, 0.13, true);
-  }
-  // flower box under the front window
-  batch.add(BOX, WOOD, [-0.35, 0.36, 0.55], [0.34, 0.07, 0.09]);
-  ['#ff7a7a', '#ff8fc1', '#ffd23f', '#ff7a7a'].forEach((c, k) => batch.add(BALL, c, [-0.48 + k * 0.09, 0.41, 0.56], 0.035));
-  // porch
-  batch.add(BOX, '#a8703f', [0.3, 0.12, 0.68], [0.62, 0.06, 0.32]);
-  batch.add(BOX, STONE, [0.3, 0.04, 0.9], [0.42, 0.08, 0.16]);
-  for (const x of [0.04, 0.56]) batch.add(BOX, WOOD, [x, 0.38, 0.8], [0.05, 0.48, 0.05]);
-  batch.add(BOX, '#e0673f', [0.3, 0.64, 0.7], [0.72, 0.05, 0.38], [0.28, 0, 0]);
-  batch.add(BOX, '#c95632', [0.3, 0.6, 0.885], [0.72, 0.04, 0.04]);
-  // railings along the porch's sides, a lamp by the door and two potted plants
-  for (const x of [0.02, 0.58]) {
-    for (let z = 0.56; z < 0.8; z += 0.07) batch.add(BOX, PLANK, [x, 0.22, z], [0.025, 0.16, 0.025]);
-    batch.add(BOX, WOOD, [x, 0.31, 0.68], [0.035, 0.03, 0.3]);
-  }
-  batch.add(BOX, '#3d4148', [0.53, 0.5, 0.52], [0.05, 0.075, 0.05]);
-  batch.add(BOX, '#ffe9a8', [0.53, 0.5, 0.535], [0.035, 0.05, 0.03]);
-  for (const x of [0.1, 0.48]) {
-    batch.add(CYL10, '#c8673e', [x, 0.19, 0.6], [0.04, 0.07, 0.04]);
-    batch.add(ICO, '#5cb546', [x, 0.26, 0.6], 0.055, null, true);
-  }
-  // chimney, with bands of darker brick
-  batch.add(BOX, '#b5523b', [-0.45, 1.2, -0.18], [0.17, 0.56, 0.17]);
-  for (const y of [1.08, 1.3]) batch.add(BOX, '#963f2c', [-0.45, y, -0.18], [0.18, 0.025, 0.18]);
-  batch.add(BOX, '#8d3f2d', [-0.45, 1.5, -0.18], [0.21, 0.05, 0.21]);
-  return new THREE.Vector3(-0.45, 1.58, -0.18);
-}
+const SIZE = { silo: 1.3, windmill: 1.3, coop: 1.15, hutch: 0.8, cart: 1.15, well: 1.15, hay: 1.2, fruitTree: 1.25 };
 
 function silo(batch) {
   batch.add(CYL16, STONE, [0, 0.04, 0], [0.42, 0.08, 0.42]);
@@ -301,13 +194,6 @@ function blossomTree(batch) {
   batch.add(blossom.geometry, null, [0, 0, 0], 1, null, false);
 }
 
-/** Flowers and leafy plants along the front of the farmhouse, left of the porch, in the house's frame. */
-function frontGarden(batch) {
-  [['FLOWER_02_YellowCluster', -0.74, 0.4], ['PLANT_10_BroadleafPlant', -0.52, 0.3], ['FLOWER_05_RedWildflower', -0.3, 0.42], ['FLOWER_01_WhiteCluster', -0.08, 0.36]]
-    .forEach(([name, x, s], k) => addNature(batch, name, [x, 0, 0.74 + (k % 2) * 0.07], s, k * 1.3));
-  addNature(batch, 'PLANT_10_BroadleafPlant', [0.82, 0, 0.45], 0.28, 2);
-}
-
 /** A chopping stump with a log and a branch beside it, and a red toadstool. */
 function woodpile(batch) {
   addNature(batch, 'TREE_14_Stump', [0, 0, 0], 0.24);
@@ -484,28 +370,6 @@ function reeds(batch, rand, river, riverHalf, groundY, waterY, from, to, every) 
   }
 }
 
-function smokePuffs(origin) {
-  const group = new THREE.Group();
-  const puffs = [];
-  for (let k = 0; k < 6; k++) {
-    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: '#f4f1ea', transparent: true, depthWrite: false, opacity: 0 }));
-    s.userData.phase = k / 6;
-    group.add(s);
-    puffs.push(s);
-  }
-  return {
-    group,
-    update(t) {
-      for (const s of puffs) {
-        const k = (t * 0.22 + s.userData.phase) % 1;
-        s.position.set(origin.x + k * 0.35 + Math.sin(k * 6 + s.userData.phase * 9) * 0.06, origin.y + k * 1.3, origin.z - k * 0.12);
-        s.scale.setScalar(0.18 + k * 0.5);
-        s.material.opacity = Math.min(1, k * 6) * (1 - k) * 0.75;
-      }
-    },
-  };
-}
-
 /**
  * Puts the farm buildings round the ring road and the rest of what people made about the valley.
  * map: { layout, at(u, b, y), groundY(x, z), rand, bridges: [[a, b]], river, riverHalf, waterY }
@@ -523,11 +387,7 @@ export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, riv
     return out;
   };
 
-  const smoke = smokePuffs(place(L.farmhouse, () => {
-    const chimney = toWorld(farmhouse(batch));
-    frontGarden(batch);
-    return chimney;
-  }, SIZE.farmhouse));
+  const smoke = smokePuffs(place(L.farmhouse, () => farmhouse(batch)));
   group.add(smoke.group);
   place(L.silo, () => silo(batch), SIZE.silo);
   place(L.cart, () => cart(batch), SIZE.cart);
@@ -600,4 +460,24 @@ export function addBuildings(batch, { layout: L, at, groundY, rand, bridges, riv
     smoke.update(t);
   };
   return { group, coopYard, update };
+}
+
+/**
+ * The buildings redone for the painted valley, each on its pad in the painting (PLACES in valleyMap.js). They join
+ * one at a time as each is redone (docs/redesign.md); until then addBuildings keeps the old ones for the 3D valley.
+ * at(u, b) is the map's point in the world. Returns the group and update(t).
+ */
+export function placeBuildings({ at }) {
+  const batch = new Batch();
+  const place = ({ at: [u, b], turn = 0 }, build) => {
+    const p = at(u, b);
+    batch.push(p.x, 0, p.z, FACE + turn);
+    const out = build();
+    batch.pop();
+    return out;
+  };
+  const smoke = smokePuffs(place(PLACES.farmhouse, () => farmhouse(batch)));
+  const group = new THREE.Group();
+  group.add(batch.build(), smoke.group);
+  return { group, update: (t) => smoke.update(t) };
 }

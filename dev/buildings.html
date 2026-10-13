@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Buildings</title>
+<!-- The game fetches its pictures from beside index.html (Vite still resolves the imports below from this file). -->
+<base href="../">
+<style>
+  html,body{margin:0;background:#2b2b2b;font-family:sans-serif;color:#eee}
+  main{display:flex;flex-wrap:wrap;gap:8px;padding:8px}
+  figure{margin:0;position:relative}
+  figcaption{position:absolute;left:6px;top:4px;font-size:12px;text-shadow:0 1px 2px #000;z-index:2}
+  canvas{display:block}
+  #over{position:absolute;inset:0;opacity:0;pointer-events:none}
+  label{display:flex;gap:6px;align-items:center;font-size:13px;padding:0 8px}
+</style></head>
+<body>
+<!-- One building beside the reference design, to model it to the design and check where it stands: ?b=farmhouse
+     (a name in PLACES). Left, the reference as drawn; right, the game's view of the building where it stands on the
+     painting, in the game's light, at the same scale. The slider lays the reference over the game's view.
+     ?span=5 sets how many world units the views take across, ?up=0.7 how far up the screen from the building's spot
+     they are centred. -->
+<main>
+  <figure><figcaption>Thiết kế</figcaption><canvas id="ref"></canvas></figure>
+  <figure><figcaption>Trong game</figcaption><canvas id="game"></canvas><canvas id="over"></canvas></figure>
+</main>
+<label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
+<script type="module">
+import * as THREE from 'three';
+import { at, SUN_DIR, SHADOW_BOX } from '../src/three/countryside.js';
+import { buildBackdrop, shadowCatcher } from '../src/three/backdrop.js';
+import { placeBuildings } from '../src/three/buildings.js';
+import { PLACES } from '../src/three/valleyMap.js';
+
+// The reference design (art/backdrop/2-style-reference.png): the pixel the middle of the plots falls on, and how
+// many pixels a world unit takes across the screen and up it, measured on its plots. It looks down a little more
+// steeply than the game, so it is drawn squashed to the game's view.
+const REF = { url: './art/backdrop/2-style-reference.png', cx: 806, cy: 502, scale: 55, scaleY: 59 };
+const TILT = 0.559; // a step up the map, up the screen (see countryside.js)
+const CAM_DIR = new THREE.Vector3(1, 0.95, 1).normalize(); // as in FarmScene
+
+const params = new URLSearchParams(location.search);
+const name = params.get('b') || 'farmhouse';
+const span = Number(params.get('span') || 5);
+const up = Number(params.get('up') || 0.7);
+const [u, b] = PLACES[name].at;
+
+const width = Math.min(640, Math.floor((window.innerWidth - 24) / 2));
+const height = Math.round(width * 0.75);
+const viewH = (span * height) / width;
+
+// The reference, cut round the same spot.
+const refImg = new Image();
+refImg.src = REF.url;
+await refImg.decode();
+for (const id of ['ref', 'over']) {
+  const c = document.getElementById(id);
+  c.width = width * devicePixelRatio;
+  c.height = height * devicePixelRatio;
+  c.style.width = `${width}px`;
+  c.style.height = `${height}px`;
+  const g = c.getContext('2d');
+  g.imageSmoothingQuality = 'high';
+  const x = REF.cx + REF.scale * u - (span * REF.scale) / 2;
+  const y = REF.cy - REF.scaleY * (TILT * b + up) - (viewH * REF.scaleY) / 2;
+  g.drawImage(refImg, x, y, span * REF.scale, viewH * REF.scaleY, 0, 0, c.width, c.height);
+}
+document.getElementById('mix').addEventListener('input', (e) => (document.getElementById('over').style.opacity = e.target.value));
+
+// The game's view: its renderer settings, lights and camera (see FarmScene), the painting and the buildings.
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('game'), antialias: true });
+renderer.setPixelRatio(devicePixelRatio);
+renderer.setSize(width, height);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.toneMappingExposure = 1.1;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight('#e4eeff', '#7b9a4a', 0.8));
+const sun = new THREE.DirectionalLight('#ffe2a4', 3.2);
+sun.position.copy(SUN_DIR).multiplyScalar(12);
+sun.castShadow = true;
+sun.shadow.mapSize.set(3072, 3072);
+Object.assign(sun.shadow.camera, { left: -SHADOW_BOX, right: SHADOW_BOX, top: SHADOW_BOX, bottom: -SHADOW_BOX, near: 1, far: 25 });
+sun.shadow.bias = -0.0006;
+sun.shadow.normalBias = 0.02;
+scene.add(sun);
+
+const backdrop = buildBackdrop();
+scene.add(backdrop.mesh, shadowCatcher(SHADOW_BOX * 3));
+await backdrop.setDetail(true);
+const placed = placeBuildings({ at });
+scene.add(placed.group);
+
+const spot = at(u, b);
+const camera = new THREE.OrthographicCamera(-span / 2, span / 2, up + viewH / 2, up - viewH / 2, 0.1, 100);
+camera.position.copy(spot).addScaledVector(CAM_DIR, 30);
+camera.lookAt(spot);
+
+const clock = new THREE.Timer();
+renderer.setAnimationLoop(() => {
+  clock.update();
+  const t = clock.getElapsed();
+  backdrop.update(t);
+  placed.update(t);
+  renderer.render(scene, camera);
+  window.__ready = true;
+});
+</script>
+</body></html>

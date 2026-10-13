@@ -129,9 +129,13 @@ export const ROADS = {
   windmill: [[6.6, 1.4], [7.5, 1.95], [8.0, 2.7], [8.4, 3.5], [8.6, 4.3], [8.6, 5.0], [8.5, 5.4]],
 };
 
-/** Where things stand: [u, b], with a footprint or size where the design shows one. */
+/**
+ * Where things stand: [u, b], with a footprint or size where the design shows one, and a turn where it does not face
+ * the camera (added to the angle that does).
+ */
 export const PLACES = {
-  farmhouse: { at: [-6.3, 4.6], size: [2.6, 1.8] }, // its porch faces the ring's back left side
+  // Turned 30° from facing the camera, so its porch faces the ring's back left side.
+  farmhouse: { at: [-6.4, 4.45], size: [2.6, 1.8], turn: Math.PI / 6 },
   cherry: { at: [-8.0, 2.7] },
   coop: { at: [-4.4, 6.3] },
   henHouse: { at: [-3.5, 7.0] },
