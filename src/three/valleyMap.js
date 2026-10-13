@@ -154,7 +154,14 @@ export const PLACES = {
   stoneShed: { at: [5.0, 4.4], turn: -0.2 },
   // On its pad by the ring road's front left side, turned 54° so its left gable and its mouth show.
   well: { at: [-5.9, -3.65], turn: 0.94 },
-  buffalo: { at: [6.3, -2.6] },
+  // The buffalo grazing on the grass at the top of the river's rocky bank, facing left and a little towards the
+  // camera, and her calf behind her by the road (animals/buffalo.js). They wander about `area`, the grass between
+  // the road to the big bridge and the river, up into the meadow below the small fall.
+  buffalo: {
+    at: [6.9, -3.2], turn: -1.45,
+    area: [[5.35, -3.53], [6.06, -2.71], [6.82, -1.49], [7.35, -0.37], [8.29, 0.14], [9.24, -0.01], [9.59, -0.47], [8.59, -1.45], [7.24, -3.1], [6.06, -3.63]],
+  },
+  calf: { at: [6.4, -2.3], turn: -1.35 },
   // The fenced fields over the big bridge: square to the plots, `half` along each of their sides.
   fields: { at: [11.0, -6.7], half: [2.25, 2.8] },
   scarecrow: { at: [12.2, -3.8] },

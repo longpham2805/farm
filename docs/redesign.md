@@ -45,7 +45,8 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   average (at the layout's size), against 0.9 px before.
 - Flowing water: `water-map.py` makes `public/backdrop-water.png` and `public/water-noise.png`; the shader is in
   `backdrop.js`. Checked in the game: the falls stream down and the river drifts.
-- The view pans and zooms over exactly the painting (`VIEW_BOUNDS` comes from the backdrop); zoom stops at 1.6.
+- The view pans and zooms over exactly the painting (`VIEW_BOUNDS` comes from the backdrop); zoom stops at 1.6 (3.2 under `npm run dev`,
+  to look at the models close up).
 - `valleyMap.js` follows the painting (option A, chosen over asking the model to repaint it). Measured from the
   painting's water, roads and trees, in map units, by resampling it into the map's frame:
   - `RIVER`, the whole course: the layout's was up to 1.5 units off the painted river even at the front, not only in
@@ -141,6 +142,31 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   wander and peck in any polygon. The hen yard has a flock (`henYard` returns where, `PLACES.henYard.hens` which);
   the same birds can be let loose anywhere. `dev/animals.html` shows every breed close up. The old `hen` in
   `animals.js` belongs to the old 3D valley.
+- **Buffalo** (`src/three/animals/buffalo.js`, kinds in `BUFFALOES`: a grown buffalo and a calf), built like a Cape
+  buffalo from two pictures the user gave: a slate grey body in one smooth piece round its spine (`loft` through
+  `TRUNK`), the back rising to a hump over the shoulders and falling away to a smaller rump, a deep chest with a fold
+  of skin under the throat and the belly tucked up behind; a thick neck carrying the head low in front; a long face
+  down to a broad, dark muzzle, eyes with whites; the horns meeting in a broad boss over the forehead and sweeping
+  out and down beside the head, then up, the tips turning in; drooping ears under them, pink inside; sturdy legs,
+  darker below the knee (buds for horns on the calf, whose head and legs are longer for its size). An earlier white
+  chevron round the throat looked odd and went. The hide wears a coat of hair, as it looked too smooth (`Coat`): a
+  drawn picture of tufts of strands, streaking the hide's colour and raised by a bump on a matt hide, lying back
+  along the body and down the neck, head and legs, the same size all over; and on the body, neck and legs the coat
+  drawn three times more a little way out (`SHELLS`), showing only strand tips, fewer the farther out, so the edges
+  look soft. The face, ears and tail have only the flat coat. They graze with the muzzle down in the grass, nibbling, lift the head
+  to look about for a few seconds every fourteen, swish the tail and flick the ears. Every so often one turns and
+  walks slowly to another spot not far off, its legs stepping in diagonal pairs and its head nodding, and grazes
+  there; the calf follows its mother soon after she stops (`herd(area, members)`, which lets any buffaloes loose in a
+  polygon; `inside` and `spotIn` in `animals/area.js` serve the chickens too). They never walk into each other: each
+  takes up a few circles along its back (`BODY`, `gap`), they take turns to walk, and one sets off only on a way it
+  can turn (either way round) and walk clear of the others standing; the calf stands out of its mother's reach as she
+  turns about, so she can always turn. The patch they wander is narrow, so they cannot pass each other: an earlier
+  version that let both walk at once wedged them together for minutes at a time. `tests/herd.test.js` runs them for
+  half an hour and checks. They start where the reference draws them: the buffalo on the grass at the top of the
+  river's rocky bank near the big bridge, side on, facing left, the calf behind her towards the road, and wander the
+  grass between the road to the big bridge and the river, up into the meadow below the small fall (`PLACES.buffalo`
+  and its `area`, `calf`, placed by `placeBuildings`). `dev/animals.html?set=buffaloes` shows them close up (`?cols=2`
+  bigger), `?t=11.5` with the head up, `?walk=1` walking on the spot.
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
   sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
@@ -162,8 +188,8 @@ In this order:
 
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
    building at a time as above. Done: every building along the back of the ring road (farmhouse, hen yard and hens,
-   cart, barn, bale, silo, haystack, windmill and stone shed), the well and the bridges. Next: the other animals
-   (each in `animals/` like the chickens: the buffalo, cows and sheep, the pig, ducks, birds) and fences (`addAnimals`,
+   cart, barn, bale, silo, haystack, windmill and stone shed), the well, the bridges and the buffalo. Next: the other
+   animals (each in `animals/` like the chickens: cows and sheep, the pig, ducks, birds) and fences (`addAnimals`,
    the old `LAYOUT` in `countryside.js` giving way to `PLACES`), the fields over the big bridge with the scarecrow,
    the meadow's fence and trough, the landing by the small fall, and spray and mist at the foot of each painted fall
    (`buildWaterfall` has them; put them at `WATERFALLS`).

@@ -18,6 +18,7 @@ import { well } from './buildings/well.js';
 import { cart, hayBale, haystack } from './buildings/hay.js';
 import { bridge as plankBridge } from './buildings/bridge.js';
 import { flock } from './animals/chicken.js';
+import { herd } from './animals/buffalo.js';
 
 // A lily pad: a disc with a notch cut out.
 const PAD = new THREE.CylinderGeometry(1, 1, 1, 12, 1, false, 0.35, TAU - 0.35);
@@ -405,6 +406,12 @@ export function placeBuildings({ at }) {
   const hens = flock(place(PLACES.henYard, () => henYard(batch)), PLACES.henYard.hens);
   const wellParts = place(PLACES.well, () => well(batch));
   const hay = [place(PLACES.cart, () => cart(batch)), place(PLACES.bale, () => hayBale(batch)), place(PLACES.haystack, () => haystack(batch))];
+  // The buffalo and her calf by the river, grazing and wandering about their patch of grass.
+  const buffaloes = herd(PLACES.buffalo.area.map(([u, b]) => at(u, b)), ['buffalo', 'calf'].map((name) => {
+    const { at: [u, b], turn } = PLACES[name];
+    const p = at(u, b);
+    return { name, x: p.x, z: p.z, heading: FACE + turn };
+  }));
   // The bridges, each turned to run between its ends: the big one with a lamp at its farm end, the small one with
   // lanterns on its corners.
   const glow = new Batch();
@@ -417,11 +424,12 @@ export function placeBuildings({ at }) {
     batch.pop();
   }
   const group = new THREE.Group();
-  group.add(batch.build(), buildGlow(glow), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay);
+  group.add(batch.build(), buildGlow(glow), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, buffaloes.group);
   const update = (t, dt) => {
     smoke.update(t);
     sails.children[0].rotation.z = -t * 0.9;
     hens.update(t, dt);
+    buffaloes.update(t, dt);
     wellParts.update(t);
   };
   return { group, update };

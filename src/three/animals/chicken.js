@@ -5,6 +5,7 @@
 // A chicken faces +z, standing on its origin. Its head is a child of its own, so it can peck.
 import * as THREE from 'three';
 import { Batch } from '../batch.js';
+import { inside } from './area.js';
 
 const TAU = Math.PI * 2;
 const BALL = new THREE.SphereGeometry(1, 14, 10);
@@ -130,17 +131,6 @@ export function chicken(name) {
   const g = kind.chick ? chick(kind) : bird(kind);
   g.scale.setScalar(kind.size);
   return g;
-}
-
-/** Whether the world point (x, z) is inside the polygon of world points `area`. */
-function inside(area, x, z) {
-  let hit = false;
-  for (let i = 0, j = area.length - 1; i < area.length; j = i++) {
-    const a = area[i];
-    const b = area[j];
-    if (a.z > z !== b.z > z && x < ((b.x - a.x) * (z - a.z)) / (b.z - a.z) + a.x) hit = !hit;
-  }
-  return hit;
 }
 
 /**

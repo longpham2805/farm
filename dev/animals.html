@@ -10,30 +10,43 @@
 </style></head>
 <body>
 <!-- Every breed in src/three/animals/chicken.js, close up in the game's light and from its camera, pecking now and
-     then; ?cols=4 sets the grid width, ?turn=0 turns them all to face the camera (1.1 by default). -->
+     then; ?set=buffaloes shows the buffaloes in src/three/animals/buffalo.js instead, grazing (?walk=1, walking on
+     the spot). ?cols=4 sets the grid width, ?turn=0 turns them all to face the camera (1.1 by default), ?t=10 holds
+     them at that moment. -->
 <div id="grid"></div>
 <canvas id="c"></canvas>
 <script type="module">
 import * as THREE from 'three';
 import { chicken, CHICKENS } from '../src/three/animals/chicken.js';
+import { buffalo, BUFFALOES } from '../src/three/animals/buffalo.js';
 
 // The game's sun (SUN_DIR in countryside.js).
 const SUN_DIR = new THREE.Vector3(-0.414, 1.11, 0.91).normalize();
 const params = new URLSearchParams(location.search);
 const cols = Number(params.get('cols') || 4);
 const turn = Number(params.get('turn') ?? 1.1);
+const still = params.has('t') ? Number(params.get('t')) : null;
+// ?walk=1 has the buffaloes walk on the spot.
+const walking = params.has('walk');
+
+// Each set: its kinds, how to make one, how many world units a cell shows across, and how it moves.
+const SETS = {
+  chickens: { kinds: CHICKENS, make: chicken, view: 0.44, move: (a, t, phase) => (a.userData.head.rotation.x = 0.95 * Math.max(0, Math.sin(t * 3 + phase)) ** 4) },
+  buffaloes: { kinds: BUFFALOES, make: (name) => buffalo(name), view: 1.6, move: (a, t, phase) => a.userData.update(t + phase, 1 / 60, walking ? 0.12 : 0) },
+};
+const set = SETS[params.get('set') || 'chickens'];
 
 const grid = document.getElementById('grid');
 grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-const cells = Object.keys(CHICKENS).map((name) => {
+const cells = Object.keys(set.kinds).map((name) => {
   const f = document.createElement('figure');
   const cap = document.createElement('figcaption');
   cap.textContent = name;
   f.append(cap);
   grid.append(f);
-  const bird = chicken(name);
-  bird.rotation.y = Math.PI / 4 + turn;
-  return { f, bird, phase: Math.random() * 6 };
+  const animal = set.make(name);
+  animal.rotation.y = Math.PI / 4 + turn;
+  return { f, animal, phase: Math.random() * 6 };
 });
 
 const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true });
@@ -53,29 +66,30 @@ const sun = new THREE.DirectionalLight('#ffe2a4', 3.2);
 sun.position.copy(SUN_DIR).multiplyScalar(4);
 sun.castShadow = true;
 sun.shadow.mapSize.set(1024, 1024);
-Object.assign(sun.shadow.camera, { left: -0.5, right: 0.5, top: 0.5, bottom: -0.5, near: 0.5, far: 8 });
+const v = set.view;
+Object.assign(sun.shadow.camera, { left: -v, right: v, top: v, bottom: -v, near: 0.5, far: 8 });
 scene.add(sun);
-const ground = new THREE.Mesh(new THREE.CircleGeometry(0.3, 32).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#d9b77e', roughness: 0.95 }));
+const ground = new THREE.Mesh(new THREE.CircleGeometry(v * 0.7, 32).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#d9b77e', roughness: 0.95 }));
 ground.receiveShadow = true;
 scene.add(ground);
 // The game's camera direction, close up.
-const camera = new THREE.OrthographicCamera(-0.22, 0.22, 0.3, -0.14, 0.1, 100);
+const camera = new THREE.OrthographicCamera(-v / 2, v / 2, v * 0.68, -v * 0.32, 0.1, 100);
 camera.position.copy(new THREE.Vector3(1, 0.95, 1).normalize().multiplyScalar(10));
-camera.lookAt(0, 0.08, 0);
+camera.lookAt(0, v * 0.18, 0);
 
 const clock = new THREE.Timer();
 renderer.setAnimationLoop(() => {
   clock.update();
-  const t = clock.getElapsed();
-  for (const { f, bird, phase } of cells) {
-    bird.userData.head.rotation.x = 0.95 * Math.max(0, Math.sin(t * 3 + phase)) ** 4;
-    scene.add(bird);
+  const t = still ?? clock.getElapsed();
+  for (const { f, animal, phase } of cells) {
+    set.move(animal, t, still === null ? phase : 0);
+    scene.add(animal);
     const r = f.getBoundingClientRect();
     const y = window.innerHeight - r.bottom;
     renderer.setViewport(r.left, y, r.width, r.height);
     renderer.setScissor(r.left, y, r.width, r.height);
     renderer.render(scene, camera);
-    scene.remove(bird);
+    scene.remove(animal);
   }
   window.__ready = true;
 });
