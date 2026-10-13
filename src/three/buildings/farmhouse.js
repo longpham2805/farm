@@ -5,7 +5,7 @@
 // Modelled with its front to +z and its long side along x; placed, it turns to face the ring road, so the camera
 // sees its front and its left end (-x). The back and the right end face away and are left plain.
 import * as THREE from 'three';
-import { BOX, GABLE, BALL, ICO, CYL10, GLASS, STONE, stoneFooting } from './parts.js';
+import { BOX, GABLE, BALL, ICO, CYL10, GLASS, STONE, stoneFooting, tiledSlope } from './parts.js';
 import { addNature } from '../nature.js';
 import { seeded } from '../../util.js';
 
@@ -41,39 +41,7 @@ const RIDGE_Y = TOP + R;
 const EAVE_Y = TOP - (R / (D / 2)) * O;
 const EAVE_Z = D / 2 + O;
 
-const TILE = 0.15;
 const BOARD = 0.07;
-
-/**
- * Clay tiles on a slope from its top edge (height y0 at z0) down to its bottom edge (y1 at z1), w across in x:
- * staggered rows of tiles, each a little flatter than the slope so its lower edge stands proud, on a dark underlay
- * that shows between them.
- */
-function tiles(batch, rand, { w, z0, y0, z1, y1, rows }) {
-  const dz = z1 - z0;
-  const dy = y1 - y0;
-  const len = Math.hypot(dz, dy);
-  const s = Math.sign(dz);
-  const a = Math.atan2(-dy, Math.abs(dz));
-  // Along the slope (down it) and out of it.
-  const down = [dz / len, dy / len];
-  const out = [s * Math.sin(a), Math.cos(a)];
-  const on = (t, lift) => [z0 + down[0] * t + out[0] * lift, y0 + down[1] * t + out[1] * lift];
-  const [mz, my] = on(len / 2, 0.005);
-  batch.add(BOX, UNDERLAY, [0, my, mz], [w, 0.02, len], [s * a, 0, 0]);
-  const n = rows ?? Math.max(2, Math.round(len / 0.12));
-  const step = len / n;
-  for (let k = 0; k < n; k++) {
-    const [z, y] = on((k + 0.5) * step, 0.03);
-    for (let x = -w / 2 - ((k % 2) * TILE) / 2; x < w / 2; x += TILE) {
-      const left = Math.max(-w / 2, x);
-      const right = Math.min(w / 2, x + TILE);
-      if (right - left < 0.04) continue;
-      const color = TILES[Math.floor(rand() * TILES.length)];
-      batch.add(BOX, color, [(left + right) / 2, y, z], [right - left - 0.014, 0.035, step * 1.3], [s * (a - 0.07), 0, 0]);
-    }
-  }
-}
 
 /** A window with a wooden frame, a cross of glazing bars, a sill and blue shutters, its middle at p, facing `turn`. */
 function shuttered(batch, p, turn, w, h) {
@@ -146,7 +114,7 @@ function porch(batch, rand) {
   rail(x0 + 0.03, front - 0.03, xm - 0.15, front - 0.03);
   // Its roof: tiles from just under the eaves of the house down to the posts.
   batch.push(xm, 0, 0);
-  tiles(batch, rand, { w: x1 - x0 + 0.1, z0: EAVE_Z - 0.06, y0: EAVE_Y - 0.03, z1: front + 0.06, y1: F + postH + 0.02, rows: 3 });
+  tiledSlope(batch, rand, { w: x1 - x0 + 0.1, z0: EAVE_Z - 0.06, y0: EAVE_Y - 0.03, z1: front + 0.06, y1: F + postH + 0.02, rows: 3, tones: TILES, under: UNDERLAY });
   batch.pop();
   // The roof's sides: a board under each end.
   for (const x of [x0 - 0.04, x1 + 0.04]) {
@@ -222,7 +190,7 @@ export function farmhouse(batch) {
   // The roof: two slopes of tiles from the ridge to the eaves, round ridge tiles along the top and a dark board
   // under the tiles' edge at each end.
   const width = W + 2 * O;
-  for (const s of [1, -1]) tiles(batch, rand, { w: width, z0: 0, y0: RIDGE_Y, z1: s * EAVE_Z, y1: EAVE_Y });
+  for (const s of [1, -1]) tiledSlope(batch, rand, { w: width, z0: 0, y0: RIDGE_Y, z1: s * EAVE_Z, y1: EAVE_Y, tones: TILES, under: UNDERLAY });
   batch.add(CYL10, RIDGE, [0, RIDGE_Y + 0.035, 0], [0.06, width + 0.04, 0.06], [0, 0, Math.PI / 2]);
   for (let x = -width / 2 + 0.12; x < width / 2; x += 0.2) batch.add(CYL10, '#a83f26', [x, RIDGE_Y + 0.035, 0], [0.066, 0.025, 0.066], [0, 0, Math.PI / 2]);
   const slope = Math.atan2(RIDGE_Y - EAVE_Y, EAVE_Z);

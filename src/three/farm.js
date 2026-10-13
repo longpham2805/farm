@@ -5,10 +5,11 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { worldMat } from './materials.js';
-import { Batch, gableGeometry, shingleRoof } from './batch.js';
+import { Batch } from './batch.js';
 import { addNature, railFence, steppingStones } from './nature.js';
 import { seeded } from '../util.js';
-import { RING } from './valleyMap.js';
+import { RING, PLACES } from './valleyMap.js';
+import { barn } from './buildings/barn.js';
 
 export const SPACING = 1.32;
 export const PLOT = 1.16;
@@ -111,9 +112,8 @@ function ringSides(inset, margin) {
 const FENCE = 0.62;
 const GATE = 0.25;
 
-/** Where the barn stands, in map units: across the ring road from the back corner. */
-export const BARN_SPOT = [0, 8.3];
-const BARN_SIZE = 1.5;
+/** Where the barn stands, in map units: on its pad in the painting, across the ring road from the back corner. */
+export const BARN_SPOT = PLACES.barn.at;
 
 const BARN_AT = toWorld(...BARN_SPOT);
 // The frog's pond, inside the front right side: world x, z.
@@ -132,7 +132,6 @@ export const plotCenter = (index) => {
 const STEM = new THREE.CylinderGeometry(0.012, 0.012, 0.16, 5, 1, true);
 const PETAL = new THREE.SphereGeometry(1, 5, 3);
 const BOX = new THREE.BoxGeometry(1, 1, 1);
-const GABLE = gableGeometry();
 const POST = new THREE.CylinderGeometry(1, 1, 1, 6);
 const CAP = new THREE.ConeGeometry(1, 1, 4);
 
@@ -169,74 +168,6 @@ export function buildGlow(glow) {
     o.material.emissiveIntensity = 0.65;
   });
   return group;
-}
-
-/** The big barn: its gable end to the front with a loft door, boarded walls, white trim and crossed double doors. */
-function barn(theme) {
-  const batch = new Batch();
-  const white = '#fff8ef';
-  const shadeOf = (color, k) => `#${new THREE.Color(color).multiplyScalar(k).getHexString()}`;
-  const door = shadeOf(theme.barn, 0.72);
-  const w = 1.1;
-  const d = 0.95;
-  const h = 0.75;
-  const rise = 0.5;
-  batch.add(BOX, '#c9c2b4', [0, 0.03, 0], [w + 0.08, 0.06, d + 0.08]);
-  batch.add(BOX, theme.barn, [0, h / 2, 0], [w, h, d]);
-  batch.add(GABLE, theme.barn, [0, h, 0], [d, rise, w], [0, Math.PI / 2, 0], true);
-  // The walls are boarded: battens up them every 0.1, round the doors, the loft door and the windows.
-  const batten = shadeOf(theme.barn, 0.84);
-  for (let x = -w / 2 + 0.09; x < w / 2 - 0.05; x += 0.1) {
-    for (const s of [-1, 1]) {
-      const z = s * (d / 2 + 0.004);
-      const front = s === 1 && Math.abs(x) < 0.32;
-      if (front) batch.add(BOX, batten, [x, (0.6 + h) / 2, z], [0.018, h - 0.6, 0.01]);
-      else batch.add(BOX, batten, [x, h / 2, z], [0.018, h - 0.02, 0.01]);
-      const gable = rise * (1 - Math.abs(x) / (w / 2)) - 0.03;
-      if (gable > 0.04 && !(s === 1 && Math.abs(x) < 0.16)) batch.add(BOX, batten, [x, h + gable / 2, z], [0.018, gable, 0.01]);
-    }
-  }
-  for (let z = -d / 2 + 0.09; z < d / 2 - 0.05; z += 0.1) {
-    for (const s of [-1, 1]) {
-      const x = s * (w / 2 + 0.004);
-      if (Math.abs(z) < 0.15) {
-        batch.add(BOX, batten, [x, 0.17, z], [0.01, 0.3, 0.018]);
-        batch.add(BOX, batten, [x, 0.66, z], [0.01, 0.15, 0.018]);
-      } else batch.add(BOX, batten, [x, h / 2, z], [0.01, h - 0.02, 0.018]);
-    }
-  }
-  // The roof, its ridge front to back, shingled in rows, with white boards along its front edge.
-  const half = w / 2 + 0.08;
-  const slant = Math.hypot(half, rise);
-  const tilt = Math.atan2(rise, half);
-  batch.push(0, 0, 0, Math.PI / 2);
-  shingleRoof(batch, { y: h, width: d + 0.16, depth: 2 * half, rise, tones: [theme.roof, shadeOf(theme.roof, 0.86), shadeOf(theme.roof, 1.1)], ridge: shadeOf(theme.roof, 0.75), rows: 6 });
-  batch.pop();
-  for (const s of [-1, 1]) {
-    batch.add(BOX, white, [(s * half) / 2, h + rise / 2 + 0.04, d / 2 + 0.095], [slant + 0.04, 0.05, 0.03], [0, 0, -s * tilt]);
-  }
-  for (const x of [-w / 2, w / 2]) for (const z of [-d / 2, d / 2]) batch.add(BOX, white, [x, h / 2, z], [0.05, h, 0.05]);
-  // Double doors, each leaf crossed with white braces.
-  const dw = 0.52;
-  const dh = 0.52;
-  batch.add(BOX, white, [0, dh / 2 + 0.02, d / 2 + 0.005], [dw + 0.06, dh + 0.04, 0.02]);
-  for (const s of [-1, 1]) {
-    const x = (s * dw) / 4;
-    batch.add(BOX, door, [x, dh / 2 + 0.02, d / 2 + 0.017], [dw / 2 - 0.03, dh - 0.03, 0.012]);
-    const reach = Math.hypot(dw / 2 - 0.06, dh - 0.08);
-    const angle = Math.atan2(dh - 0.08, dw / 2 - 0.06);
-    for (const r of [angle, -angle]) batch.add(BOX, white, [x, dh / 2 + 0.02, d / 2 + 0.027], [reach, 0.035, 0.012], [0, 0, r]);
-  }
-  // A loft door up in the gable, and a window in each side.
-  const ly = h + 0.17;
-  batch.add(BOX, white, [0, ly, d / 2 + 0.005], [0.27, 0.25, 0.02]);
-  batch.add(BOX, door, [0, ly, d / 2 + 0.017], [0.2, 0.18, 0.012]);
-  for (const r of [0.73, -0.73]) batch.add(BOX, white, [0, ly, d / 2 + 0.026], [0.25, 0.028, 0.01], [0, 0, r]);
-  for (const s of [-1, 1]) {
-    batch.add(BOX, white, [s * (w / 2 + 0.006), 0.45, 0], [0.02, 0.24, 0.24]);
-    batch.add(BOX, '#a9dcff', [s * (w / 2 + 0.014), 0.45, 0], [0.012, 0.18, 0.18]);
-  }
-  return batch.build();
 }
 
 function frog() {
@@ -349,20 +280,13 @@ export function buildFarm(theme) {
   // Benches in front of the flower beds, looking in at the plots.
   for (const [x, z, turn] of [[-0.2, 3.8, Math.PI], [3.8, -0.4, -Math.PI / 2], [0.8, -3.8, 0]]) addNature(deco, 'PROP_10_WoodenBench', [x, 0, z], 0.36, turn);
 
-  const b = new THREE.Group();
-  b.add(barn(theme));
+  // The barn, turned from facing the camera as its place says.
+  const b = barn(theme);
   b.position.set(BARN_AT[0], 0, BARN_AT[1]);
-  b.rotation.y = Math.PI / 4;
-  b.scale.setScalar(BARN_SIZE);
-  b.updateMatrix();
+  b.rotation.y = Math.PI / 4 + (PLACES.barn.turn ?? 0);
   b.traverse((o) => (o.userData.action = 'barn'));
   group.add(b);
   clickables.push(b);
-  // leafy plants at the barn's front corners
-  for (const [x, s, turn] of [[-0.66, 0.3, 0.5], [0.66, 0.27, 2.6]]) {
-    const p = new THREE.Vector3(x, 0, 0.5).applyMatrix4(b.matrix);
-    addNature(deco, 'PLANT_10_BroadleafPlant', [p.x, 0, p.z], s, turn);
-  }
 
   // pond with a frog
   const [px, pz] = POND;

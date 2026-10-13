@@ -73,8 +73,19 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   Once it looks right it goes into `placeBuildings` at its `PLACES` spot and is checked in the game.
 - **Farmhouse** (`buildings/farmhouse.js`): walls of weatherboards painted cream on a stone footing, a big roof of
   orange clay tiles laid tile by tile, a smoking brick chimney, blue shutters, a window box, a long wooden planter of
-  flowers in front, and a porch with its own tiled roof, a door, railings and steps. The reference draws it turned more towards the camera than the game's 45°, so it stands turned
-  30° (`PLACES.farmhouse.turn`), which also fits its painted pad, and in its middle (`[-6.4, 4.45]`, measured).
+  flowers in front, and a porch with its own tiled roof, a door, railings and steps. The reference draws it turned
+  more towards the camera than the game's 45°, so it stands turned 30° (`PLACES.farmhouse.turn`), which also fits
+  its painted pad, and in its middle (`[-6.4, 4.45]`, measured).
+- **Barn** (`buildings/barn.js`, still placed by `buildFarm` in `farm.js`, since it takes each farm's colours and
+  opens the warehouse when tapped): boarded red walls with white corners and trim, its gable end to the front with
+  both doors swung open and a loft door above, a gambrel roof of thick wooden shingles (steep below the knees,
+  gentle above, the upper part a little proud of the lower), a log along the ridge, an open chimney astride it, and
+  two windows down its right side. The walls are hollow round a room you see through the doorway: a plank floor,
+  hay, bales and a crate, which glow a little in their own colours so they read in the walls' shade. It stands on
+  its pad (`BARN_SPOT` is `PLACES.barn.at`), turned 18° left of facing the camera: the reference draws its front
+  nearly square to the camera yet shows its right side, and 18° is where the side's windows clear the eaves. The
+  home farm's barn is a deeper red and its roof a lighter wood (`HOME_THEME`). The reference lights the roof's
+  right slope; the game's sun, from the upper left, lights the left one.
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`). Only things inside the sun's shadow box
   (`SHADOW_BOX`, 10 units round the middle) cast them; the fields over the big bridge are outside it.
@@ -92,12 +103,11 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
 In this order:
 
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
-   building at a time as above. Done: the farmhouse. Next, in this order: the barn (it stands at `BARN_SPOT` in
-   `farm.js`, behind its painted pad; `PLACES.barn` is on the pad), the silo, the windmill with the stone shed (no
-   model yet), the coop and hen house with their run (the old `coop` and `hutch` are one hut twice; the reference
-   has two), the well, the cart and the hay. Then bridges, animals and fences (`addAnimals`, the old `LAYOUT` in
-   `countryside.js` giving way to `PLACES`), the landing by the small fall, and spray and mist at the foot of each
-   painted fall (`buildWaterfall` has them; put them at `WATERFALLS`).
+   building at a time as above. Done: the farmhouse and the barn. Next, in this order: the silo, the windmill with
+   the stone shed (no model yet), the coop and hen house with their run (the old `coop` and `hutch` are one hut
+   twice; the reference has two), the well, the cart and the hay. Then bridges, animals and fences (`addAnimals`,
+   the old `LAYOUT` in `countryside.js` giving way to `PLACES`), the landing by the small fall, and spray and mist
+   at the foot of each painted fall (`buildWaterfall` has them; put them at `WATERFALLS`).
 2. **3D trees that sway** gently (wind in the vertex shader) in the olive areas and round the farm; bushes, flowers,
    rocks and reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in

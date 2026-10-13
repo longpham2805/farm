@@ -141,7 +141,8 @@ export const PLACES = {
   henHouse: { at: [-3.5, 7.0] },
   chickenRun: { at: [-3.6, 5.8], radius: 1.0 },
   cart: { at: [-1.8, 7.0] },
-  barn: { at: [0.8, 6.9], size: [1.9, 1.9] }, // its doors face the camera, just behind the ring's back corner
+  // Just behind the ring's back corner, its doors turned 18° left of facing the camera, so its right side shows.
+  barn: { at: [0.8, 6.9], size: [1.9, 1.9], turn: -0.32 },
   bale: { at: [1.9, 6.1] },
   silo: { at: [3.3, 6.3], radius: 0.55, height: 2.75 },
   haystack: { at: [4.7, 6.3] },

@@ -25,7 +25,7 @@ const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 const easeInCubic = (t) => t * t * t;
 
 export const HOME_THEME = {
-  grass: '#86d460', grassDark: '#5fb346', fence: '#c98a4b', barn: '#ef6461', roof: '#a35f3c',
+  grass: '#86d460', grassDark: '#5fb346', fence: '#c98a4b', barn: '#d8473b', roof: '#d4914f',
 };
 
 export function npcTheme(npc) {

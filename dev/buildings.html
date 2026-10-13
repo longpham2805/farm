@@ -15,7 +15,7 @@
 <body>
 <!-- One building beside the reference design, to model it to the design and check where it stands: ?b=farmhouse
      (a name in PLACES). Left, the reference as drawn; right, the game's view of the building where it stands on the
-     painting, in the game's light, at the same scale. The slider lays the reference over the game's view.
+     painting, with the farm in the middle (the barn among it), in the game's light, at the same scale. The slider lays the reference over the game's view.
      ?span=5 sets how many world units the views take across, ?up=0.7 how far up the screen from the building's spot
      they are centred. -->
 <main>
@@ -29,6 +29,8 @@ import { at, SUN_DIR, SHADOW_BOX } from '../src/three/countryside.js';
 import { buildBackdrop, shadowCatcher } from '../src/three/backdrop.js';
 import { placeBuildings } from '../src/three/buildings.js';
 import { PLACES } from '../src/three/valleyMap.js';
+import { buildFarm } from '../src/three/farm.js';
+import { HOME_THEME } from '../src/three/scene.js';
 
 // The reference design (art/backdrop/2-style-reference.png): the pixel the middle of the plots falls on, and how
 // many pixels a world unit takes across the screen and up it, measured on its plots. It looks down a little more
@@ -90,7 +92,7 @@ const backdrop = buildBackdrop();
 scene.add(backdrop.mesh, shadowCatcher(SHADOW_BOX * 3));
 await backdrop.setDetail(true);
 const placed = placeBuildings({ at });
-scene.add(placed.group);
+scene.add(placed.group, buildFarm(HOME_THEME).group);
 
 const spot = at(u, b);
 const camera = new THREE.OrthographicCamera(-span / 2, span / 2, up + viewH / 2, up - viewH / 2, 0.1, 100);
