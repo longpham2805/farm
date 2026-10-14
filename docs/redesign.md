@@ -239,6 +239,18 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   at its corners, a lip along the top, glossy water a little below it; the meadow's animals keep clear of it (a notch
   in `PLACES.meadow.area`), a cow grazing just behind it looks to be drinking. The reference's hay rack, bench and
   lamp in the meadow are not built.
+- **The fields over the big bridge** (`buildings/fields.js`, in `placeBuildings`), on the painting's pad of dirt,
+  which was measured again on the painting (`PLACES.fields`: its middle had been 0.8 units off), square to the plots:
+  four raised beds of dark ridged soil, two by two, with paths of the pad between them, as the reference draws them:
+  ripe wheat at the back (clumps of stalks, each with a golden ear), lettuces on the left (an open rosette of broad
+  leaves round a tighter one and a pale heart), bushy beans on the right and white-flowering plants at the front.
+  Plants are drawn a few to a bed and big, as in the reference: drawn small and many, they read as a texture. A rail
+  fence (`woodFence`) runs all round, with a gate in the side along the road (the reference leaves the front right
+  side open, and the user wanted it fenced); a scarecrow (sack head, straw hat with a red band, blue shirt, arms out
+  on a crossbar, straw hands) stands by the back fence. The wheat sways in gusts of wind that roll across the field
+  (`wind`: a vertex shader bending it by its height). Left for step 2, with the other plants: the reference's big
+  sunflowers along the front right side and round the front corner (they were built here, then taken out to come
+  with the plants), and its post with a bird on it by the back fence.
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
   sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
@@ -261,10 +273,11 @@ In this order:
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
    building at a time as above. Done: every building along the back of the ring road (farmhouse, hen yard and hens,
    cart, barn, bale, silo, haystack, windmill and stone shed), the well, the bridges, the buffalo, the cows and the
-   sheep, the pig, the ducks and the swallows, and the meadow's fence and trough. Next: the fields over the big bridge
-   with their fences (`woodFence`) and the scarecrow, the landing by the small fall, and spray and mist at the foot of
-   each painted fall (`buildWaterfall` has them; put them at `WATERFALLS`).
-2. **3D trees that sway** gently (wind in the vertex shader) in the olive areas and round the farm; bushes, flowers,
+   sheep, the pig, the ducks and the swallows, the meadow's fence and trough, and the fields over the big bridge.
+   Next: the landing by the small fall, and spray and mist at the foot of each painted fall (`buildWaterfall` has
+   them; put them at `WATERFALLS`).
+2. **3D trees that sway** gently (wind in the vertex shader; `wind` in `buildings/fields.js` sways the wheat) in the
+   olive areas and round the farm; bushes, flowers (the sunflowers along the fields' front right side among them),
    rocks and reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets

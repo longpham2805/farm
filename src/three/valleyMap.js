@@ -175,9 +175,9 @@ export const PLACES = {
   ducks: { way: [[10.2, -2.2], [9.5, -2.9], [7.4, -4.8], [6.75, -5.25]], half: 0.45 },
   // Swallows (animals/birds.js) wheeling high over the hills behind the farm, round this spot and `height` up.
   birds: { at: [0, 9.4], height: 3.8 },
-  // The fenced fields over the big bridge: square to the plots, `half` along each of their sides.
-  fields: { at: [11.0, -6.7], half: [2.25, 2.8] },
-  scarecrow: { at: [12.2, -3.8] },
+  // The fenced fields over the big bridge (buildings/fields.js, with their scarecrow) on their painted pad: square to
+  // the plots, `half` from the middle to the pad's edges along world x and z (measured on the painting).
+  fields: { at: [11.8, -6.78], half: [2.38, 2.8] },
   // A little wooden landing at the end of the riverside road, beside the small fall.
   landing: { at: [10.7, -0.6] },
   // The animals grazing in the meadow, where the reference draws them: two black and white cows, side on, facing

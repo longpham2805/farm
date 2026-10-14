@@ -20,6 +20,7 @@ import { cart, hayBale, haystack } from './buildings/hay.js';
 import { bridge as plankBridge } from './buildings/bridge.js';
 import { woodFence } from './buildings/fence.js';
 import { trough as waterTrough } from './buildings/trough.js';
+import { fields as fieldBeds } from './buildings/fields.js';
 import { flock } from './animals/chicken.js';
 import { herd } from './animals/herd.js';
 import { buffalo } from './animals/buffalo.js';
@@ -418,6 +419,11 @@ export function placeBuildings({ at }) {
   // The meadow's fence on the painted meadow's edge, with a gate onto the road, and its water trough.
   woodFence(batch, MEADOW.map(([u, b]) => [at(u, b).x, at(u, b).z]), seeded(71), { closed: true, gates: PLACES.meadow.gates });
   const water = place(PLACES.trough, () => waterTrough(batch, seeded(29)));
+  // The fields over the big bridge on their painted pad, square to the plots.
+  const fieldsAt = at(...PLACES.fields.at);
+  batch.push(fieldsAt.x, 0, fieldsAt.z);
+  const crops = fieldBeds(batch, seeded(41), PLACES.fields.half);
+  batch.pop();
   // The buffalo and her calf by the river, grazing and wandering about their patch of grass.
   const buffaloes = herd(PLACES.buffalo.area.map(([u, b]) => at(u, b)), ['buffalo', 'calf'].map((name) => {
     const { at: [u, b], turn } = PLACES[name];
@@ -453,7 +459,7 @@ export function placeBuildings({ at }) {
     batch.pop();
   }
   const group = new THREE.Group();
-  group.add(batch.build(), buildGlow(glow), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, water, buffaloes.group, meadow.group, pigs.group, lawnHens.group, ducks.group, birds.group);
+  group.add(batch.build(), buildGlow(glow), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, water, crops.group, buffaloes.group, meadow.group, pigs.group, lawnHens.group, ducks.group, birds.group);
   const update = (t, dt) => {
     smoke.update(t);
     sails.children[0].rotation.z = -t * 0.9;
@@ -464,6 +470,7 @@ export function placeBuildings({ at }) {
     lawnHens.update(t, dt);
     ducks.update(t, dt);
     birds.update(t, dt);
+    crops.update(t);
     wellParts.update(t);
   };
   return { group, update };
