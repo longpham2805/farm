@@ -472,20 +472,33 @@ export function placeBuildings({ at }) {
     plankBridge(batch, glow, { span: dir.length(), width, arch, lamp: name === 'main', lanterns: name === 'small' });
     batch.pop();
   }
-  // Spray thrown up along the small fall's lip, where the water rolls over, heading down and to the left on screen
-  // as the water does, and a little mist over it.
-  const lipSpray = (() => {
-    const [[x0, y0], [x1, y1]] = BACKDROP.falls[1].lip;
-    const line = [paintedPoint(x0 + 1, y0 + 0.7), paintedPoint(x1 - 1.5, y1 - 1)];
-    const outward = new THREE.Vector3(0.6, 0, 1.4).normalize();
-    const drops = spray(line, { count: 45, up: [0.22, 0.42], out: [0.06, 0.16], outward, spread: 0.03, gravity: 2.0, life: [0.45, 0.7], size: [0.035, 0.075], strength: 0.75, seed: 3 });
-    const mist = spray(line, { count: 8, up: [0.04, 0.1], out: [0.02, 0.05], outward, gravity: 0.1, life: [1.4, 2.2], size: [0.12, 0.26], strength: 0.2, seed: 5 });
+  // Spray off a line of the painting's pixels along a fall, heading `outward`: droplets, and a mist over them.
+  const fallSpray = (pixels, outward, drops, mist) => {
+    const line = pixels.map(([x, y]) => paintedPoint(x, y));
+    const parts = [spray(line, { outward, ...drops }), spray(line, { outward, ...mist })];
     const group = new THREE.Group();
-    group.add(drops.group, mist.group);
-    return { group, update: (t, dt) => (drops.update(t, dt), mist.update(t, dt)) };
-  })();
+    group.add(...parts.map((p) => p.group));
+    return { group, update: (t, dt) => parts.forEach((p) => p.update(t, dt)) };
+  };
+  const [[x0, y0], [x1, y1]] = BACKDROP.falls[1].lip;
+  const falls = [
+    // Along the small fall's lip, where the water rolls over, heading down and to the left on screen as the water
+    // does, and a little mist.
+    fallSpray([[x0 + 1, y0 + 0.7], [x1 - 1.5, y1 - 1]], new THREE.Vector3(0.6, 0, 1.4).normalize(),
+      { count: 130, up: [0.6, 1.5], out: [0.15, 0.6], spread: 0.28, gravity: 3.2, life: [0.6, 1.1], size: [0.05, 0.11], strength: 0.95, seed: 3 },
+      { count: 14, up: [0.08, 0.2], out: [0.03, 0.1], gravity: 0.1, life: [1.4, 2.2], size: [0.16, 0.36], strength: 0.22, seed: 5 }),
+    // Where each fall lands, along the foam at its foot: droplets thrown up out of the pool, mostly towards the
+    // camera and fanning out to the sides, and a mist rising slowly over them; more and higher under the main fall,
+    // which drops farther.
+    fallSpray([[1196, 137], [1230, 141], [1265, 137]], new THREE.Vector3(1, 0, 1).normalize(),
+      { count: 70, up: [1.2, 2.4], out: [0.1, 1.0], spread: 0.9, gravity: 3.5, life: [0.8, 1.4], size: [0.08, 0.14], strength: 0.9, seed: 7 },
+      { count: 14, up: [0.2, 0.4], out: [0.05, 0.2], spread: 0.15, gravity: 0, life: [2.2, 3.4], size: [0.4, 1.0], strength: 0.07, seed: 11 }),
+    fallSpray([[1258, 541], [1272, 545], [1288, 545]], new THREE.Vector3(0.8, 0, 1.2).normalize(),
+      { count: 40, up: [0.9, 1.7], out: [0.1, 0.8], spread: 0.7, gravity: 3.5, life: [0.6, 1.0], size: [0.06, 0.1], strength: 0.9, seed: 13 },
+      { count: 8, up: [0.1, 0.25], out: [0.03, 0.12], spread: 0.1, gravity: 0, life: [1.8, 2.8], size: [0.25, 0.55], strength: 0.08, seed: 17 }),
+  ];
   const group = new THREE.Group();
-  group.add(lipSpray.group, batch.build(), buildGlow(glow), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, water, crops.group, jetty.group, buffaloes.group, meadow.group, pigs.group, lawnHens.group, ducks.group, birds.group);
+  group.add(...falls.map((f) => f.group), batch.build(), buildGlow(glow), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, water, crops.group, jetty.group, buffaloes.group, meadow.group, pigs.group, lawnHens.group, ducks.group, birds.group);
   const update = (t, dt) => {
     smoke.update(t);
     sails.children[0].rotation.z = -t * 0.9;
@@ -498,7 +511,7 @@ export function placeBuildings({ at }) {
     birds.update(t, dt);
     crops.update(t);
     jetty.update(t);
-    lipSpray.update(t, dt);
+    for (const f of falls) f.update(t, dt);
     wellParts.update(t);
   };
   return { group, update };

@@ -71,9 +71,14 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     goes over it down and to the left, and pours down leaning left all the way, 0.3 pixels across for each pixel down,
     the fall's left side with it (`lean`; it first leaned only at the top, and the wrong way). Just above the top the
     river's streaks bunched into little eddies; they fade out there now.
-  - Spray leaps along the small fall's lip and falls back over the curtain, with a little mist (`spray` in
-    `buildings/spray.js`: soft white spots on squares facing the camera, added to the painting, from a line of ground
-    points given by `paintedPoint` in `backdrop.js`), to come at the foot of each fall too.
+  - Spray (`spray` in `buildings/spray.js`: soft white spots on squares facing the camera, added to the painting, from
+    a line of the painting's pixels made ground points by `paintedPoint` in `backdrop.js`; `fallSpray` in
+    `placeBuildings`): along the small fall's lip it splashes up thick, about a quarter of the fall's height (the
+    user wanted it strong), and falls back over the curtain, with a little mist. At the foot of each fall, along
+    its painted foam, droplets leap out of the pool, mostly towards the camera and fanning out to the sides, and a
+    faint mist rises slowly over the curtain's foot; more and higher under the main fall. Over the painted foam,
+    already white, the droplets hardly show; they read where they fly out over the dark rocks and the blue pool.
+    None along the main fall's top, which lies on the painting's top edge.
 - The view pans and zooms over exactly the painting (`VIEW_BOUNDS` comes from the backdrop); zoom stops at 1.6 (3.2 under `npm run dev`,
   to look at the models close up).
 - `valleyMap.js` follows the painting (option A, chosen over asking the model to repaint it). Measured from the
@@ -309,9 +314,8 @@ In this order:
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
    building at a time as above. Done: every building along the back of the ring road (farmhouse, hen yard and hens,
    cart, barn, bale, silo, haystack, windmill and stone shed), the well, the bridges, the buffalo, the cows and the
-   sheep, the pig, the ducks and the swallows, the meadow's fence and trough, the fields over the big bridge, and the
-   landing by the small fall. Next: spray and mist at the foot of each painted fall (`buildWaterfall` has them; put
-   them at `WATERFALLS`).
+   sheep, the pig, the ducks and the swallows, the meadow's fence and trough, the fields over the big bridge, the
+   landing by the small fall, and spray and mist at the foot of each painted fall. Step 1 is done.
 2. **3D trees that sway** gently (wind in the vertex shader; `wind` in `buildings/fields.js` sways the wheat) in the
    olive areas and round the farm; bushes, flowers (the sunflowers along the fields' front right side among them),
    rocks and reeds.
