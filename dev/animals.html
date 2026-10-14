@@ -11,9 +11,9 @@
 <body>
 <!-- Every breed in src/three/animals/chicken.js, close up in the game's light and from its camera, pecking now and
      then; ?set=buffaloes shows the buffaloes in src/three/animals/buffalo.js instead, grazing (?walk=1, walking on
-     the spot), and ?set=cows two cows from src/three/animals/cow.js, their patches laid out differently. ?cols=4
-     sets the grid width, ?turn=0 turns them all to face the camera (1.1 by default), ?t=10 holds them at that
-     moment, ?view=0.8 looks closer. -->
+     the spot), ?set=cows two cows from src/three/animals/cow.js, their patches laid out differently, and ?set=sheep
+     two ewes from src/three/animals/sheep.js. ?cols=4 sets the grid width, ?turn=0 turns them all to face the camera
+     (1.1 by default), ?t=10 holds them at that moment, ?view=0.8 looks closer. -->
 <div id="grid"></div>
 <canvas id="c"></canvas>
 <script type="module">
@@ -21,6 +21,7 @@ import * as THREE from 'three';
 import { chicken, CHICKENS } from '../src/three/animals/chicken.js';
 import { buffalo, BUFFALOES } from '../src/three/animals/buffalo.js';
 import { cow } from '../src/three/animals/cow.js';
+import { sheep } from '../src/three/animals/sheep.js';
 
 // The game's sun (SUN_DIR in countryside.js).
 const SUN_DIR = new THREE.Vector3(-0.414, 1.11, 0.91).normalize();
@@ -28,7 +29,7 @@ const params = new URLSearchParams(location.search);
 const cols = Number(params.get('cols') || 4);
 const turn = Number(params.get('turn') ?? 1.1);
 const still = params.has('t') ? Number(params.get('t')) : null;
-// ?walk=1 has the buffaloes and cows walk on the spot.
+// ?walk=1 has the buffaloes, cows and sheep walk on the spot.
 const walking = params.has('walk');
 
 // Each set: its kinds, how to make one, how many world units a cell shows across, and how it moves.
@@ -37,6 +38,8 @@ const SETS = {
   buffaloes: { kinds: BUFFALOES, make: (name) => buffalo(name), view: 1.6, move: (a, t, phase) => a.userData.update(t + phase, 1 / 60, walking ? 0.12 : 0) },
   // Two Holsteins, each with the phase that lays out its patches.
   cows: { kinds: { holstein: 0, 'holstein 2': 5.3 }, make: (name) => cow('holstein', SETS.cows.kinds[name]), view: 1.6, move: (a, t, phase) => a.userData.update(t + phase, 1 / 60, walking ? 0.12 : 0) },
+  // Two ewes, each with the phase that lays out its fleece.
+  sheep: { kinds: { ewe: 0, 'ewe 2': 5.3 }, make: (name) => sheep('ewe', SETS.sheep.kinds[name]), view: 1.0, move: (a, t, phase) => a.userData.update(t + phase, 1 / 60, walking ? 0.12 : 0) },
 };
 const set = SETS[params.get('set') || 'chickens'];
 

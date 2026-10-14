@@ -166,8 +166,8 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   river's rocky bank near the big bridge, side on, facing left, the calf behind her towards the road, and wander the
   grass between the road to the big bridge and the river, up into the meadow below the small fall (`PLACES.buffalo`
   and its `area`, `calf`, placed by `placeBuildings`). `dev/animals.html?set=buffaloes` shows them close up (`?cols=2`
-  bigger), `?t=11.5` with the head up, `?walk=1` walking on the spot. What the cattle share is in `animals/parts.js`:
-  the shapes, `Coat`, `loft`, `hornGeometry` and `grazing` (how they graze, look about and walk).
+  bigger), `?t=11.5` with the head up, `?walk=1` walking on the spot. What the grazing animals share is in
+  `animals/parts.js`: the shapes, `Coat`, `loft`, `hornGeometry` and `grazing` (how they graze, look about and walk).
 - **Cows** (`src/three/animals/cow.js`, kinds in `COWS`: a Holstein), black and white as the reference draws them in
   the meadow, built like the buffalo: a chunky body in one smooth piece (`loft` through its own `TRUNK`), square at
   the rump, level along the back, the barrel deep; a slimmer neck; a big black head (scaled 1.45) with a pale pink
@@ -180,11 +180,22 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   smaller patches looked spindly beside the reference, and a white blaze on the face stuck out like a bar, so it went.
   They graze, look about and walk like the buffalo (`grazing`, their head lifted higher to look about) and wander the
   meadow with `herd`: two of them, starting where the reference draws them, side on, facing right and a little
-  towards the camera, and wandering `PLACES.cows.area`, the meadow inside its fence and clear of the trough (the
-  trees in the meadow, still to come, are not kept clear of yet). `tests/herd.test.js` checks two cows too.
+  towards the camera, and wandering `PLACES.meadow.area`, the meadow inside its fence and clear of the trough (the
+  trees in the meadow, still to come, are not kept clear of yet).
   `dev/animals.html?set=cows` shows two close up (`?view=1.2` closer), and
   `dev/buildings.html?at=-11.75,-2.75&span=2.2&t=11.5&up=0.4` sets one beside the reference (`?t` now also holds the
   animals where they start).
+- **Sheep** (`src/three/animals/sheep.js`, kinds in `SHEEP`: a ewe), white as the reference draws them: a plump round
+  body of wool (`loft` through `FLEECE`), a woolly tuft of a tail, a woolly neck; a long, narrow pale face under a cap
+  of wool, a pink nose, ears out sideways, pink inside; slender pale legs, wool at their tops, on dark hooves. The
+  fleece is `Coat` with `wool`: a picture of curls packed together, each lit on top and shaded round its edge, its
+  mask a dome per curl so the shells (standing off 1.8 times as far as hair) show the curls' tops; and `lumps`, the
+  hide swelling out in lumps a few hundredths of a unit high (noise along the normals, on finer balls and a finer
+  loft), so the outline is a fleece's. Each sheep's fleece lies differently (its phase). They graze, look about and
+  walk like the cattle. The cows and the sheep are one herd (`PLACES.meadow`, each member naming its kind), so they
+  keep out of each other's way: the two cows where they were, a ewe at the right of the meadow walking away to the
+  back right, as the reference draws her, and another on the left, where the reference's sheep is hidden behind the
+  harvest button. `tests/herd.test.js` runs the four of them. `dev/animals.html?set=sheep` shows two close up.
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
   sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
@@ -206,8 +217,8 @@ In this order:
 
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
    building at a time as above. Done: every building along the back of the ring road (farmhouse, hen yard and hens,
-   cart, barn, bale, silo, haystack, windmill and stone shed), the well, the bridges, the buffalo and the cows. Next:
-   the other animals (each in `animals/` like the chickens: the sheep, the pig, ducks, birds) and fences (`addAnimals`,
+   cart, barn, bale, silo, haystack, windmill and stone shed), the well, the bridges, the buffalo, the cows and the
+   sheep. Next: the other animals (each in `animals/` like the chickens: the pig, ducks, birds) and fences (`addAnimals`,
    the old `LAYOUT` in `countryside.js` giving way to `PLACES`), the fields over the big bridge with the scarecrow,
    the meadow's fence and trough, the landing by the small fall, and spray and mist at the foot of each painted fall
    (`buildWaterfall` has them; put them at `WATERFALLS`).

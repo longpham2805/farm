@@ -167,13 +167,18 @@ export const PLACES = {
   scarecrow: { at: [12.2, -3.8] },
   // A little wooden landing at the end of the riverside road, beside the small fall.
   landing: { at: [10.7, -0.6] },
-  // Two black and white cows grazing in the meadow, side on, facing right and a little towards the camera
-  // (animals/cow.js). They wander about `area`, the meadow inside its fence, clear of the trough.
-  cows: {
-    herd: [{ at: [-11.9, -2.95], turn: 1.3 }, { at: [-11.5, -0.6], turn: 1.3 }],
+  // The animals grazing in the meadow, where the reference draws them: two black and white cows, side on, facing
+  // right and a little towards the camera (animals/cow.js), and two ewes, the one in view walking away to the back
+  // right (animals/sheep.js). They wander about `area`, the meadow inside its fence, clear of the trough.
+  meadow: {
+    herd: [
+      { name: 'holstein', at: [-11.9, -2.95], turn: 1.3 },
+      { name: 'holstein', at: [-11.5, -0.6], turn: 1.3 },
+      { name: 'ewe', at: [-10.4, 0.1], turn: 2.0 },
+      { name: 'ewe', at: [-12.9, 0.3], turn: 1.0 },
+    ],
     area: [[-14.0, 0.8], [-10.85, 1.45], [-8.2, 0.1], [-8.2, -2.0], [-9.4, -3.3], [-10.1, -3.0], [-11.7, -3.0], [-12.3, -3.8], [-13.9, -4.4]],
   },
-  sheep: [[-10.0, 0.3], [-12.6, 0.6]],
   trough: { at: [-10.9, -3.5] },
 };
 
