@@ -22,6 +22,7 @@ import { herd } from './animals/herd.js';
 import { buffalo } from './animals/buffalo.js';
 import { cow, COWS } from './animals/cow.js';
 import { sheep } from './animals/sheep.js';
+import { pig } from './animals/pig.js';
 
 // A lily pad: a disc with a notch cut out.
 const PAD = new THREE.CylinderGeometry(1, 1, 1, 12, 1, false, 0.35, TAU - 0.35);
@@ -421,6 +422,11 @@ export function placeBuildings({ at }) {
     const p = at(u, b);
     return { name, x: p.x, z: p.z, heading: FACE + turn };
   }), (name, phase) => (name in COWS ? cow : sheep)(name, phase));
+  // The pig rooting about the grass behind the plots.
+  const pigs = herd(PLACES.pig.area.map(([u, b]) => at(u, b)), [PLACES.pig].map(({ at: [u, b], turn }) => {
+    const p = at(u, b);
+    return { name: 'pig', x: p.x, z: p.z, heading: FACE + turn };
+  }), pig);
   // The bridges, each turned to run between its ends: the big one with a lamp at its farm end, the small one with
   // lanterns on its corners.
   const glow = new Batch();
@@ -433,13 +439,14 @@ export function placeBuildings({ at }) {
     batch.pop();
   }
   const group = new THREE.Group();
-  group.add(batch.build(), buildGlow(glow), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, buffaloes.group, meadow.group);
+  group.add(batch.build(), buildGlow(glow), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, buffaloes.group, meadow.group, pigs.group);
   const update = (t, dt) => {
     smoke.update(t);
     sails.children[0].rotation.z = -t * 0.9;
     hens.update(t, dt);
     buffaloes.update(t, dt);
     meadow.update(t, dt);
+    pigs.update(t, dt);
     wellParts.update(t);
   };
   return { group, update };

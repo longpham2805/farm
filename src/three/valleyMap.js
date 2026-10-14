@@ -162,6 +162,12 @@ export const PLACES = {
     area: [[5.35, -3.53], [6.06, -2.71], [6.82, -1.49], [7.35, -0.37], [8.29, 0.14], [9.24, -0.01], [9.59, -0.47], [8.59, -1.45], [7.24, -3.1], [6.06, -3.63]],
   },
   calf: { at: [6.4, -2.3], turn: -1.35 },
+  // The pig on the grass behind the plots, side on, facing right (animals/pig.js). It roots about `area`, between the
+  // back plots and the ring road, keeping off the plots.
+  pig: {
+    at: [-0.3, 3.95], turn: 1.4,
+    area: [[-1.3, 2.85], [0, 4.1], [1.3, 2.85], [1.5, 3.4], [1.0, 4.5], [0, 4.85], [-1.0, 4.5], [-1.5, 3.4]],
+  },
   // The fenced fields over the big bridge: square to the plots, `half` along each of their sides.
   fields: { at: [11.0, -6.7], half: [2.25, 2.8] },
   scarecrow: { at: [12.2, -3.8] },

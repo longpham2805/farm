@@ -196,6 +196,18 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   keep out of each other's way: the two cows where they were, a ewe at the right of the meadow walking away to the
   back right, as the reference draws her, and another on the left, where the reference's sheep is hidden behind the
   harvest button. `tests/herd.test.js` runs the four of them. `dev/animals.html?set=sheep` shows two close up.
+- **Pig** (`src/three/animals/pig.js`, kinds in `PIGS`), pink as the reference draws it: a plump round body on short,
+  stout legs, a big head straight off the shoulders with full cheeks and a flat round snout, ears flopping forward
+  over the eyes, a curly tail (a tube wound a ring and a half), and a coat of fine bristles that hardly shows
+  (`stand` 0.3, `streak` 0.25). A paler pink looked salmon and dusty in the game's warm light and green bounce, so the
+  pink leans to magenta. It roots about with its snout in the grass (`grazing`) on the lawn behind the plots, where
+  the reference draws it beside a vegetable patch (not built yet), side on, facing right (`PLACES.pig` and its
+  `area`, between the back plots and the ring road; the plots' back corner is cut out of it, so the player's plots
+  stay clear). `herd` now keeps every walk inside the area all along (`insideAll` in `area.js`), not only where it
+  ends, and an animal steps along the straight way it planned while it turns to face it: before, a walk past the
+  corner could cut across the plots. `tests/herd.test.js` checks the pig never leaves its patch.
+  `dev/animals.html?set=pigs` shows it close up, `dev/buildings.html?at=-0.1,3.8&span=2.4&t=11.5&up=0.3` beside the
+  reference.
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
   sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
@@ -218,7 +230,7 @@ In this order:
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
    building at a time as above. Done: every building along the back of the ring road (farmhouse, hen yard and hens,
    cart, barn, bale, silo, haystack, windmill and stone shed), the well, the bridges, the buffalo, the cows and the
-   sheep. Next: the other animals (each in `animals/` like the chickens: the pig, ducks, birds) and fences (`addAnimals`,
+   sheep, and the pig. Next: the other animals (each in `animals/` like the chickens: ducks, birds) and fences (`addAnimals`,
    the old `LAYOUT` in `countryside.js` giving way to `PLACES`), the fields over the big bridge with the scarecrow,
    the meadow's fence and trough, the landing by the small fall, and spray and mist at the foot of each painted fall
    (`buildWaterfall` has them; put them at `WATERFALLS`).

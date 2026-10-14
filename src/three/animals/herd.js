@@ -1,7 +1,7 @@
 // Cattle let loose in a patch of grass (herd): the buffaloes by the river, the cows in the meadow.
 import * as THREE from 'three';
 import { TAU } from './parts.js';
-import { spotIn } from './area.js';
+import { inside, insideAll, spotIn } from './area.js';
 
 // How much room an animal leaves round the others when it picks where to go, and how near it lets itself come.
 const ROOM = 0.08;
@@ -29,8 +29,9 @@ export function gap(p, q) {
  * Animals let loose in `area`, a polygon of world points, each made by make(name, phase) and starting at its spot
  * facing its way ([{ name, x, z, heading }]). An animal's userData says how big it is (`size`), the ground it takes
  * up (`body`, see gap), how fast it walks (`pace`) and whether it is a `calf`, and has its update(t, dt, speed). Each
- * grazes a while, then turns and walks slowly to another spot not far off and grazes there. A calf keeps near the
- * first grown one, its mother, setting off soon after she gets where she was going. None walks into another: they
+ * grazes a while, then turns and walks slowly to another spot not far off and grazes there, never leaving the area on
+ * the way (it may have corners cut out of it, like the plots' behind the pig). A calf keeps near the first grown one,
+ * its mother, setting off soon after she gets where she was going. None walks into another: they
  * take turns, one walking while the others graze, and it goes only where it can turn and walk clear of them; a calf
  * stands out of its mother's reach as she turns about, so she can always turn. Returns the group and update(t, dt).
  */
@@ -65,8 +66,8 @@ export function herd(area, members, make) {
     way.spin = Math.sign(turn);
     return way;
   };
-  // The way `a` can take to (x, z), turning whichever way round keeps clear of the others where they stand, and for a
-  // calf, ending out of its mother's reach; null if there is none. One already too near another only has to keep from
+  // The way `a` can take to (x, z), inside the area all along, turning whichever way round keeps clear of the others
+  // where they stand, and for a calf, ending out of its mother's reach; null if there is none. One already too near another only has to keep from
   // coming nearer.
   const clearWay = (a) => {
     const start = pose(a);
@@ -75,6 +76,8 @@ export function herd(area, members, make) {
     const turnsAbout = a.userData.calf && a !== mother ? [mother.position.x, mother.position.z, reach(mother)] : null;
     const outOfReach = ([x, z, h, size, body]) => body.every(([f, r]) => Math.hypot(x + Math.sin(h) * f * size - turnsAbout[0], z + Math.cos(h) * f * size - turnsAbout[1]) - r * size - turnsAbout[2] > ROOM);
     return (x, z) => {
+      // One that has strayed outside only has to get back in.
+      if (inside(area, start[0], start[1]) ? !insideAll(area, start[0], start[1], x, z) : !inside(area, x, z)) return null;
       for (const long of [false, true]) {
         const way = wayTo(a, x, z, long);
         if ((!turnsAbout || outOfReach(way.at(-1))) && way.every((p) => others.every((o, k) => gap(p, o) > room[k]))) return way;
@@ -127,8 +130,9 @@ export function herd(area, members, make) {
           // Turning on the spot still takes steps.
           if (speed < 0.03 && Math.abs(turn) > 0.05) speed = 0.03;
           const step = Math.min(d, dt * speed * Math.max(0, Math.cos(turn)));
-          const x = a.position.x + Math.sin(heading) * step;
-          const z = a.position.z + Math.cos(heading) * step;
+          // It steps along the straight way it planned, which keeps inside the area and clear of the others.
+          const x = a.position.x + (dx / d) * step;
+          const z = a.position.z + (dz / d) * step;
           // Should it still come too near another, it stops; kept back a while, it grazes where it is.
           const moved = pose(a, x, z, heading);
           if (animals.some((o) => o !== a && gap(moved, pose(o)) < Math.min(NEAREST, gap(pose(a), pose(o))))) {

@@ -11,6 +11,22 @@ export function inside(area, x, z) {
   return hit;
 }
 
+/** Whether the straight way from (x0, z0) to (x1, z1) keeps inside the polygon `area` all along. */
+export function insideAll(area, x0, z0, x1, z1) {
+  if (!inside(area, x0, z0) || !inside(area, x1, z1)) return false;
+  // Which side of the line from a to b the point (x, z) is on.
+  const side = (a, b, x, z) => Math.sign((b.x - a.x) * (z - a.z) - (b.z - a.z) * (x - a.x));
+  const p = { x: x0, z: z0 };
+  const q = { x: x1, z: z1 };
+  for (let i = 0, j = area.length - 1; i < area.length; j = i++) {
+    const a = area[i];
+    const b = area[j];
+    // It crosses this edge if each lies across the other's line.
+    if (side(a, b, x0, z0) * side(a, b, x1, z1) < 0 && side(p, q, a.x, a.z) * side(p, q, b.x, b.z) < 0) return false;
+  }
+  return true;
+}
+
 /**
  * A spot [x, z] picked at random inside `area`; with `near` ([x, z]) and `reach`, one between `reach[0]` and
  * `reach[1]` from it, if there is one. With `ok(x, z)`, only a spot it accepts, or null when none is found.
