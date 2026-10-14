@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Plants</title>
+<!-- The game fetches its pictures from beside index.html (Vite still resolves the imports below from this file). -->
+<base href="../">
+<style>
+  html,body{margin:0;background:#2b2b2b;font-family:sans-serif;color:#eee}
+  main{display:flex;flex-wrap:wrap;gap:8px;padding:8px}
+  figure{margin:0;position:relative}
+  figcaption{position:absolute;left:6px;top:4px;font-size:12px;text-shadow:0 1px 2px #000;z-index:3}
+  canvas{display:block}
+  .over{position:absolute;inset:0;opacity:0;pointer-events:none;z-index:2}
+  label{display:flex;gap:6px;align-items:center;font-size:13px;padding:0 8px}
+  #c{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:1}
+</style></head>
+<body>
+<!-- The plants of step 2 of the redesign, one kind at a time (?set=pines): for each place the reference design draws
+     one, the reference cut round it beside the model at the same scale, in the game's light and from its camera (the
+     slider lays the reference over the model); then a few of the model close up, from other seeds
+     (?seeds=1,2,3,4, ?h=1.4 their height). -->
+<div id="refs"></div>
+<label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
+<main id="seeds"></main>
+<canvas id="c"></canvas>
+<script type="module">
+import * as THREE from 'three';
+import { SUN_DIR } from '../src/three/countryside.js';
+import { pine } from '../src/three/plants/pine.js';
+
+// The reference design (art/backdrop/2-style-reference.png) and how many of its pixels a world unit takes across the
+// screen and up it (REF in dev/buildings.html).
+const REF = { url: './art/backdrop/2-style-reference.png', scale: 55, scaleY: 59 };
+const CAM_DIR = new THREE.Vector3(1, 0.95, 1).normalize(); // as in FarmScene
+
+// Each set: how to make one (seed, height), and where the reference draws them: the box cut from it, the pixel its
+// foot stands on (guessed where it is hidden, from where its top is and the height given) and how tall it is.
+const SETS = {
+  pines: {
+    make: (seed, h) => pine(seed, h),
+    refs: [
+      { name: 'Thông nhỏ cạnh đồng cỏ', box: [165, 700, 235, 795], foot: [199, 789], height: 1.39, seed: 1 },
+      { name: 'Thông lớn phía trước (gốc bị che)', box: [495, 725, 645, 905], foot: [569, 902], height: 3.4, seed: 2 },
+    ],
+  },
+};
+const params = new URLSearchParams(location.search);
+const set = SETS[params.get('set') || 'pines'];
+const seeds = (params.get('seeds') || '1,2,3,4').split(',').map(Number);
+const seedHeight = Number(params.get('h') || 1.4);
+
+const refImg = new Image();
+refImg.src = REF.url;
+await refImg.decode();
+
+// A view: a cell on the page, the tree in it, and how many world units the cell shows each way from its foot.
+const views = [];
+const figure = (parent, caption, w, h) => {
+  const f = document.createElement('figure');
+  f.style.width = `${w}px`;
+  f.style.height = `${h}px`;
+  const cap = document.createElement('figcaption');
+  cap.textContent = caption;
+  f.append(cap);
+  parent.append(f);
+  return f;
+};
+const drawRef = (canvas, [x0, y0, x1, y1], w, h) => {
+  canvas.width = w * devicePixelRatio;
+  canvas.height = h * devicePixelRatio;
+  canvas.style.width = `${w}px`;
+  canvas.style.height = `${h}px`;
+  const g = canvas.getContext('2d');
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(refImg, x0, y0, x1 - x0, y1 - y0, 0, 0, canvas.width, canvas.height);
+};
+// Each comparison takes a row: the reference and the model side by side, half the page wide each, or as wide as fits
+// the window's height.
+const half = Math.floor((window.innerWidth - 24) / 2);
+for (const { name, box, foot, height, seed } of set.refs) {
+  const [x0, y0, x1, y1] = box;
+  const zoom = Math.min(half / (x1 - x0), (window.innerHeight * 0.85) / (y1 - y0));
+  const w = Math.round((x1 - x0) * zoom);
+  const h = Math.round((y1 - y0) * zoom);
+  const refs = document.createElement('main');
+  document.getElementById('refs').append(refs);
+  const a = figure(refs, name, w, h);
+  const ref = document.createElement('canvas');
+  drawRef(ref, box, w, h);
+  a.append(ref);
+  const b = figure(refs, `Mẫu (${height} cao)`, w, h);
+  const over = document.createElement('canvas');
+  over.className = 'over';
+  drawRef(over, box, w, h);
+  b.append(over);
+  views.push({ f: b, tree: set.make(seed, height), left: -(foot[0] - x0) / REF.scale, right: (x1 - foot[0]) / REF.scale, top: (foot[1] - y0) / REF.scaleY, bottom: -(y1 - foot[1]) / REF.scaleY });
+}
+document.getElementById('mix').addEventListener('input', (e) => document.querySelectorAll('.over').forEach((c) => (c.style.opacity = e.target.value)));
+for (const seed of seeds) {
+  const ch = Math.min(Math.round(half * 1.25), Math.round(window.innerHeight * 0.85));
+  const f = figure(document.getElementById('seeds'), `seed ${seed}`, half, ch);
+  const w = (seedHeight * 1.05 * half) / ch;
+  views.push({ f, tree: set.make(seed, seedHeight), left: -w / 2, right: w / 2, top: seedHeight * 0.95, bottom: -seedHeight * 0.1 });
+}
+
+// The game's renderer settings and lights (see FarmScene and dev/buildings.html), on a plain grassy ground.
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, alpha: true });
+renderer.setPixelRatio(devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight, false);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.toneMappingExposure = 1.1;
+renderer.setScissorTest(true);
+renderer.setClearColor('#cfe9f7', 1);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight('#e4eeff', '#7b9a4a', 0.8));
+const sun = new THREE.DirectionalLight('#ffe2a4', 3.2);
+sun.position.copy(SUN_DIR).multiplyScalar(10);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -5, right: 5, top: 5, bottom: -5, near: 1, far: 25 });
+sun.shadow.bias = -0.0006;
+sun.shadow.normalBias = 0.02;
+scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 20).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#86c94f', roughness: 0.95 }));
+ground.receiveShadow = true;
+scene.add(ground);
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
+camera.position.copy(CAM_DIR).multiplyScalar(30);
+camera.lookAt(0, 0, 0);
+
+renderer.setAnimationLoop(() => {
+  if (renderer.getPixelRatio() !== devicePixelRatio) renderer.setPixelRatio(devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight, false);
+  for (const { f, tree, left, right, top, bottom } of views) {
+    const r = f.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > window.innerHeight) continue;
+    Object.assign(camera, { left, right, top, bottom });
+    camera.updateProjectionMatrix();
+    scene.add(tree);
+    const y = window.innerHeight - r.bottom;
+    renderer.setViewport(r.left, y, r.width, r.height);
+    renderer.setScissor(r.left, y, r.width, r.height);
+    renderer.render(scene, camera);
+    scene.remove(tree);
+  }
+  window.__ready = true;
+});
+</script>
+</body></html>

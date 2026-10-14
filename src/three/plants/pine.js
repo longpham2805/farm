@@ -1,0 +1,137 @@
+// A pine as the reference design draws them: a narrow cone of stacked tiers on a short brown trunk. Each tier is a
+// skirt of broad panels of needles, each folded down its middle so one half takes the light and the other does not,
+// their tips drooping out and down over the tier below, darker up under the tier above. Flat facets, as the design's
+// low-poly trees.
+import * as THREE from 'three';
+import { seeded } from '../../util.js';
+
+const TAU = Math.PI * 2;
+
+/** Needles: deep in the shade under a tier, mid on its panels, light at their tips; the bark. */
+export const PINE = { shade: '#123f24', dark: '#1f6232', mid: '#2f8a45', light: '#5cae4c', bark: '#a06c40', barkDark: '#6b4426' };
+
+const MATERIAL = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.92 });
+
+/** Triangles with a colour at each corner, each facing away from `inside` (a point, or a direction when `away`). */
+function mesher() {
+  const pos = [];
+  const col = [];
+  const n = new THREE.Vector3();
+  const ab = new THREE.Vector3();
+  const ac = new THREE.Vector3();
+  const tri = (a, b, c, ca, cb, cc, facing) => {
+    ab.subVectors(b, a);
+    ac.subVectors(c, a);
+    n.crossVectors(ab, ac);
+    if (n.dot(facing(a, b, c)) < 0) [b, c, cb, cc] = [c, b, cc, cb];
+    for (const p of [a, b, c]) pos.push(p.x, p.y, p.z);
+    for (const k of [ca, cb, cc]) col.push(k.r, k.g, k.b);
+  };
+  const geometry = () => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    g.computeVertexNormals();
+    return g;
+  };
+  return { tri, geometry };
+}
+
+// Which way a face should look: out from the trunk, or down.
+const OUT = (a, b, c) => new THREE.Vector3(a.x + b.x + c.x, 0, a.z + b.z + c.z);
+const DOWN = () => new THREE.Vector3(0, -1, 0);
+
+/**
+ * One tier: K panels round the trunk, their tips at radius R and height y (drooping a little below it), the notches
+ * between them higher and further in, all rising to a point `h` above y, inside the tier above. `light` is how lit
+ * this tier is as a whole (the lower ones a little darker).
+ */
+function tier(m, rand, c, { y, h, R, K, light }) {
+  const turn = rand() * TAU;
+  const at = (a, r, yy) => new THREE.Vector3(Math.cos(a) * r, yy, Math.sin(a) * r);
+  const apex = new THREE.Vector3(0, y + h, 0);
+  const ridge = [];
+  const valley = [];
+  const tip = [];
+  const notch = [];
+  const band = Math.min(h, R * 1.3);
+  const midY = y + h * 0.42;
+  const midR = R * 0.58;
+  for (let k = 0; k < K; k++) {
+    const a = turn + (k / K) * TAU + (rand() - 0.5) * 0.2;
+    const b = turn + ((k + 0.5) / K) * TAU + (rand() - 0.5) * 0.2;
+    const j = 1 + (rand() - 0.5) * 0.12;
+    ridge.push(at(a, midR * 1.12 * j, midY));
+    valley.push(at(b, midR * 0.92, midY + band * 0.03));
+    tip.push(at(a, R * j, y - band * (0.04 + rand() * 0.06)));
+    notch.push(at(b, R * 0.88, y + band * 0.07));
+  }
+  const under = new THREE.Vector3(0, y + band * 0.4, 0);
+  const tone = (from, to, f) => from.clone().lerp(to, f).multiplyScalar(light);
+  const C = { apex: tone(c.shade, c.dark, 0.3), ridge: tone(c.dark, c.mid, 0.8), valley: tone(c.shade, c.dark, 0.9), tip: tone(c.mid, c.light, 0.85), notch: tone(c.dark, c.mid, 0.5), under: c.shade };
+  for (let k = 0; k < K; k++) {
+    const k1 = (k + 1) % K;
+    m.tri(apex, ridge[k], valley[k], C.apex, C.ridge, C.valley, OUT);
+    m.tri(apex, valley[k], ridge[k1], C.apex, C.valley, C.ridge, OUT);
+    m.tri(ridge[k], valley[k], notch[k], C.ridge, C.valley, C.notch, OUT);
+    m.tri(ridge[k], notch[k], tip[k], C.ridge, C.notch, C.tip, OUT);
+    m.tri(valley[k], ridge[k1], tip[k1], C.valley, C.ridge, C.tip, OUT);
+    m.tri(valley[k], tip[k1], notch[k], C.valley, C.tip, C.notch, OUT);
+    // Underneath, dark, seen through the notches and from below.
+    m.tri(tip[k], notch[k], under, C.under, C.under, C.under, DOWN);
+    m.tri(notch[k], tip[k1], under, C.under, C.under, C.under, DOWN);
+  }
+}
+
+/** A tapering trunk of `sides` flat sides from the ground up to `top`. */
+function trunk(m, c, top, r0, r1, sides = 6) {
+  const ring = (y, r) => Array.from({ length: sides }, (_, k) => new THREE.Vector3(Math.cos((k / sides) * TAU) * r, y, Math.sin((k / sides) * TAU) * r));
+  const lo = ring(-0.02, r0);
+  const hi = ring(top, r1);
+  for (let k = 0; k < sides; k++) {
+    const k1 = (k + 1) % sides;
+    // Lit on the sun's side (upper left of the screen), darker round the back.
+    const f = 0.5 + 0.5 * Math.cos((k / sides) * TAU - 2.4);
+    const col = c.barkDark.clone().lerp(c.bark, f);
+    m.tri(lo[k], lo[k1], hi[k1], col, col, col, OUT);
+    m.tri(lo[k], hi[k1], hi[k], col, col, col, OUT);
+  }
+}
+
+/**
+ * A pine `height` tall (world units), laid out by `seed`: five or six tiers, the crown half to two thirds as wide as
+ * it is tall, its lowest tier a quarter of the height up, so the trunk shows under it from the camera. Returns a mesh
+ * standing on its foot at the origin.
+ */
+export function pine(seed = 1, height = 1.4, colors = PINE) {
+  const rand = seeded(seed);
+  const c = Object.fromEntries(Object.entries(colors).map(([k, v]) => [k, new THREE.Color(v)]));
+  // A little lighter or darker, a little yellower or bluer, from tree to tree.
+  const hue = (rand() - 0.5) * 0.025;
+  const value = 1 + (rand() - 0.5) * 0.12;
+  for (const k of ['shade', 'dark', 'mid', 'light']) c[k].offsetHSL(hue, 0, 0).multiplyScalar(value);
+  const m = mesher();
+  const n = rand() < 0.5 ? 5 : 6;
+  const foot = 0.24 + rand() * 0.04;
+  const topH = 0.24;
+  const Rmax = 0.26 + rand() * 0.07;
+  trunk(m, c, foot + 0.25, 0.045, 0.028);
+  // The bands of the tiers below the top one, a little deeper low down.
+  const weights = Array.from({ length: n - 1 }, (_, i) => 1 - 0.3 * (i / Math.max(1, n - 2)));
+  const total = weights.reduce((s, w) => s + w, 0);
+  let y = foot;
+  for (let i = 0; i < n; i++) {
+    const top = i === n - 1;
+    const band = top ? 1 - y : ((1 - foot - topH) * weights[i]) / total;
+    const R = Rmax * ((1 - y) / (1 - foot)) ** 0.92 * (top ? 1.1 : 1);
+    tier(m, rand, c, { y, h: top ? band : band * 1.7, R, K: top ? 5 : i < 2 ? 7 : 6, light: 0.92 + 0.08 * (i / (n - 1)) });
+    y += band;
+  }
+  const g = m.geometry();
+  g.scale(height, height, height);
+  const mesh = new THREE.Mesh(g, MATERIAL);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  mesh.userData.height = height;
+  return mesh;
+}
