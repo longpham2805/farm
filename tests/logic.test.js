@@ -35,7 +35,12 @@ test('data tables are consistent', () => {
     assert.ok(info && info.fact.vi && info.fact.en, `no nutrition for ${c.id}`);
     for (const n of info.n) assert.ok(NUTRIENTS[n], `${c.id}: unknown nutrient ${n}`);
   }
-  for (const [mat] of Object.entries(LEVEL_MATERIALS).map(([, m]) => [m.crop])) assert.ok(G.CROP_BY_ID[mat], mat);
+  for (const [level, m] of Object.entries(LEVEL_MATERIALS)) {
+    assert.ok(G.CROP_BY_ID[m.crop], m.crop);
+    assert.ok(G.CROP_BY_ID[m.crop].unlock < Number(level), `level ${level} needs ${m.crop} before it can be grown`);
+  }
+  for (const c of CROPS) assert.ok(c.unlock <= MAX_LEVEL, `${c.id} opens above the top level`);
+  for (let level = 31; level <= MAX_LEVEL; level++) assert.ok(G.unlocksAt(level).seeds.length > 0, `level ${level} opens nothing`);
 });
 
 test('old saves keep their crops after the seed list changed', () => {

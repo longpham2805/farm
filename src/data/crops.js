@@ -92,6 +92,32 @@ export const CROPS = [
     name: { vi: 'Lê vàng', en: 'Golden Pear' }, color: '#e6e81a', leaf: '#3fbf3a' },
   { id: 'durian', tier: 4, unlock: 30, price: 600, xp: 400, yield: 5, sell: 1200, grow: 72000, variants: 8,
     name: { vi: 'Sầu riêng', en: 'Durian' }, color: '#b5cf1a', leaf: '#33a835' },
+
+  // Levels 31–40: one new fruit (or two) for every level.
+  { id: 'chili', tier: 4, unlock: 31, price: 560, xp: 330, yield: 7, sell: 760, grow: 61200, variants: 3,
+    name: { vi: 'Ớt', en: 'Chilli' }, color: '#f0141c', leaf: '#33b833' },
+  { id: 'lime', tier: 4, unlock: 31, price: 580, xp: 340, yield: 7, sell: 780, grow: 63000, variants: 3,
+    name: { vi: 'Chanh', en: 'Lime' }, color: '#58c21f', leaf: '#1e7f2c' },
+  { id: 'tangerine', tier: 4, unlock: 32, price: 610, xp: 360, yield: 6, sell: 900, grow: 66600, variants: 3,
+    name: { vi: 'Quýt', en: 'Tangerine' }, color: '#ff6a00', leaf: '#2f9e35' },
+  { id: 'guava', tier: 4, unlock: 33, price: 630, xp: 380, yield: 6, sell: 940, grow: 68400, variants: 3,
+    name: { vi: 'Ổi', en: 'Guava' }, color: '#d2ea72', leaf: '#3fb83a' },
+  { id: 'greenPear', tier: 4, unlock: 33, price: 650, xp: 390, yield: 6, sell: 960, grow: 68400, variants: 3,
+    name: { vi: 'Lê xanh', en: 'Green Pear' }, color: '#9ed83a', leaf: '#3fbf3a' },
+  { id: 'starfruit', tier: 4, unlock: 34, price: 450, xp: 900, yield: 6, sell: 700, grow: 79200, variants: 5, tags: ['exp'],
+    name: { vi: 'Khế', en: 'Starfruit' }, color: '#ffd21f', leaf: '#3cb835' },
+  { id: 'passionFruit', tier: 4, unlock: 35, price: 680, xp: 420, yield: 6, sell: 1020, grow: 72000, variants: 5,
+    name: { vi: 'Chanh dây', en: 'Passion Fruit' }, color: '#7a2a6a', leaf: '#3fb83a' },
+  { id: 'pomegranate', tier: 4, unlock: 36, price: 720, xp: 450, yield: 6, sell: 1080, grow: 75600, variants: 8, tags: ['lucky'],
+    name: { vi: 'Lựu', en: 'Pomegranate' }, color: '#d81e3a', leaf: '#3fae35' },
+  { id: 'rambutan', tier: 4, unlock: 37, price: 740, xp: 470, yield: 7, sell: 1000, grow: 75600, variants: 5,
+    name: { vi: 'Chôm chôm', en: 'Rambutan' }, color: '#f0282a', leaf: '#2fa83a' },
+  { id: 'cashew', tier: 4, unlock: 38, price: 780, xp: 500, yield: 6, sell: 1180, grow: 79200, variants: 5,
+    name: { vi: 'Đào lộn hột', en: 'Cashew' }, color: '#ff7a1a', leaf: '#3fae35' },
+  { id: 'cherry', tier: 4, unlock: 39, price: 820, xp: 540, yield: 6, sell: 1260, grow: 82800, variants: 8,
+    name: { vi: 'Cherry', en: 'Cherry' }, color: '#c8102e', leaf: '#3fbf3a' },
+  { id: 'melon', tier: 4, unlock: 40, price: 900, xp: 600, yield: 5, sell: 1600, grow: 86400, variants: 8,
+    name: { vi: 'Dưa lưới', en: 'Melon' }, color: '#a8b860', leaf: '#45c23a' },
 ];
 
 // Mystery packs: plant one and a random crop from the pool grows.
