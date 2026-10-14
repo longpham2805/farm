@@ -207,7 +207,28 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   ends, and an animal steps along the straight way it planned while it turns to face it: before, a walk past the
   corner could cut across the plots. `tests/herd.test.js` checks the pig never leaves its patch.
   `dev/animals.html?set=pigs` shows it close up, `dev/buildings.html?at=-0.1,3.8&span=2.4&t=11.5&up=0.3` beside the
-  reference.
+  reference. On its right two brown hens peck about (`PLACES.lawnHens`, the chickens' `flock`), where the reference
+  draws two small brown birds; the pig's area stops short of theirs.
+- **Ducks and swallows**, which the reference does not draw but the old valley had (the user chose to keep them):
+  - Ducks (`src/three/animals/duck.js`, kinds in `DUCKS`), built smooth like the chickens: a white mother duck riding
+    low in the water, a full breast, wings folded along her sides, her tail turned up, an orange bill broad and flat;
+    yellow ducklings, round, with stubs of wings. What lies under the surface is hidden by the painted water.
+    `paddle(way, half, names)` lets a family loose on a stretch of river: the mother swims to a spot along it, rests,
+    now and then tips up to feed (head under, tail in the air), and swims on. Her five ducklings keep near her, each
+    swimming after a spot of its own that it picks afresh every few seconds, behind her as she swims and all round her
+    as she rests, speeding up and slowing down, keeping off each other and inside the river, and pecking at the water
+    when still (they first followed her trail exactly, in a line, and looked towed). Rings of ripples spread from
+    each and fade. They paddle the river between the small fall's pool and the big bridge, by the buffalo
+    (`PLACES.ducks`). `tests/ducks.test.js` checks the ducklings keep near her, apart and on the river.
+  - Swallows (`src/three/animals/birds.js`, `BIRDS`): a slim dark blue body, pale beneath, a rufous throat, a forked
+    tail in one flat piece from inside the body, and long swept wings, each one strip that turns at the shoulder and
+    curves gradually about the wrist as it beats (`bendWing`): wings of two flat halves hinged at the wrist, and a
+    tail of two separate spikes, looked broken. `wheel(centre, names)` has a few fly circles of their own
+    round a spot high over the hills behind the farm (`PLACES.birds`), beating their wings for a few seconds, then
+    gliding, banking into the turn. Drawn about twice a swallow's size against the farm (`size` 1.8): at their true
+    size they were a few pixels over the dark forest. They cast no shadows.
+  - `dev/animals.html?set=ducks` and `?set=birds` show them close up. The old `addAnimals` in `animals.js` belongs to
+    the old 3D valley.
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
   sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
@@ -230,8 +251,8 @@ In this order:
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
    building at a time as above. Done: every building along the back of the ring road (farmhouse, hen yard and hens,
    cart, barn, bale, silo, haystack, windmill and stone shed), the well, the bridges, the buffalo, the cows and the
-   sheep, and the pig. Next: the other animals (each in `animals/` like the chickens: ducks, birds) and fences (`addAnimals`,
-   the old `LAYOUT` in `countryside.js` giving way to `PLACES`), the fields over the big bridge with the scarecrow,
+   sheep, the pig, the ducks and the swallows. Next: the fences (the old `LAYOUT` in `countryside.js` giving way to
+   `PLACES`), the fields over the big bridge with the scarecrow,
    the meadow's fence and trough, the landing by the small fall, and spray and mist at the foot of each painted fall
    (`buildWaterfall` has them; put them at `WATERFALLS`).
 2. **3D trees that sway** gently (wind in the vertex shader) in the olive areas and round the farm; bushes, flowers,

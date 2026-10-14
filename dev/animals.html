@@ -12,9 +12,10 @@
 <!-- Every breed in src/three/animals/chicken.js, close up in the game's light and from its camera, pecking now and
      then; ?set=buffaloes shows the buffaloes in src/three/animals/buffalo.js instead, grazing (?walk=1, walking on
      the spot), ?set=cows two cows from src/three/animals/cow.js, their patches laid out differently, ?set=sheep
-     two ewes from src/three/animals/sheep.js, and ?set=pigs the pig in src/three/animals/pig.js. ?cols=4 sets the
-     grid width, ?turn=0 turns them all to face the camera (1.1 by default), ?t=10 holds them at that moment,
-     ?view=0.8 looks closer. -->
+     two ewes from src/three/animals/sheep.js, ?set=pigs the pig in src/three/animals/pig.js, ?set=ducks and
+     ?set=birds the ducks and the swallow in src/three/animals/duck.js and birds.js. ?cols=4 sets the grid width,
+     ?turn=0 turns them all to face the camera (1.1 by default), ?t=10 holds them at that moment, ?view=0.8 looks
+     closer. -->
 <div id="grid"></div>
 <canvas id="c"></canvas>
 <script type="module">
@@ -24,6 +25,8 @@ import { buffalo, BUFFALOES } from '../src/three/animals/buffalo.js';
 import { cow } from '../src/three/animals/cow.js';
 import { sheep } from '../src/three/animals/sheep.js';
 import { pig, PIGS } from '../src/three/animals/pig.js';
+import { duck, DUCKS } from '../src/three/animals/duck.js';
+import { bird, BIRDS } from '../src/three/animals/birds.js';
 
 // The game's sun (SUN_DIR in countryside.js).
 const SUN_DIR = new THREE.Vector3(-0.414, 1.11, 0.91).normalize();
@@ -43,6 +46,14 @@ const SETS = {
   // Two ewes, each with the phase that lays out its fleece.
   sheep: { kinds: { ewe: 0, 'ewe 2': 5.3 }, make: (name) => sheep('ewe', SETS.sheep.kinds[name]), view: 1.0, move: (a, t, phase) => a.userData.update(t + phase, 1 / 60, walking ? 0.12 : 0) },
   pigs: { kinds: PIGS, make: (name) => pig(name), view: 0.8, move: (a, t, phase) => a.userData.update(t + phase, 1 / 60, walking ? 0.1 : 0) },
+  ducks: { kinds: DUCKS, make: duck, view: 0.4, move: (a, t, phase) => (a.userData.head.rotation.x = 0.12 * Math.sin(t * 5 + phase)) },
+  // A swallow in the air, beating its wings for three seconds, then gliding for three; ?t holds its wings at a
+  // moment of their beat, a second a beat.
+  birds: { kinds: BIRDS, make: (name) => {
+    const b = bird(name);
+    b.position.y = 0.3;
+    return b;
+  }, view: 1.0, move: (a, t, phase) => a.userData.flap(t * (still === null ? 14 : 1) + phase, (t + phase) % 6 > 3 ? 1 : 0) },
 };
 const set = SETS[params.get('set') || 'chickens'];
 

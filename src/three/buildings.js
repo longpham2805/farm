@@ -23,6 +23,8 @@ import { buffalo } from './animals/buffalo.js';
 import { cow, COWS } from './animals/cow.js';
 import { sheep } from './animals/sheep.js';
 import { pig } from './animals/pig.js';
+import { paddle } from './animals/duck.js';
+import { wheel } from './animals/birds.js';
 
 // A lily pad: a disc with a notch cut out.
 const PAD = new THREE.CylinderGeometry(1, 1, 1, 12, 1, false, 0.35, TAU - 0.35);
@@ -427,6 +429,12 @@ export function placeBuildings({ at }) {
     const p = at(u, b);
     return { name: 'pig', x: p.x, z: p.z, heading: FACE + turn };
   }), pig);
+  // Two brown hens pecking about the grass on the pig's right.
+  const lawnHens = flock(PLACES.lawnHens.area.map(([u, b]) => at(u, b)), PLACES.lawnHens.hens);
+  // The mother duck and her ducklings on the river above the big bridge.
+  const ducks = paddle(PLACES.ducks.way.map(([u, b]) => at(u, b)), PLACES.ducks.half, ['duck', ...Array(5).fill('duckling')]);
+  // Swallows wheeling over the hills behind the farm.
+  const birds = wheel(at(...PLACES.birds.at, PLACES.birds.height), ['swallow', 'swallow', 'swallow']);
   // The bridges, each turned to run between its ends: the big one with a lamp at its farm end, the small one with
   // lanterns on its corners.
   const glow = new Batch();
@@ -439,7 +447,7 @@ export function placeBuildings({ at }) {
     batch.pop();
   }
   const group = new THREE.Group();
-  group.add(batch.build(), buildGlow(glow), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, buffaloes.group, meadow.group, pigs.group);
+  group.add(batch.build(), buildGlow(glow), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, buffaloes.group, meadow.group, pigs.group, lawnHens.group, ducks.group, birds.group);
   const update = (t, dt) => {
     smoke.update(t);
     sails.children[0].rotation.z = -t * 0.9;
@@ -447,6 +455,9 @@ export function placeBuildings({ at }) {
     buffaloes.update(t, dt);
     meadow.update(t, dt);
     pigs.update(t, dt);
+    lawnHens.update(t, dt);
+    ducks.update(t, dt);
+    birds.update(t, dt);
     wellParts.update(t);
   };
   return { group, update };

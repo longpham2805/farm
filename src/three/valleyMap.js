@@ -163,11 +163,18 @@ export const PLACES = {
   },
   calf: { at: [6.4, -2.3], turn: -1.35 },
   // The pig on the grass behind the plots, side on, facing right (animals/pig.js). It roots about `area`, between the
-  // back plots and the ring road, keeping off the plots.
+  // back plots and the ring road, keeping off the plots, and leaving the grass on its right to two brown hens
+  // (`lawnHens`, animals/chicken.js), as the reference draws them.
   pig: {
     at: [-0.3, 3.95], turn: 1.4,
-    area: [[-1.3, 2.85], [0, 4.1], [1.3, 2.85], [1.5, 3.4], [1.0, 4.5], [0, 4.85], [-1.0, 4.5], [-1.5, 3.4]],
+    area: [[-1.3, 2.85], [0, 4.1], [0.9, 3.23], [1.0, 4.4], [0, 4.85], [-1.0, 4.5], [-1.5, 3.4]],
   },
+  lawnHens: { area: [[1.25, 3.05], [2.1, 2.2], [2.6, 2.6], [2.3, 3.9], [1.5, 4.3]], hens: ['brown', 'brown'] },
+  // A mother duck and her ducklings (animals/duck.js) paddling about the river between the small fall's pool and the
+  // big bridge: `way` down the middle of that stretch, `half` how far either side of it they swim.
+  ducks: { way: [[10.2, -2.2], [9.5, -2.9], [7.4, -4.8], [6.75, -5.25]], half: 0.45 },
+  // Swallows (animals/birds.js) wheeling high over the hills behind the farm, round this spot and `height` up.
+  birds: { at: [0, 9.4], height: 3.8 },
   // The fenced fields over the big bridge: square to the plots, `half` along each of their sides.
   fields: { at: [11.0, -6.7], half: [2.25, 2.8] },
   scarecrow: { at: [12.2, -3.8] },
