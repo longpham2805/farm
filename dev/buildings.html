@@ -109,7 +109,8 @@ renderer.setAnimationLoop(() => {
   clock.update();
   const t = still ?? clock.getElapsed();
   backdrop.update(t);
-  placed.update(t, clock.getDelta());
+  // Held still, the animals stay where they start.
+  placed.update(t, still === null ? clock.getDelta() : 0);
   renderer.render(scene, camera);
   window.__ready = true;
 });

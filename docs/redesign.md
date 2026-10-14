@@ -156,8 +156,8 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   look soft. The face, ears and tail have only the flat coat. They graze with the muzzle down in the grass, nibbling, lift the head
   to look about for a few seconds every fourteen, swish the tail and flick the ears. Every so often one turns and
   walks slowly to another spot not far off, its legs stepping in diagonal pairs and its head nodding, and grazes
-  there; the calf follows its mother soon after she stops (`herd(area, members)`, which lets any buffaloes loose in a
-  polygon; `inside` and `spotIn` in `animals/area.js` serve the chickens too). They never walk into each other: each
+  there; the calf follows its mother soon after she stops (`herd(area, members, make)` in `animals/herd.js`, which
+  lets any cattle loose in a polygon; `inside` and `spotIn` in `animals/area.js` serve the chickens too). They never walk into each other: each
   takes up a few circles along its back (`BODY`, `gap`), they take turns to walk, and one sets off only on a way it
   can turn (either way round) and walk clear of the others standing; the calf stands out of its mother's reach as she
   turns about, so she can always turn. The patch they wander is narrow, so they cannot pass each other: an earlier
@@ -166,7 +166,25 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   river's rocky bank near the big bridge, side on, facing left, the calf behind her towards the road, and wander the
   grass between the road to the big bridge and the river, up into the meadow below the small fall (`PLACES.buffalo`
   and its `area`, `calf`, placed by `placeBuildings`). `dev/animals.html?set=buffaloes` shows them close up (`?cols=2`
-  bigger), `?t=11.5` with the head up, `?walk=1` walking on the spot.
+  bigger), `?t=11.5` with the head up, `?walk=1` walking on the spot. What the cattle share is in `animals/parts.js`:
+  the shapes, `Coat`, `loft`, `hornGeometry` and `grazing` (how they graze, look about and walk).
+- **Cows** (`src/three/animals/cow.js`, kinds in `COWS`: a Holstein), black and white as the reference draws them in
+  the meadow, built like the buffalo: a chunky body in one smooth piece (`loft` through its own `TRUNK`), square at
+  the rump, level along the back, the barrel deep; a slimmer neck; a big black head (scaled 1.45) with a pale pink
+  muzzle, short pale horns and black ears out sideways, pink inside; a pink udder; short, stout white legs on dark
+  hooves. The coat is sleeker than the buffalo's (`Coat`'s `stand` and `streak`: the hair stands off half as far and
+  streaks the white less, which looked dirty and woolly at full strength). Big black patches lie over the white
+  (`patches` in `Coat`, drawn in the hide's shader from noise in each piece's own space, so they move with it, sharp
+  and ragged with the hair at their edges): about 0.3 model units across, on the body, neck and legs above the knee,
+  each cow's and each leg's laid out by its own seed (the herd's phase). An earlier, longer and slimmer body with
+  smaller patches looked spindly beside the reference, and a white blaze on the face stuck out like a bar, so it went.
+  They graze, look about and walk like the buffalo (`grazing`, their head lifted higher to look about) and wander the
+  meadow with `herd`: two of them, starting where the reference draws them, side on, facing right and a little
+  towards the camera, and wandering `PLACES.cows.area`, the meadow inside its fence and clear of the trough (the
+  trees in the meadow, still to come, are not kept clear of yet). `tests/herd.test.js` checks two cows too.
+  `dev/animals.html?set=cows` shows two close up (`?view=1.2` closer), and
+  `dev/buildings.html?at=-11.75,-2.75&span=2.2&t=11.5&up=0.4` sets one beside the reference (`?t` now also holds the
+  animals where they start).
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
   sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
@@ -188,8 +206,8 @@ In this order:
 
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
    building at a time as above. Done: every building along the back of the ring road (farmhouse, hen yard and hens,
-   cart, barn, bale, silo, haystack, windmill and stone shed), the well, the bridges and the buffalo. Next: the other
-   animals (each in `animals/` like the chickens: cows and sheep, the pig, ducks, birds) and fences (`addAnimals`,
+   cart, barn, bale, silo, haystack, windmill and stone shed), the well, the bridges, the buffalo and the cows. Next:
+   the other animals (each in `animals/` like the chickens: the sheep, the pig, ducks, birds) and fences (`addAnimals`,
    the old `LAYOUT` in `countryside.js` giving way to `PLACES`), the fields over the big bridge with the scarecrow,
    the meadow's fence and trough, the landing by the small fall, and spray and mist at the foot of each painted fall
    (`buildWaterfall` has them; put them at `WATERFALLS`).
