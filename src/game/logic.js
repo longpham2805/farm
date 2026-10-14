@@ -260,8 +260,8 @@ export function openChests(state, tier, count = state.chests[tier]) {
 // ── Plots ─────────────────────────────────────────────────────
 
 export function thirstPoints(growMs) {
-  if (growMs < 20000) return [];
-  if (growMs < 300000) return [0.45];
+  if (growMs < 12000) return [];
+  if (growMs < 180000) return [0.45];
   return [0.3, 0.65];
 }
 
