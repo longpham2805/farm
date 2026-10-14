@@ -302,6 +302,15 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     low-poly trees. A cool green (in the game's warm light a yellower one looked olive). The lowest tier stands a
     quarter of the height up, so a brown trunk shows under it from the camera, as the reference draws it. Each seed
     gives a tree a little different in tiers, turn, width and shade.
+  - **Round tree** (`plants/roundTree.js`, `?set=round`): a brown trunk, leaning a little on flaring roots, forking a
+    quarter of the way up into three limbs out to the lowest clumps and one up the middle; a crown a little wider
+    than tall of twenty-odd clumps of leaves over a flattened ball round a big one in the middle, the lower ones
+    further out so the crown spreads at its foot. Each clump is a twelve-sided ball turned, stretched and roughened
+    its own way, so its facets are broad, as the reference draws them, yet no two alike (balls of many small facets
+    looked like bunches of grapes or boulders, plain twelve-sided ones like gems); each facet one colour, from
+    yellow-green on top to deep green under the crown and in the gaps. Two sets of colours in `ROUND_TREES`: `lime`,
+    as most of the woods, and `green`, darker, as in front (`?leaves=green`). What the plants share is in
+    `plants/parts.js`: one material, faces coloured at their corners, limbs, a palette shifted per tree.
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
   sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
@@ -329,7 +338,7 @@ In this order:
 2. **3D trees that sway** gently (wind in the vertex shader; `wind` in `buildings/fields.js` sways the wheat) in the
    olive areas and round the farm; bushes, flowers (the sunflowers along the fields' front right side among them),
    rocks and reeds. The trees are designed one kind at a time first (above), then placed all together. Done: the
-   pine. Next: the round tree, then the fruit tree, the pink blossom tree by the farmhouse and the birch.
+   pine and the round tree. Next: the fruit tree, then the pink blossom tree by the farmhouse and the birch.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's

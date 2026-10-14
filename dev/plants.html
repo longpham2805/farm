@@ -17,7 +17,7 @@
 <!-- The plants of step 2 of the redesign, one kind at a time (?set=pines): for each place the reference design draws
      one, the reference cut round it beside the model at the same scale, in the game's light and from its camera (the
      slider lays the reference over the model); then a few of the model close up, from other seeds
-     (?seeds=1,2,3,4, ?h=1.4 their height). -->
+     (?seeds=1,2,3,4, ?h=1.4 their height); ?set=round for the round trees (?leaves=green, the darker ones). -->
 <div id="refs"></div>
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <main id="seeds"></main>
@@ -26,6 +26,7 @@
 import * as THREE from 'three';
 import { SUN_DIR } from '../src/three/countryside.js';
 import { pine } from '../src/three/plants/pine.js';
+import { roundTree, ROUND_TREES } from '../src/three/plants/roundTree.js';
 
 // The reference design (art/backdrop/2-style-reference.png) and how many of its pixels a world unit takes across the
 // screen and up it (REF in dev/buildings.html).
@@ -37,16 +38,26 @@ const CAM_DIR = new THREE.Vector3(1, 0.95, 1).normalize(); // as in FarmScene
 const SETS = {
   pines: {
     make: (seed, h) => pine(seed, h),
+    h: 1.4,
     refs: [
       { name: 'Thông nhỏ cạnh đồng cỏ', box: [165, 700, 235, 795], foot: [199, 789], height: 1.39, seed: 1 },
       { name: 'Thông lớn phía trước (gốc bị che)', box: [495, 725, 645, 905], foot: [569, 902], height: 3.4, seed: 2 },
+    ],
+  },
+  round: {
+    // ?leaves=green for the darker green ones (ROUND_TREES).
+    make: (seed, h) => roundTree(seed, h, ROUND_TREES[params.get('leaves') || 'lime']),
+    h: 2.4,
+    refs: [
+      { name: 'Cây tán tròn trong rừng bên trái', box: [15, 275, 135, 415], foot: [73, 412], height: 2.5, seed: 1 },
+      { name: 'Cây tán tròn trong rừng phía sau (gốc bị che)', box: [535, 100, 670, 250], foot: [604, 247], height: 2.4, seed: 2 },
     ],
   },
 };
 const params = new URLSearchParams(location.search);
 const set = SETS[params.get('set') || 'pines'];
 const seeds = (params.get('seeds') || '1,2,3,4').split(',').map(Number);
-const seedHeight = Number(params.get('h') || 1.4);
+const seedHeight = Number(params.get('h') || set.h);
 
 const refImg = new Image();
 refImg.src = REF.url;

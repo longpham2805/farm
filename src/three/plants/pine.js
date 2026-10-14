@@ -4,42 +4,10 @@
 // low-poly trees.
 import * as THREE from 'three';
 import { seeded } from '../../util.js';
-
-const TAU = Math.PI * 2;
+import { TAU, MATERIAL, mesher, OUT, DOWN } from './parts.js';
 
 /** Needles: deep in the shade under a tier, mid on its panels, light at their tips; the bark. */
 export const PINE = { shade: '#123f24', dark: '#1f6232', mid: '#2f8a45', light: '#5cae4c', bark: '#a06c40', barkDark: '#6b4426' };
-
-const MATERIAL = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.92 });
-
-/** Triangles with a colour at each corner, each facing away from `inside` (a point, or a direction when `away`). */
-function mesher() {
-  const pos = [];
-  const col = [];
-  const n = new THREE.Vector3();
-  const ab = new THREE.Vector3();
-  const ac = new THREE.Vector3();
-  const tri = (a, b, c, ca, cb, cc, facing) => {
-    ab.subVectors(b, a);
-    ac.subVectors(c, a);
-    n.crossVectors(ab, ac);
-    if (n.dot(facing(a, b, c)) < 0) [b, c, cb, cc] = [c, b, cc, cb];
-    for (const p of [a, b, c]) pos.push(p.x, p.y, p.z);
-    for (const k of [ca, cb, cc]) col.push(k.r, k.g, k.b);
-  };
-  const geometry = () => {
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-    g.computeVertexNormals();
-    return g;
-  };
-  return { tri, geometry };
-}
-
-// Which way a face should look: out from the trunk, or down.
-const OUT = (a, b, c) => new THREE.Vector3(a.x + b.x + c.x, 0, a.z + b.z + c.z);
-const DOWN = () => new THREE.Vector3(0, -1, 0);
 
 /**
  * One tier: K panels round the trunk, their tips at radius R and height y (drooping a little below it), the notches
