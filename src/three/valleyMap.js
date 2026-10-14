@@ -182,17 +182,21 @@ export const PLACES = {
   landing: { at: [10.7, -0.6] },
   // The animals grazing in the meadow, where the reference draws them: two black and white cows, side on, facing
   // right and a little towards the camera (animals/cow.js), and two ewes, the one in view walking away to the back
-  // right (animals/sheep.js). They wander about `area`, the meadow inside its fence, clear of the trough.
+  // right (animals/sheep.js). They wander about `area`, the meadow inside its fence, clear of the trough. The fence
+  // (MEADOW) has `gates`: [side, how far along it, how wide], here one onto the road at its front right (the right
+  // side, square to the camera, would show a gate only edge on).
   meadow: {
+    gates: [[3, 0.5, 0.62]],
     herd: [
-      { name: 'holstein', at: [-11.9, -2.95], turn: 1.3 },
+      { name: 'holstein', at: [-11.9, -2.75], turn: 1.3 },
       { name: 'holstein', at: [-11.5, -0.6], turn: 1.3 },
       { name: 'ewe', at: [-10.4, 0.1], turn: 2.0 },
       { name: 'ewe', at: [-12.9, 0.3], turn: 1.0 },
     ],
-    area: [[-14.0, 0.8], [-10.85, 1.45], [-8.2, 0.1], [-8.2, -2.0], [-9.4, -3.3], [-10.1, -3.0], [-11.7, -3.0], [-12.3, -3.8], [-13.9, -4.4]],
+    area: [[-14.0, 0.8], [-10.85, 1.45], [-8.2, 0.1], [-8.2, -2.0], [-9.4, -3.3], [-10.0, -2.85], [-12.1, -2.85], [-12.5, -3.8], [-13.9, -4.4]],
   },
-  trough: { at: [-10.9, -3.5] },
+  // The meadow's water trough, by its fence at the front, along it (buildings/trough.js).
+  trough: { at: [-11.35, -3.45], turn: 0.17 },
 };
 
 /** The meadow's fence, corner to corner, on the painted meadow's edge (it shows as a faint line). */

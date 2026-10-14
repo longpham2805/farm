@@ -229,6 +229,16 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     size they were a few pixels over the dark forest. They cast no shadows.
   - `dev/animals.html?set=ducks` and `?set=birds` show them close up. The old `addAnimals` in `animals.js` belongs to
     the old 3D valley.
+- **The meadow's fence and trough**: a rail fence (`woodFence` in `buildings/fence.js`, for the fields' fences too)
+  round the painted meadow's edge (`MEADOW`, the faint line in the painting, which runs a little differently from the
+  reference's fence): square posts of weathered wood at most 0.42 apart and at every corner, no two quite the same
+  height or quite upright, each with a lighter cap, two rails from post to post, each a little off level. A gate of
+  three boards and a brace, between two stouter posts, opens onto the road at the front right (`PLACES.meadow.gates`;
+  on the right side, square to the camera, it showed only edge on). The trough (`buildings/trough.js`) stands where
+  the reference draws it, along the front fence (`PLACES.trough`): a box of planks three to a side on two beams, posts
+  at its corners, a lip along the top, glossy water a little below it; the meadow's animals keep clear of it (a notch
+  in `PLACES.meadow.area`), a cow grazing just behind it looks to be drinking. The reference's hay rack, bench and
+  lamp in the meadow are not built.
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
   sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
@@ -251,10 +261,9 @@ In this order:
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
    building at a time as above. Done: every building along the back of the ring road (farmhouse, hen yard and hens,
    cart, barn, bale, silo, haystack, windmill and stone shed), the well, the bridges, the buffalo, the cows and the
-   sheep, the pig, the ducks and the swallows. Next: the fences (the old `LAYOUT` in `countryside.js` giving way to
-   `PLACES`), the fields over the big bridge with the scarecrow,
-   the meadow's fence and trough, the landing by the small fall, and spray and mist at the foot of each painted fall
-   (`buildWaterfall` has them; put them at `WATERFALLS`).
+   sheep, the pig, the ducks and the swallows, and the meadow's fence and trough. Next: the fields over the big bridge
+   with their fences (`woodFence`) and the scarecrow, the landing by the small fall, and spray and mist at the foot of
+   each painted fall (`buildWaterfall` has them; put them at `WATERFALLS`).
 2. **3D trees that sway** gently (wind in the vertex shader) in the olive areas and round the farm; bushes, flowers,
    rocks and reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
