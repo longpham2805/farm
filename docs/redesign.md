@@ -307,10 +307,19 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     than tall of twenty-odd clumps of leaves over a flattened ball round a big one in the middle, the lower ones
     further out so the crown spreads at its foot. Each clump is a twelve-sided ball turned, stretched and roughened
     its own way, so its facets are broad, as the reference draws them, yet no two alike (balls of many small facets
-    looked like bunches of grapes or boulders, plain twelve-sided ones like gems); each facet one colour, from
-    yellow-green on top to deep green under the crown and in the gaps. Two sets of colours in `ROUND_TREES`: `lime`,
-    as most of the woods, and `green`, darker, as in front (`?leaves=green`). What the plants share is in
-    `plants/parts.js`: one material, faces coloured at their corners, limbs, a palette shifted per tree.
+    looked like bunches of grapes or boulders, plain twelve-sided ones like gems), from yellow-green on top to deep
+    green under the crown and in the gaps. The edges are rounded over a little, as the user wanted (`soft` 0.4 in the
+    form: each facet split in four, the middles of its edges pushed out towards the ball, the light and colour
+    bending round the corners; 0.6 was too round); the limbs and roots are round too. Two sets of colours in
+    `ROUND_TREES`: `lime`, as most of the woods, and `green`, darker, as in front (`?leaves=green`). `leafyTree` grows
+    it from a form (`ROUND_FORM`), and the fruit tree from its own. What the plants share is in `plants/parts.js`: the
+    materials (flat, and soft), faces coloured at their corners, limbs, a palette shifted per tree.
+  - **Fruit tree** (`plants/fruitTree.js`, `?set=fruit`), as inside the ring road: smaller (1.6 tall), on a short
+    stout trunk forking low, its crown wider for its height and hanging lower, of more and smaller clumps, a deep,
+    rich green, rounded over as the round tree. Fourteen to eighteen big glossy fruit, a little flattened, round the
+    sides and underneath rather than on top, each clear of the other clumps and fruit (more, and further out, looked
+    like pompoms). Kinds in `FRUIT_TREES`: `apple`, mostly red with a few orange, and `orange` (`?fruit=orange`).
+    Returns a group, the tree and its fruit (a smooth, glossy mesh of its own).
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
   sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
@@ -338,7 +347,7 @@ In this order:
 2. **3D trees that sway** gently (wind in the vertex shader; `wind` in `buildings/fields.js` sways the wheat) in the
    olive areas and round the farm; bushes, flowers (the sunflowers along the fields' front right side among them),
    rocks and reeds. The trees are designed one kind at a time first (above), then placed all together. Done: the
-   pine and the round tree. Next: the fruit tree, then the pink blossom tree by the farmhouse and the birch.
+   pine, the round tree and the fruit tree. Next: the pink blossom tree by the farmhouse, then the birch.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's

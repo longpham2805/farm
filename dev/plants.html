@@ -17,7 +17,7 @@
 <!-- The plants of step 2 of the redesign, one kind at a time (?set=pines): for each place the reference design draws
      one, the reference cut round it beside the model at the same scale, in the game's light and from its camera (the
      slider lays the reference over the model); then a few of the model close up, from other seeds
-     (?seeds=1,2,3,4, ?h=1.4 their height); ?set=round for the round trees (?leaves=green, the darker ones). -->
+     (?seeds=1,2,3,4, ?h=1.4 their height); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange). -->
 <div id="refs"></div>
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <main id="seeds"></main>
@@ -27,6 +27,7 @@ import * as THREE from 'three';
 import { SUN_DIR } from '../src/three/countryside.js';
 import { pine } from '../src/three/plants/pine.js';
 import { roundTree, ROUND_TREES } from '../src/three/plants/roundTree.js';
+import { fruitTree, FRUIT_TREES } from '../src/three/plants/fruitTree.js';
 
 // The reference design (art/backdrop/2-style-reference.png) and how many of its pixels a world unit takes across the
 // screen and up it (REF in dev/buildings.html).
@@ -51,6 +52,15 @@ const SETS = {
     refs: [
       { name: 'Cây tán tròn trong rừng bên trái', box: [15, 275, 135, 415], foot: [73, 412], height: 2.5, seed: 1 },
       { name: 'Cây tán tròn trong rừng phía sau (gốc bị che)', box: [535, 100, 670, 250], foot: [604, 247], height: 2.4, seed: 2 },
+    ],
+  },
+  fruit: {
+    // ?fruit=orange for the orange trees (FRUIT_TREES).
+    make: (seed, h) => fruitTree(seed, h, FRUIT_TREES[params.get('fruit') || 'apple']),
+    h: 1.6,
+    refs: [
+      { name: 'Cây ăn quả trong vòng đường, bên trái', box: [525, 545, 615, 645], foot: [571, 636], height: 1.6, seed: 1 },
+      { name: 'Cây ăn quả trong vòng đường, bên phải', box: [960, 350, 1060, 450], foot: [1009, 446], height: 1.6, seed: 2 },
     ],
   },
 };
