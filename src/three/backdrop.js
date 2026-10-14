@@ -29,7 +29,26 @@ export const BACKDROP = {
   },
   gutter: 32,
   water: './backdrop-water.png',
+  // The falls, where the water drops down the picture, in the painting's 1536 × 1024 pixels from its top left
+  // (MAIN_FALL and SIDE_FALL in art/backdrop/water-map.py): from x[0] to x[1] across at its top, down to the foot.
+  // The water goes over the `lip`, from [x, y] to [x, y], the top level to the left of it, and pours down leaning
+  // `lean` pixels across for each pixel down (to the left if below 0), its left side leaning with it.
+  falls: [
+    { x: [1195, 1266], lip: [[1195, 0], [1266, 0]], foot: 132, lean: 0 },
+    { x: [1267.1, 1294.5], lip: [[1273.8, 499], [1294.1, 513]], foot: 546, lean: -0.33 },
+  ],
 };
+
+/**
+ * The point on the ground the painting's pixel (px, py) lies on, in its 1536 × 1024 pixels from its top left (as
+ * `falls` gives them), with y set to `y`.
+ */
+export function paintedPoint(px, py, y = 0, { width, cx, cy, scale, scaleY } = BACKDROP) {
+  const k = width / 1536;
+  const u = (px * k - cx) / scale;
+  const b = (cy - py * k) / (S * scaleY);
+  return new THREE.Vector3((u - b) * Math.SQRT1_2, y, -(u + b) * Math.SQRT1_2);
+}
 
 /** The part of the screen plane the backdrop covers, in world units: u across, up the screen. */
 export function backdropBounds({ width, height, cx, cy, scale, scaleY } = BACKDROP) {
@@ -45,21 +64,71 @@ const RIPPLE = 0.14;
 const WATER_FRAGMENT = /* glsl */ `
 #ifdef USE_MAP
 	vec2 mapUv = vMapUv;
-	vec3 water = texture2D( waterMap, tileRect.xy + vMapUv * tileRect.zw ).rgb;
+	vec2 paintUv = tileRect.xy + vMapUv * tileRect.zw;
+	vec3 water = texture2D( waterMap, paintUv ).rgb;
 	vec2 turn = water.rg * 2.0 - 1.0;
 	float wet = smoothstep( 0.05, 0.5, length( turn ) );
 	float shine = 0.0;
+	// Where across the flow this is, from bank to bank. Where it jumps from one bank to the other between two of the
+	// water map's pixels (in narrow water), the streaks would break in steps along the jump: nothing moves there.
+	// Towards the banks the water's movement eases off with wet, which the map ramps up from the bank. (Worked out
+	// outside the branch below, as derivatives need every pixel round about.)
+	float across = water.b * 2.0 - 1.0;
+	// How far one of the water map's pixels spans on screen, to measure the jumps by.
+	float texel = max( fwidth( paintUv.x ) * float( textureSize( waterMap, 0 ).x ), 1e-4 );
+	float steady = ( 1.0 - smoothstep( 0.15, 0.5, fwidth( across ) / texel ) ) * ( 1.0 - smoothstep( 0.1, 0.4, length( fwidth( turn ) ) / texel ) );
 	if ( wet > 0.0 ) {
-		// Where along the flow this is, slid downstream with time, and where across it, from bank to bank.
+		// Where along the flow this is, slid downstream with time.
 		float along = atan( turn.y, turn.x ) / 6.2831853 - waterDrift;
-		float across = water.b * 2.0 - 1.0;
 		float mid = 1.0 - abs( across );
 		vec3 n1 = texture2D( waterNoise, vec2( along, across * 0.5 ) ).rgb;
 		vec3 n2 = texture2D( waterNoise, vec2( along * 2.0 + 0.31, across * 1.1 + 0.57 ) ).rgb;
-		mapUv += ( vec2( n1.b, n2.b ) - 0.5 ) * waterRipple * wet * ( 0.3 + 0.7 * mid );
+		vec2 ripple = ( vec2( n1.b, n2.b ) - 0.5 ) * ( 0.4 + 0.6 * mid );
 		float streaks = smoothstep( 0.6, 0.75, n1.r ) * 0.6 + smoothstep( 0.62, 0.76, n2.r ) * 0.4;
 		float glints = smoothstep( 0.76, 0.84, n2.g );
-		shine = ( streaks * 0.35 + glints * 0.8 ) * wet;
+		shine = streaks * 0.35 + glints * 0.8;
+		// Where the falls are. A fall's top is level to the left of its lip, then runs down the lip to its right;
+		// just over the lip the water rolls over the edge: a thin bright band along it, shimmering as it slides.
+		// Just above the top the river's streaks would bunch up into little eddies: the water there slides
+		// smoothly to the edge.
+		float fall = 0.0;
+		float lip = 0.0;
+		float calm = 0.0;
+		float bend = 0.0;
+		for ( int k = 0; k < 2; k++ ) {
+			vec4 box = waterFalls[ k ];
+			vec4 edge = waterLips[ k ];
+			float top = mix( edge.y, edge.w, clamp( ( paintUv.x - edge.x ) / ( edge.z - edge.x ), 0.0, 1.0 ) );
+			float below = top - paintUv.y;
+			// The water leans box.w pixels across for each pixel down, and the fall's left side with it.
+			float lean = box.w * max( below, 0.0 ) * 1024.0 / 1536.0;
+			float wide = smoothstep( box.x + lean - 0.002, box.x + lean + 0.002, paintUv.x ) * ( 1.0 - smoothstep( box.y - 0.002, box.y + 0.002, paintUv.x ) );
+			float here = wide * smoothstep( -0.001, 0.003, below ) * smoothstep( box.z - 0.004, box.z + 0.004, paintUv.y );
+			if ( here > fall ) bend = -lean;
+			fall = max( fall, here );
+			float onLip = smoothstep( edge.x - 0.001, edge.x + 0.002, paintUv.x ) * ( 1.0 - smoothstep( edge.z - 0.002, edge.z + 0.001, paintUv.x ) );
+			lip = max( lip, onLip * smoothstep( -0.0015, 0.0, below ) * ( 1.0 - smoothstep( 0.0, 0.002, below ) ) );
+			float near = smoothstep( box.x - 0.004, box.x + 0.004, paintUv.x ) * ( 1.0 - smoothstep( box.y - 0.004, box.y + 0.004, paintUv.x ) );
+			calm = max( calm, near * ( 1.0 - smoothstep( 0.006, 0.016, -below ) ) * step( 0.0, -below ) );
+		}
+		ripple *= 1.0 - 0.85 * calm;
+		shine *= 1.0 - calm;
+		// Down a fall the river's streaks would stretch the whole height of it and blink: there, thin streaks run
+		// down the picture instead, fast, leaning as the water does, and the water only shivers up and down.
+		if ( fall > 0.0 ) {
+			vec2 down = vec2( ( paintUv.x + bend ) * 24.0, paintUv.y * 6.5 + waterDrift * 4.0 );
+			vec3 f1 = texture2D( waterNoise, down ).rgb;
+			vec3 f2 = texture2D( waterNoise, down * vec2( 1.7, 1.3 ) + vec2( 0.37, waterDrift * 3.0 ) ).rgb;
+			float lines = smoothstep( 0.58, 0.72, f1.r ) * 0.6 + smoothstep( 0.6, 0.74, f2.g ) * 0.5;
+			shine = mix( shine, lines * 0.55, fall );
+			ripple = mix( ripple, vec2( 0.0, f1.b - 0.5 ) * 0.5, fall );
+		}
+		if ( lip > 0.0 ) {
+			float roll = texture2D( waterNoise, vec2( paintUv.x * 40.0, waterDrift * 6.0 ) ).g;
+			shine = max( shine, lip * ( 0.35 + 0.4 * smoothstep( 0.45, 0.7, roll ) ) );
+		}
+		mapUv += ripple * waterRipple * wet * steady;
+		shine *= wet * steady;
 	}
 	vec4 sampledDiffuseColor = texture2D( map, mapUv );
 	diffuseColor *= sampledDiffuseColor;
@@ -94,7 +163,10 @@ export function buildBackdrop(spec = BACKDROP) {
     noise.wrapS = noise.wrapT = THREE.RepeatWrapping;
     noise.minFilter = THREE.LinearFilter;
     noise.generateMipmaps = false;
-    Object.assign(uniforms, { waterMap: { value: loader.load(spec.water) }, waterNoise: { value: noise } });
+    // The falls as the water map's UVs see them, from its bottom left: [x0, x1, the foot, the lean] and the lip's ends.
+    const falls = spec.falls.map(({ x, foot, lean }) => new THREE.Vector4(x[0] / 1536, x[1] / 1536, 1 - foot / 1024, lean));
+    const lips = spec.falls.map(({ lip: [[x0, y0], [x1, y1]] }) => new THREE.Vector4(x0 / 1536, 1 - y0 / 1024, x1 / 1536, 1 - y1 / 1024));
+    Object.assign(uniforms, { waterMap: { value: loader.load(spec.water) }, waterNoise: { value: noise }, waterFalls: { value: falls }, waterLips: { value: lips } });
   }
 
   // One tile: its content (without the gutter) as a plane, with UVs into its image, gutter and all.
@@ -138,7 +210,7 @@ export function buildBackdrop(spec = BACKDROP) {
       material.onBeforeCompile = (shader) => {
         Object.assign(shader.uniforms, uniforms, own);
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', '#include <common>\nuniform sampler2D waterMap;\nuniform sampler2D waterNoise;\nuniform float waterDrift;\nuniform vec2 waterRipple;\nuniform vec4 tileRect;')
+          .replace('#include <common>', '#include <common>\nuniform sampler2D waterMap;\nuniform sampler2D waterNoise;\nuniform float waterDrift;\nuniform vec2 waterRipple;\nuniform vec4 tileRect;\nuniform vec4 waterFalls[2];\nuniform vec4 waterLips[2];')
           .replace('#include <map_fragment>', WATER_FRAGMENT);
       };
     }

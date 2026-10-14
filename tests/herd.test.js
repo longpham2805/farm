@@ -33,15 +33,10 @@ test('the buffalo and her calf wander about without ever walking into each other
 });
 
 test('the cows and the sheep wander about the meadow without ever walking into each other', () => {
-  // A patch about the size of the meadow.
-  const area = [{ x: 0, z: 0 }, { x: 5, z: 0 }, { x: 5.5, z: 3 }, { x: 3, z: 4.5 }, { x: 0, z: 4 }];
+  // The meadow as the game has it (in map units, which keep its shape), and where they start.
+  const area = PLACES.meadow.area.map(([u, b]) => ({ x: u, z: b }));
   for (let run = 0; run < 3; run++) {
-    const { group, update } = herd(area, [
-      { name: 'holstein', x: 1.5, z: 1.2, heading: 1.3 },
-      { name: 'holstein', x: 2.0, z: 3.0, heading: 1.3 },
-      { name: 'ewe', x: 3.6, z: 3.4, heading: 2.0 },
-      { name: 'ewe', x: 0.7, z: 3.2, heading: 1.0 },
-    ], (name, phase) => (name in COWS ? cow : sheep)(name, phase));
+    const { group, update } = herd(area, PLACES.meadow.herd.map(({ name, at: [u, b], turn }) => ({ name, x: u, z: b, heading: turn })), (name, phase) => (name in COWS ? cow : sheep)(name, phase));
     const animals = group.children;
     const pose = (a) => [a.position.x, a.position.z, a.rotation.y, a.userData.size, a.userData.body];
     const walked = animals.map(() => 0);

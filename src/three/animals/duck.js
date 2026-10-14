@@ -194,8 +194,9 @@ export function paddle(way, half, names) {
       const tz = mother.position.z - Math.cos(h) * back - Math.sin(h) * side;
       const [dx, dz] = [tx - d.position.x, tz - d.position.z];
       const dist = Math.hypot(dx, dz) || 1;
-      // Slowing as it gets there; now and then a little faster, to catch up.
-      const speed = Math.min(u.pace * (1 + 0.3 * Math.sin(t * 0.8 + u.phase)), dist * 1.2);
+      // Slowing as it gets there; now and then a little faster, and faster still when it has fallen behind her.
+      const behind = Math.max(0, Math.hypot(mother.position.x - d.position.x, mother.position.z - d.position.z) - 0.5);
+      const speed = Math.min(u.pace * (1 + 0.3 * Math.sin(t * 0.8 + u.phase)) * (1 + behind * 2), dist * 1.2);
       let [wx, wz] = [(dx / dist) * speed, (dz / dist) * speed];
       for (const o of ducks) {
         if (o === d) continue;

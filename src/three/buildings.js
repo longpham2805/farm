@@ -21,6 +21,9 @@ import { bridge as plankBridge } from './buildings/bridge.js';
 import { woodFence } from './buildings/fence.js';
 import { trough as waterTrough } from './buildings/trough.js';
 import { fields as fieldBeds } from './buildings/fields.js';
+import { landing } from './buildings/landing.js';
+import { spray } from './buildings/spray.js';
+import { BACKDROP, paintedPoint } from './backdrop.js';
 import { flock } from './animals/chicken.js';
 import { herd } from './animals/herd.js';
 import { buffalo } from './animals/buffalo.js';
@@ -424,6 +427,17 @@ export function placeBuildings({ at }) {
   batch.push(fieldsAt.x, 0, fieldsAt.z);
   const crops = fieldBeds(batch, seeded(41), PLACES.fields.half);
   batch.pop();
+  // The landing at the end of the riverside road, turned to run out over the river, and the boat tied up at it.
+  const jetty = (() => {
+    const { ends, width, side } = PLACES.landing;
+    const [a, b] = ends.map(([u, v]) => at(u, v));
+    const dir = b.clone().sub(a);
+    const mid = a.clone().add(b).multiplyScalar(0.5);
+    batch.push(mid.x, 0, mid.z, Math.atan2(-dir.z, dir.x));
+    const out = landing(batch, seeded(53), { span: dir.length(), width, side });
+    batch.pop();
+    return out;
+  })();
   // The buffalo and her calf by the river, grazing and wandering about their patch of grass.
   const buffaloes = herd(PLACES.buffalo.area.map(([u, b]) => at(u, b)), ['buffalo', 'calf'].map((name) => {
     const { at: [u, b], turn } = PLACES[name];
@@ -458,8 +472,20 @@ export function placeBuildings({ at }) {
     plankBridge(batch, glow, { span: dir.length(), width, arch, lamp: name === 'main', lanterns: name === 'small' });
     batch.pop();
   }
+  // Spray thrown up along the small fall's lip, where the water rolls over, heading down and to the left on screen
+  // as the water does, and a little mist over it.
+  const lipSpray = (() => {
+    const [[x0, y0], [x1, y1]] = BACKDROP.falls[1].lip;
+    const line = [paintedPoint(x0 + 1, y0 + 0.7), paintedPoint(x1 - 1.5, y1 - 1)];
+    const outward = new THREE.Vector3(0.6, 0, 1.4).normalize();
+    const drops = spray(line, { count: 45, up: [0.22, 0.42], out: [0.06, 0.16], outward, spread: 0.03, gravity: 2.0, life: [0.45, 0.7], size: [0.035, 0.075], strength: 0.75, seed: 3 });
+    const mist = spray(line, { count: 8, up: [0.04, 0.1], out: [0.02, 0.05], outward, gravity: 0.1, life: [1.4, 2.2], size: [0.12, 0.26], strength: 0.2, seed: 5 });
+    const group = new THREE.Group();
+    group.add(drops.group, mist.group);
+    return { group, update: (t, dt) => (drops.update(t, dt), mist.update(t, dt)) };
+  })();
   const group = new THREE.Group();
-  group.add(batch.build(), buildGlow(glow), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, water, crops.group, buffaloes.group, meadow.group, pigs.group, lawnHens.group, ducks.group, birds.group);
+  group.add(lipSpray.group, batch.build(), buildGlow(glow), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, water, crops.group, jetty.group, buffaloes.group, meadow.group, pigs.group, lawnHens.group, ducks.group, birds.group);
   const update = (t, dt) => {
     smoke.update(t);
     sails.children[0].rotation.z = -t * 0.9;
@@ -471,6 +497,8 @@ export function placeBuildings({ at }) {
     ducks.update(t, dt);
     birds.update(t, dt);
     crops.update(t);
+    jetty.update(t);
+    lipSpray.update(t, dt);
     wellParts.update(t);
   };
   return { group, update };

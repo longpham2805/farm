@@ -44,7 +44,36 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   the water still flows. Fitted again on the sharper picture, the layout's roads lie 0.5 px from the painted ones on
   average (at the layout's size), against 0.9 px before.
 - Flowing water: `water-map.py` makes `public/backdrop-water.png` and `public/water-noise.png`; the shader is in
-  `backdrop.js`. Checked in the game: the falls stream down and the river drifts.
+  `backdrop.js`. The river drifts and the falls stream down. Mended later, at the user's word, where it looked odd
+  close up:
+  - The banks: the water map is a quarter of the upscaled painting's size, so where the ripples and streaks ran right
+    up to a bank its edge showed in steps, rocks and foam nudged into the water, streaks drawn over the sand. The
+    map's m now ramps up from 0 at a bank to 1 five pixels in (`EDGE`) and the shader eases the water in over that; it
+    calms the water wherever the map's across or flow jumps between two of its pixels (measured per map pixel, so at
+    any zoom); and across fades where the flow heads into a bank and the side it lies on flickers.
+  - The flow: from the top of the main fall alone, it spread out from where the river came into a pool, into a bay
+    and against the bank. It is now half the time from the top of the main fall less half the time on to where the
+    river leaves the picture: the same along the river (less a constant), heading for the way out in a pool, and
+    barely moving in a bay.
+  - Above the small fall the painting had a narrow bar of sand with an arm of water behind it, and water and land
+    looked muddled: `fix-v1.py` fills both with the river's water (`mend_bar`), so the river runs straight down to
+    the grass and over the fall. A patch of yellow-green like grass on the fall's lip is that water now (`mend_lip`).
+    The curtain was narrow, a darker strip down its left side made it look like two streams, and a dark gap showed by
+    the rocks on its right: `mend_curtain` draws it again, its painted rows stretched across as one stream, out to the
+    rocks and out over the pool (`CURTAIN`, as the user outlined it), its left side running down and to the left
+    from its top corner; the painted crest's corner that stuck out left of that is the bank now (`BULGE`). The painting was upscaled and tiled again after each.
+  - The falls (`falls` in `BACKDROP`, `MAIN_FALL` and `SIDE_FALL` in `water-map.py`): the river's streaks stretched
+    the whole height of the small fall and blinked; there, thin streaks run down the picture instead, fast, and the
+    water only shivers up and down. Each fall has a `lip`, from [x, y] to [x, y], its top level to the left of it, and
+    a thin bright band shimmers along the lip where the water rolls over. The small fall's lip is short and steep, from
+    the middle of its top down to the corner of the rocks on its right, as the user marked it (a level lip, one
+    slanting the other way, then a longer, gentler one all across, looked wrong). The water comes in from the right,
+    goes over it down and to the left, and pours down leaning left all the way, 0.3 pixels across for each pixel down,
+    the fall's left side with it (`lean`; it first leaned only at the top, and the wrong way). Just above the top the
+    river's streaks bunched into little eddies; they fade out there now.
+  - Spray leaps along the small fall's lip and falls back over the curtain, with a little mist (`spray` in
+    `buildings/spray.js`: soft white spots on squares facing the camera, added to the painting, from a line of ground
+    points given by `paintedPoint` in `backdrop.js`), to come at the foot of each fall too.
 - The view pans and zooms over exactly the painting (`VIEW_BOUNDS` comes from the backdrop); zoom stops at 1.6 (3.2 under `npm run dev`,
   to look at the models close up).
 - `valleyMap.js` follows the painting (option A, chosen over asking the model to repaint it). Measured from the
@@ -251,6 +280,13 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   (`wind`: a vertex shader bending it by its height). Left for step 2, with the other plants: the reference's big
   sunflowers along the front right side and round the front corner (they were built here, then taken out to come
   with the plants), and its post with a bird on it by the back fence.
+- **The landing** (`buildings/landing.js`, in `placeBuildings`) at the end of the riverside road, beside the small
+  fall, where the painted road runs down to the water (the reference draws only rocks there): a jetty of planks laid
+  across two beams, running on from the road out over the river between `PLACES.landing.ends`, on posts standing in
+  the water, those at the far end up above the deck, the corner one stouter with a coil of rope; and a rowing boat
+  tied up alongside it, away from the fall, rocking gently: a hull painted blue outside with a white rim, a floor of
+  boards just above the water (the painted water hides all below it, and the boat showed the river through its
+  bottom), a transom, two seats and a pair of oars, and a rope from its bow to the post.
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
   sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
@@ -273,9 +309,9 @@ In this order:
 1. **Bring back the 3D on top of the painting**, placed from `valleyMap.js` (`PLACES`, `BRIDGES`, `MEADOW`), one
    building at a time as above. Done: every building along the back of the ring road (farmhouse, hen yard and hens,
    cart, barn, bale, silo, haystack, windmill and stone shed), the well, the bridges, the buffalo, the cows and the
-   sheep, the pig, the ducks and the swallows, the meadow's fence and trough, and the fields over the big bridge.
-   Next: the landing by the small fall, and spray and mist at the foot of each painted fall (`buildWaterfall` has
-   them; put them at `WATERFALLS`).
+   sheep, the pig, the ducks and the swallows, the meadow's fence and trough, the fields over the big bridge, and the
+   landing by the small fall. Next: spray and mist at the foot of each painted fall (`buildWaterfall` has them; put
+   them at `WATERFALLS`).
 2. **3D trees that sway** gently (wind in the vertex shader; `wind` in `buildings/fields.js` sways the wheat) in the
    olive areas and round the farm; bushes, flowers (the sunflowers along the fields' front right side among them),
    rocks and reeds.

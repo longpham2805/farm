@@ -15,7 +15,7 @@ is left to do, is in [docs/redesign.md](../../docs/redesign.md).
 | `layout-annotated.png` | The layout (old colours) with a u grid and the named marks, for matching coordinates by eye. |
 | `prompt.txt` | How to ask an image model for the painting, and what to reply when it strays. |
 | `painted-v1.webp` | The first painting (1536×1024), as the image model made it. |
-| `painted-v1-fixed.webp` | The same, mended by `fix-v1.py` (the meadow and the small fall). The game loads it upscaled ×4 and cut into tiles, in `public/backdrop/`. |
+| `painted-v1-fixed.webp` | The same, mended by `fix-v1.py` (the meadow, the small fall, the bar of sand above it, a patch like grass on its lip, and its curtain drawn wider, pouring down to the left). The game loads it upscaled ×4 and cut into tiles, in `public/backdrop/`. |
 
 ## Coordinates
 

@@ -178,8 +178,10 @@ export const PLACES = {
   // The fenced fields over the big bridge (buildings/fields.js, with their scarecrow) on their painted pad: square to
   // the plots, `half` from the middle to the pad's edges along world x and z (measured on the painting).
   fields: { at: [11.8, -6.78], half: [2.38, 2.8] },
-  // A little wooden landing at the end of the riverside road, beside the small fall.
-  landing: { at: [10.7, -0.6] },
+  // A little wooden landing at the end of the riverside road, beside the small fall (buildings/landing.js): a jetty
+  // running on from the road out over the river between its `ends`, `width` across, a boat tied up on its `side` (1:
+  // its left looking out over the water), away from the fall.
+  landing: { ends: [[10.62, -0.3], [10.86, -1.2]], width: 0.5, side: 1 },
   // The animals grazing in the meadow, where the reference draws them: two black and white cows, side on, facing
   // right and a little towards the camera (animals/cow.js), and two ewes, the one in view walking away to the back
   // right (animals/sheep.js). They wander about `area`, the meadow inside its fence, clear of the trough. The fence
