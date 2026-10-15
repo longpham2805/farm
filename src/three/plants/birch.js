@@ -31,11 +31,11 @@ const FORM = {
 /**
  * One leaf from `base`, pointing along `along`, its face turned to `face` (square to `along`), `size` long: a pointed
  * oval, widest a little below its middle, folded down its middle so its halves rise a little to its edges, and arched
- * so its tip droops; coloured `col`, its two halves taking the light differently.
+ * so its tip droops; coloured `col`, its two halves taking the light differently. `wide`: how wide it is, of its length.
  */
-function leaf(m, base, along, face, size, col) {
+export function leaf(m, base, along, face, size, col, wide = 0.48) {
   const across = new THREE.Vector3().crossVectors(along, face).normalize();
-  const width = size * 0.48;
+  const width = size * wide;
   // Along the middle: how far, and how far the arch has dropped there; out to the edge: how far along, how wide there.
   const rib = [[0, 0], [0.3, 0.02], [0.62, 0.06], [1, 0.14]];
   const edge = [[0.16, 0.26], [0.45, 0.5], [0.76, 0.32]];

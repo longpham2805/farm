@@ -17,7 +17,7 @@
 <!-- The plants of step 2 of the redesign, one kind at a time (?set=pines): for each place the reference design draws
      one, the reference cut round it beside the model at the same scale, in the game's light and from its camera (the
      slider lays the reference over the model); then a few of the model close up, from other seeds
-     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river. -->
+     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=bushes the bushes. -->
 <div id="refs"></div>
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <main id="seeds"></main>
@@ -31,6 +31,7 @@ import { fruitTree, FRUIT_TREES } from '../src/three/plants/fruitTree.js';
 import { blossomTree } from '../src/three/plants/blossomTree.js';
 import { birch } from '../src/three/plants/birch.js';
 import { slimTree } from '../src/three/plants/slimTree.js';
+import { bush } from '../src/three/plants/bush.js';
 
 // The reference design (art/backdrop/2-style-reference.png) and how many of its pixels a world unit takes across the
 // screen and up it (REF in dev/buildings.html).
@@ -85,6 +86,17 @@ const SETS = {
     refs: [
       { name: 'Cây mảnh bên sông, cạnh hàng rào ruộng (cây trước, gốc bị che)', box: [1335, 525, 1410, 660], foot: [1371, 650], height: 2.3, seed: 1 },
       { name: 'Cây mảnh bên sông, cạnh hàng rào ruộng (cây sau)', box: [1360, 535, 1430, 650], foot: [1393, 640], height: 1.85, seed: 2 },
+    ],
+  },
+  bushes: {
+    make: (seed, h) => bush(seed, h),
+    h: 0.4,
+    // Close up, framed wider than tall and lower (the trees are framed by their height, from just under their foot).
+    span: 2,
+    low: 0.6,
+    refs: [
+      { name: 'Bụi cây sau chuồng gà, cạnh gốc cây', box: [672, 180, 727, 228], foot: [698, 211], height: 0.35, seed: 1 },
+      { name: 'Bụi cây dưới gốc cây mảnh, sau hàng rào ruộng', box: [1342, 605, 1397, 660], foot: [1370, 643], height: 0.4, seed: 2 },
     ],
   },
 };
@@ -143,9 +155,10 @@ document.getElementById('mix').addEventListener('input', (e) => document.querySe
 for (const seed of seeds) {
   const ch = Math.min(Math.round(half * 1.25), Math.round(window.innerHeight * 0.85));
   const f = figure(document.getElementById('seeds'), `seed ${seed}`, half, ch);
-  const span = params.has('close') ? 0.5 : 1.05;
+  const span = params.has('close') ? 0.5 : set.span ?? 1.05;
   const w = (seedHeight * span * half) / ch;
-  views.push({ f, tree: set.make(seed, seedHeight), left: -w / 2, right: w / 2, top: seedHeight * (span - 0.1), bottom: -seedHeight * 0.1 });
+  const low = params.has('close') ? 0.1 : set.low ?? 0.1;
+  views.push({ f, tree: set.make(seed, seedHeight), left: -w / 2, right: w / 2, top: seedHeight * (span - low), bottom: -seedHeight * low });
 }
 
 // The game's renderer settings and lights (see FarmScene and dev/buildings.html), on a plain grassy ground.
