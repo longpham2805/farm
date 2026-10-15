@@ -24,6 +24,7 @@ import { trough as waterTrough } from './buildings/trough.js';
 import { bench } from './buildings/bench.js';
 import { fields as fieldBeds } from './buildings/fields.js';
 import { landing } from './buildings/landing.js';
+import { birdPost } from './buildings/birdPost.js';
 import { spray } from './buildings/spray.js';
 import { BACKDROP, paintedPoint } from './backdrop.js';
 import { flock } from './animals/chicken.js';
@@ -431,6 +432,10 @@ export function placeBuildings({ at }) {
   batch.push(fieldsAt.x, 0, fieldsAt.z);
   const crops = fieldBeds(batch, seeded(41), PLACES.fields.half);
   batch.pop();
+  // The post with a birdhouse and a robin on it just behind their back fence, left of the scarecrow (which stands a
+  // quarter of the way along from the middle): as far along the fence from it, and behind it, as the reference draws it.
+  const post = birdPost(1, 1.13);
+  post.position.set(fieldsAt.x + PLACES.fields.half[0] * 0.25 - 1.24, 0, fieldsAt.z - PLACES.fields.half[1] - 0.06);
   // The landing at the end of the riverside road, turned to run out over the river, and the boat tied up at it.
   const jetty = (() => {
     const { ends, width, side } = PLACES.landing;
@@ -505,7 +510,7 @@ export function placeBuildings({ at }) {
       { count: 8, up: [0.1, 0.25], out: [0.03, 0.12], spread: 0.1, gravity: 0, life: [1.8, 2.8], size: [0.25, 0.55], strength: 0.08, seed: 17 }),
   ];
   const group = new THREE.Group();
-  group.add(...falls.map((f) => f.group), batch.build(), buildGlow(glow), glows.group, paper, smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, water, crops.group, jetty.group, buffaloes.group, meadow.group, pigs.group, lawnHens.group, ducks.group, birds.group);
+  group.add(...falls.map((f) => f.group), batch.build(), buildGlow(glow), glows.group, paper, smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, water, crops.group, post, jetty.group, buffaloes.group, meadow.group, pigs.group, lawnHens.group, ducks.group, birds.group);
   const update = (t, dt) => {
     smoke.update(t);
     sails.children[0].rotation.z = -t * 0.9;
@@ -517,6 +522,7 @@ export function placeBuildings({ at }) {
     ducks.update(t, dt);
     birds.update(t, dt);
     crops.update(t);
+    post.userData.robin.userData.update(t);
     jetty.update(t);
     for (const f of falls) f.update(t, dt);
     wellParts.update(t);

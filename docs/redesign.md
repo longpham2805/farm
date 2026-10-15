@@ -311,7 +311,7 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   on a crossbar, straw hands) stands by the back fence. The wheat sways in gusts of wind that roll across the field
   (`wind`: a vertex shader bending it by its height). Left for step 2, with the other plants: the reference's big
   sunflowers along the front right side and round the front corner (they were built here, then taken out to come
-  with the plants), and its post with a bird on it by the back fence (now `buildings/birdPost.js`, not placed yet).
+  with the plants), and its post with a bird on it by the back fence (now `buildings/birdPost.js`, placed with them).
 - **The landing** (`buildings/landing.js`, in `placeBuildings`) at the end of the riverside road, beside the small
   fall, where the painted road runs down to the water (the reference draws only rocks there): a jetty of planks laid
   across two beams, running on from the road out over the river between `PLACES.landing.ends`, on posts standing in
@@ -635,6 +635,15 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   the fence on the right are inside the ring, the farm's own; they are left out. The woods lose 3 trees. A wooden box
   with something orange in it behind the windmill (a planter or a fire) is not made. That is every flower outside the
   ring road.
+  The reference's row of tall pinks inside the ring road's front left side is left out (the user's choice): it stands
+  just inside its fence, where the game has the farm's own flower beds along the fence and the fruit trees moved in
+  past them, so placed further in, behind the trees, the apple tree hid nearly all of it. (The flower spikes' kind is
+  `gladiolus` in `placePlants`: named `orange` at first, it replaced the orange fruit trees, which went unnoticed for
+  four groups.)
+  The post with its birdhouse and robin (`birdPost`) is in `placeBuildings`, beside the fields: just behind their back
+  fence, left of the scarecrow, as far along the fence from it (1.24) and behind it as the reference draws it from its
+  own; its robin looks about (`userData.update`). The reference's scarecrow is bigger than the game's, so the
+  birdhouse stands a little higher above its head.
 
 ### Loose ends
 
@@ -661,8 +670,9 @@ In this order:
    the sunflower, the
    tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
    row of pinks along the ring road, the yellow clumps, the purple ones, the orange and purple spikes by the well,
-   the mixed beds, the rocks by the river and the cattails. Placed, swaying: the trees round the farm, the woods and
-   the sunflowers round the fields and the tomatoes by the pig and the flowers along the front bank, round the well, on the left edge, across the river, on the right and behind the farm. Next: the rest of the flowers, crops and props, then the rocks and the cattails.
+   the mixed beds, the rocks by the river and the cattails. Placed, swaying: the trees round the farm, the woods, the
+   sunflowers round the fields, the tomatoes by the pig and the flowers outside the ring road; and the post with its
+   robin by the fields. Next: the bench and the lamp beside the well, then the rocks and the cattails.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
