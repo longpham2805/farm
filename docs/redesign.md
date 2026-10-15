@@ -484,6 +484,26 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
       into two meshes. The clumps are not turned, so the heads keep facing the camera. About 7,200 triangles a bed
       1.2 long, heavy: fewer leaves to a clump if need be. Tried first: the clumps turned every way (heads edge on),
       further apart (gaps) and with more heads (a carpet of flowers, where the reference shows green between them).
+  - **Rocks** (`plants/rock.js`, `?set=rocks`), the boulders the reference draws along the river's banks (it has
+    hardly any by the roads). Of `ROCKS` in `valleyMap.js` only the first four clusters, the outcrops in the painted
+    forest at the back (`KEEP_ROCKS` in `art/backdrop/recolor-layout.py`), are in the painting; the rest (along the
+    river, the one in the woods on the left and the one among the front trees) were taken out of it for 3D rocks, and
+    the painted banks show only a lip of small stones there. A chunky lump of warm grey stone, 1.2 to 2.1 times as
+    wide as it is tall, longest along x: the hull round rings of corners at its foot (spreading a little, sunk into
+    the ground), its middle and its upper part, and a small face on top, each corner rounded off by a little ball of
+    points, so every edge has a thin bevel that catches the light, lighter along the top; often one or two smaller
+    lumps grown into its side. Pale on top, darker down its sides, darker still to its foot, glowing a little (0.18).
+    Its material grains and blotches the stone, with faint cracks, and lays moss in soft patches over what faces up
+    (a `moss` value at each corner). Round the foot of each lump a shadow fades out over the ground (alpha at its
+    corners): the sun's shadow alone left a thin lit line where it grazes a side (normalBias) and the stone looked set
+    on the ground, not in it. About four in ten are mossy and half have one to three small plants (a tuft of grass
+    blades or a few broad leaves, the birch's `leaf`) in the crack between two lumps and round the foot. `rock(seed,
+    h, { moss, plants, turn })` sets them; give it `turn` rather than turning what it returns, so the plants grow on
+    the side the camera sees. 110 to 370 triangles of stone, 70 to 220 of shadow, 90 to 300 of plants. Tried first: a
+    squat block with a broad flat top and upright sides (it lay flat on the ground and showed no volume; the user's
+    pictures of low-poly rocks show chunky lumps with bevelled edges); then wide bright bevels (a net of lines) and a
+    peak on top (a gem). The foot's shadow is darker than the painting's shadows (`shadowCatcher`, 0.36): look at it
+    there when placing.
   - Pictures of low-poly leafy trees the user found, kept for later on the user's machine in `art/plants/found/` (not
     in git: stock previews): crowns of big separate leaves, pointed or rounded, laid over a few lobes like shingles,
     pale on top and deep under the crown, on twisted trunks forking into a few limbs that show under it; and one of
@@ -520,7 +540,7 @@ In this order:
    the sunflower, the
    tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
    row of pinks along the ring road, the yellow clumps, the purple ones, the orange and purple spikes by the well,
-   and the mixed beds. Next: rocks by the roads and the river, then reeds.
+   the mixed beds and the rocks by the river. Next: reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's

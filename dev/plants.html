@@ -17,7 +17,7 @@
 <!-- The plants of step 2 of the redesign, one kind at a time (?set=pines): for each place the reference design draws
      one, the reference cut round it beside the model at the same scale, in the game's light and from its camera (the
      slider lays the reference over the model); then a few of the model close up, from other seeds
-     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=fir the full light green fir on the upper riverbank, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence, ?set=daisies the white daisies (flowers.js), ?set=pinks the row of tall pink flowers along the ring road, ?set=yellow the yellow clumps, ?set=purple the purple ones, ?set=orange and ?set=lupins the spikes by the well, ?set=beds the mixed beds. -->
+     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=fir the full light green fir on the upper riverbank, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence, ?set=daisies the white daisies (flowers.js), ?set=pinks the row of tall pink flowers along the ring road, ?set=yellow the yellow clumps, ?set=purple the purple ones, ?set=orange and ?set=lupins the spikes by the well, ?set=beds the mixed beds, ?set=rocks the boulders along the river (rock.js). -->
 <div id="refs"></div>
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <main id="seeds"></main>
@@ -37,6 +37,7 @@ import { sunflower } from '../src/three/plants/sunflower.js';
 import { tomato, tomatoRow } from '../src/three/plants/tomato.js';
 import { birdPost } from '../src/three/buildings/birdPost.js';
 import { flowers, flowerRow, flowerBed } from '../src/three/plants/flowers.js';
+import { rock } from '../src/three/plants/rock.js';
 
 // The reference design (art/backdrop/2-style-reference.png) and how many of its pixels a world unit takes across the
 // screen and up it (REF in dev/buildings.html).
@@ -217,8 +218,27 @@ const SETS = {
       { name: 'Luống hoa trộn dọc hàng rào cạnh nhà', box: [350, 400, 455, 465], foot: [405, 440], height: 0.3, seed: 2, make: (seed, h) => flowerBed(seed, [[-0.61, 0.29], [0.61, -0.29]], h) },
     ],
   },
+  rocks: {
+    // Longest across the screen, as the reference's lie along its banks; close up, each turned a little its own way.
+    // ?moss=0.8 and ?plants=2 give them all that look (the seed picks it otherwise).
+    make: (seed, h) => rock(seed, h, rockLook(Math.PI / 4 + Math.sin(seed * 2.4) * 0.4)),
+    h: 0.5,
+    // Close up, framed wider than tall and lower: a boulder is wider than it is tall.
+    span: 3.2,
+    low: 1,
+    refs: [
+      { name: 'Tảng đá mặt phẳng bên sông, phía trước bên trái', box: [395, 698, 482, 755], foot: [437, 742], height: 0.45, seed: 1, make: (seed, h) => rock(seed, h, rockLook(Math.PI / 4)) },
+      { name: 'Tảng đá lớn bên sông, góc trái phía dưới', box: [150, 772, 232, 852], foot: [190, 832], height: 0.65, seed: 2, make: (seed, h) => rock(seed, h, rockLook(Math.PI / 4)) },
+    ],
+  },
 };
 const params = new URLSearchParams(location.search);
+// The rocks' look: turned `turn` (π/4 lays its x along the screen), mossy and planted as ?moss= and ?plants= say.
+function rockLook(turn) {
+  const look = { turn };
+  for (const k of ['moss', 'plants']) if (params.has(k)) look[k] = Number(params.get(k));
+  return look;
+}
 const set = SETS[params.get('set') || 'pines'];
 const seeds = (params.get('seeds') || '1,2,3,4').split(',').map(Number);
 const seedHeight = Number(params.get('h') || set.h);
