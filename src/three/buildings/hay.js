@@ -1,5 +1,6 @@
 // Hay about the farmyard, as the reference design draws it: a wooden cart heaped with hay beside the hen yard, a
-// round bale at the barn's front corner, and a haystack of two tiers round a pole beside the silo. The hay is drawn
+// round bale at the barn's front corner, a haystack of two tiers round a pole beside the silo, and a rack of pale hay
+// for the sheep by the meadow's back fence. The hay is drawn
 // as straw: hundreds of strands in golden yellows on a texture with a bump to it, lying the way the straw would
 // (down a stack, round a bale, every which way on a cart), with loose straws sticking out of it and scraps of straw
 // fallen round it on the ground (strawScraps, for anywhere else hay lies about too).
@@ -14,26 +15,31 @@ const WOOD = '#b5723c';
 const DARK = '#7f4c28';
 const STRAWS = ['#f2cd5e', '#f7d978', '#e6bf50', '#d9ad45'];
 const STRANDS = ['#f8db80', '#e8bd52', '#fbe7a6', '#d4a03c', '#efc865', '#c7922f'];
+// Hay dried pale, as the reference draws it in the meadow's rack.
+const PALE_STRAWS = ['#efdcae', '#f6e8c6', '#e6cf98', '#dcc28a'];
+const PALE_STRANDS = ['#fcf6ea', '#f1e6cc', '#fffdf6', '#e6d6b2', '#f7efdc', '#dacaa4'];
 
 const textures = {};
 
 /**
  * Straw on a canvas, repeating: strands lying `along` (up the picture, v), `across` (along it, u), `tangle`d every
- * which way, or in `rings` round its middle, for a bale's ends.
+ * which way, or in `rings` round its middle, for a bale's ends; golden, or `pale`.
  */
-function strawTexture(kind) {
-  if (textures[kind]) return textures[kind];
+function strawTexture(kind, pale = false) {
+  const key = pale ? `${kind} pale` : kind;
+  if (textures[key]) return textures[key];
   const size = 256;
   const c = document.createElement('canvas');
   c.width = c.height = size;
   const g = c.getContext('2d');
   const rand = seeded(kind.length * 97);
-  g.fillStyle = '#c89a3c';
+  const strands = pale ? PALE_STRANDS : STRANDS;
+  g.fillStyle = pale ? '#ece0c4' : '#c89a3c';
   g.fillRect(0, 0, size, size);
   g.lineCap = 'round';
   if (kind === 'rings') {
     for (let r = 4; r < size * 0.72; r += 3 + rand() * 3) {
-      g.strokeStyle = STRANDS[Math.floor(rand() * STRANDS.length)];
+      g.strokeStyle = strands[Math.floor(rand() * strands.length)];
       g.lineWidth = 1.5 + rand() * 2;
       g.beginPath();
       g.arc(size / 2, size / 2, r, rand() * 6, rand() * 6 + 4 + rand() * 2);
@@ -46,7 +52,7 @@ function strawTexture(kind) {
       const len = 14 + rand() * 40;
       const x = rand() * size;
       const y = rand() * size;
-      g.strokeStyle = k % 9 === 0 ? 'rgba(150, 105, 35, 0.6)' : STRANDS[Math.floor(rand() * STRANDS.length)];
+      g.strokeStyle = k % 9 === 0 ? (pale ? 'rgba(150, 120, 70, 0.45)' : 'rgba(150, 105, 35, 0.6)') : strands[Math.floor(rand() * strands.length)];
       g.lineWidth = 1 + rand() * 1.8;
       // Drawn again a picture's width or height away, so the strands run on across its edges.
       for (const [ox, oy] of [[0, 0], [-size, 0], [0, -size], [size, 0], [0, size]]) {
@@ -61,13 +67,13 @@ function strawTexture(kind) {
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
-  textures[kind] = tex;
+  textures[key] = tex;
   return tex;
 }
 
-/** A straw material: the texture of `kind` repeated `repeat` times, its strands raised by a bump. */
-function straw(kind, repeat, flatShading = false) {
-  const map = strawTexture(kind).clone();
+/** A straw material: the texture of `kind` repeated `repeat` times, its strands raised by a bump; golden, or `pale`. */
+function straw(kind, repeat, flatShading = false, pale = false) {
+  const map = strawTexture(kind, pale).clone();
   map.repeat.set(...repeat);
   return new THREE.MeshStandardMaterial({ map, bumpMap: map, bumpScale: 2.5, roughness: 0.95, flatShading });
 }
@@ -88,8 +94,11 @@ function mesh(geometry, material, p, r = [0, 0, 0]) {
   return m;
 }
 
-/** Loose straws sticking out from p (in the batch's frame), pointing out along `out`, n of them about `spread`. */
-function straws(batch, rand, [x, y, z], out, spread, n) {
+/**
+ * Loose straws sticking out from p (in the batch's frame), pointing out along `out`, n of them about `spread`, in
+ * `colors` (four of them).
+ */
+function straws(batch, rand, [x, y, z], out, spread, n, colors = STRAWS) {
   for (let k = 0; k < n; k++) {
     const len = 0.06 + rand() * 0.07;
     const px = x + (rand() - 0.5) * spread;
@@ -99,16 +108,17 @@ function straws(batch, rand, [x, y, z], out, spread, n) {
     const yaw = Math.atan2(out[0], out[2]) + (rand() - 0.5) * 1.2;
     const pitch = Math.PI / 2 - Math.atan2(out[1], Math.hypot(out[0], out[2])) + (rand() - 0.5) * 1.0;
     batch.push(px, py, pz, yaw);
-    batch.add(BOX, STRAWS[k % STRAWS.length], [0, 0, 0], [0.005, len, 0.005], [pitch, 0, 0]);
+    batch.add(BOX, colors[k % colors.length], [0, 0, 0], [0.005, len, 0.005], [pitch, 0, 0]);
     batch.pop();
   }
 }
 
 /**
  * Scraps of straw on the ground round hay: single straws lying every which way and small tufts of a few together,
- * scattered over a ring from r0 to r1 round (x, z) in the batch's frame, thicker near the hay; n of them.
+ * scattered over a ring from r0 to r1 round (x, z) in the batch's frame, thicker near the hay; n of them, in `colors`
+ * (four of them).
  */
-export function strawScraps(batch, rand, [x, z], r0, r1, n) {
+export function strawScraps(batch, rand, [x, z], r0, r1, n, colors = STRAWS) {
   for (let k = 0; k < n; k++) {
     const a = rand() * Math.PI * 2;
     const d = r0 + (r1 - r0) * rand() ** 1.6;
@@ -120,7 +130,7 @@ export function strawScraps(batch, rand, [x, z], r0, r1, n) {
       // Lying flat, or in a tuft leaning up off the ground a little.
       const lean = many > 1 ? 0.25 + rand() * 0.4 : rand() * 0.12;
       batch.push(px + (rand() - 0.5) * 0.03, 0.004, pz + (rand() - 0.5) * 0.03, rand() * Math.PI * 2);
-      batch.add(BOX, STRAWS[Math.floor(rand() * STRAWS.length)], [0, Math.sin(lean) * len * 0.5, 0], [0.009, 0.005, len], [-lean, 0, 0]);
+      batch.add(BOX, colors[Math.floor(rand() * colors.length)], [0, Math.sin(lean) * len * 0.5, 0], [0.009, 0.005, len], [-lean, 0, 0]);
       batch.pop();
     }
   }
@@ -211,5 +221,51 @@ export function haystack(batch) {
     straws(batch, rand, [Math.sin(a) * r, y, Math.cos(a) * r], [Math.sin(a), -0.3, Math.cos(a)], 0.02, 1);
   }
   strawScraps(batch, rand, [0, 0], 0.48, 0.9, 45);
+  return hay;
+}
+
+/**
+ * The meadow's hay rack, along x: a crib of upright slats of pale wood between rails, on four legs splayed a little,
+ * heaped over its rim with pale hay that shows between the slats, straws hanging out of it, and scraps of hay the
+ * sheep have pulled out on the grass round it.
+ */
+export function hayRack(batch) {
+  const rand = seeded(67);
+  const [L, D] = [0.46, 0.3];
+  const [low, high] = [0.2, 0.36];
+  const slat = () => ['#f4d08c', '#f8d898', '#ecc47e', '#f2cc88'][Math.floor(rand() * 4)];
+  // The legs, square posts from the ground to the rim, their feet out a little.
+  for (const sx of [-1, 1]) {
+    for (const sz of [-1, 1]) batch.add(BOX, '#e0b070', [sx * (L / 2 - 0.01), (high + 0.03) / 2, sz * (D / 2 - 0.01)], [0.04, high + 0.03, 0.04], [-sz * 0.08, 0, sx * 0.08]);
+  }
+  // The floor, dark under the hay, and rails round the crib at its foot and its rim.
+  batch.add(BOX, '#6e4524', [0, low, 0], [L - 0.03, 0.025, D - 0.03]);
+  for (const y of [low + 0.01, high]) {
+    for (const s of [-1, 1]) {
+      batch.add(BOX, '#e8bc78', [0, y, s * (D / 2)], [L + 0.03, 0.03, 0.026]);
+      batch.add(BOX, '#e8bc78', [s * (L / 2), y, 0], [0.026, 0.03, D + 0.03]);
+    }
+  }
+  // Upright slats between the rails, gaps between them, along its sides and across its ends.
+  const h = high - low - 0.02;
+  for (const s of [-1, 1]) {
+    for (let k = 0; k < 9; k++) batch.add(BOX, slat(), [-L / 2 + 0.04 + (k * (L - 0.08)) / 8, low + 0.01 + h / 2, s * (D / 2)], [0.032, h, 0.016], [0, 0, (rand() - 0.5) * 0.04]);
+    for (let k = 0; k < 6; k++) batch.add(BOX, slat(), [s * (L / 2), low + 0.01 + h / 2, -D / 2 + 0.04 + (k * (D - 0.08)) / 5], [0.016, h, 0.032], [(rand() - 0.5) * 0.04, 0, 0]);
+  }
+  // The hay: filling the crib, and heaped in a soft mound over its rim, a smaller lump on top.
+  const hay = stands(batch);
+  hay.add(mesh(new RoundedBoxGeometry(L - 0.05, high - low, D - 0.05, 3, 0.05), straw('tangle', [1.2, 0.6], false, true), [0, (low + high) / 2 + 0.01, 0]));
+  const mound = new THREE.SphereGeometry(1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+  hay.add(mesh(mound.clone().scale(L / 2 + 0.035, 0.15, D / 2 + 0.035), straw('tangle', [2, 1], false, true), [0, high - 0.01, 0]));
+  hay.add(mesh(mound.clone().scale(0.14, 0.08, 0.1), straw('tangle', [1, 0.5], false, true), [0.05, high + 0.08, -0.02]));
+  // Straws hanging out over the rim all round, and sticking up out of the top.
+  for (let k = 0; k < 12; k++) {
+    const a = rand() * Math.PI * 2;
+    const [cx, cz] = [Math.cos(a), Math.sin(a)];
+    const side = k < 9;
+    const p = side ? [cx * (L / 2 + 0.03), high + 0.02, cz * (D / 2 + 0.03)] : [cx * 0.1, high + 0.12, cz * 0.05];
+    straws(batch, rand, p, side ? [cx, -0.6, cz] : [cx, 1.5, cz], 0.03, 1, PALE_STRAWS);
+  }
+  strawScraps(batch, rand, [0, 0], 0.2, 0.55, 14, PALE_STRAWS);
   return hay;
 }

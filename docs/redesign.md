@@ -271,8 +271,13 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   on the right side, square to the camera, it showed only edge on). The trough (`buildings/trough.js`) stands where
   the reference draws it, along the front fence (`PLACES.trough`): a box of planks three to a side on two beams, posts
   at its corners, a lip along the top, glossy water a little below it; the meadow's animals keep clear of it (a notch
-  in `PLACES.meadow.area`), a cow grazing just behind it looks to be drinking. The reference's hay rack, bench and
-  lamp in the meadow are not built.
+  in `PLACES.meadow.area`), a cow grazing just behind it looks to be drinking. The hay rack (`hayRack` in
+  `buildings/hay.js`) stands inside the back right fence, along it, beside the ewe in view, where the reference draws a
+  pale heap on a wooden stand (read as hay; the other reading, a basket of shorn wool, was offered): a crib of upright
+  slats of pale golden wood between rails, on four legs splayed a little, 0.46 by 0.3, heaped over its rim with hay
+  dried pale (`straw` and `strawTexture` take `pale`; the golden hay is unchanged), a few straws hanging out of it and
+  scraps on the grass round it. The herd keeps clear of it (a notch in `PLACES.meadow.area`). Built at first a third
+  bigger, its wood orange and its hay beige. The reference's bench and lamp in the meadow are not built.
 - **The fields over the big bridge** (`buildings/fields.js`, in `placeBuildings`), on the painting's pad of dirt,
   which was measured again on the painting (`PLACES.fields`: its middle had been 0.8 units off), square to the plots:
   four raised beds of dark ridged soil, two by two, with paths of the pad between them, as the reference draws them:
