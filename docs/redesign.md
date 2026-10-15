@@ -588,7 +588,8 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   patch ran across it: it is now the grass between the plots' back corner and the front of the row, about 0.84
   square units, the pig standing in front of the row's left end as in the reference (moved 0.08 to be inside it),
   and the lawn hens' patch keeps off the row's right end.
-  Then the clumps of flowers (`flowers` in `flowers.js`, a kind each: `daisy`, `yellow`, `purple`, `orange`, `lupin`),
+  Then the clumps of flowers (`flowers` in `flowers.js`, a kind each: `daisy`, `yellow`, `purple`, `gladiolus` (its `orange`; `orange` in
+  `placePlants` is the fruit tree), `lupin`),
   area by area, every clump the reference draws, not only the ones `dev/plants.html` cut out to model them from (the
   user's choice: it draws dozens). First the river's bank in front of the farm, from the pine in front of the well to
   the big bridge: fifteen on the grass between the ring road and the bank's edge (seven yellow, four lupins standing

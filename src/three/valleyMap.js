@@ -339,19 +339,19 @@ export const FLOWERS = [
   ['yellow', -4.84, -5.7, 0.55, 3], ['yellow', -3.84, -5.7, 0.3, 4], ['yellow', -4.84, -6.5, 0.5, 1],
   ['yellow', -3.96, -6.45, 0.45, 5], ['lupin', -2.4, -6.0, 0.55, 1], ['lupin', -2.1, -6.35, 0.45, 3],
   ['lupin', -1.71, -6.25, 0.4, 2], ['lupin', -1.3, -6.4, 0.4, 4],
-  ['orange', -0.75, -5.8, 0.45, 2], ['yellow', -0.8, -6.3, 0.3, 6], ['orange', -0.35, -5.94, 0.35, 3],
+  ['gladiolus', -0.75, -5.8, 0.45, 2], ['yellow', -0.8, -6.3, 0.3, 6], ['gladiolus', -0.35, -5.94, 0.35, 3],
   ['yellow', 0.35, -6.19, 0.3, 7], ['daisy', 0.89, -6.37, 0.5, 2], ['daisy', 2.04, -6.06, 0.45, 3],
   ['yellow', 2.71, -5.64, 0.55, 8],
   // Round the well, as far from it as the reference draws them from its own (the painting's well stands 0.85 further
   // back): the mixed bed curving round its front, orange spikes on its left beside a small pine with orange flowers at
   // its foot, and a little yellow clump at its right side.
   ['bed', -6.1, -4.47, 0.3, 1, { path: [[-0.71, -0.07], [-0.3, 0.02], [0, 0], [0.08, -0.59]] }],
-  ['orange', -7.43, -4.04, 0.6, 1], ['pine', -6.85, -3.98, 1.0, 2], ['orange', -6.95, -4.1, 0.4, 4],
+  ['gladiolus', -7.43, -4.04, 0.6, 1], ['pine', -6.85, -3.98, 1.0, 2], ['gladiolus', -6.95, -4.1, 0.4, 4],
   ['yellow', -5.1, -3.75, 0.3, 9],
   // Along the meadow road: a clump of pink and white flowers and one of orange ones in front of the meadow's right fence
   // (placed by the game's fence, which stands further out than the reference's), either side of its gate; pink spikes
   // beyond the road where it bends, and a yellow clump between the meadow's front fence and the road, below the trough.
-  ['bed', -8.75, -3.91, 0.4, 2, { path: [[-0.25, 0], [0.25, 0]] }], ['orange', -7.92, -2.84, 0.45, 5],
+  ['bed', -8.75, -3.91, 0.4, 2, { path: [[-0.25, 0], [0.25, 0]] }], ['gladiolus', -7.92, -2.84, 0.45, 5],
   ['lupin', -8.39, -5.6, 0.6, 5], ['yellow', -11.45, -5.0, 0.45, 10],
   // The river's bank left of the well, down to the birches past the meadow road: the big clump of daisies at its edge
   // and smaller ones beside it, and yellow clumps among the trees.
@@ -363,18 +363,18 @@ export const FLOWERS = [
   // painted road, which ends further up than the reference's). The bed along the fence below the farmhouse, moved back
   // off the road onto the grass between it and the fence; and a yellow clump at the left edge, past the meadow.
   ['bed', -12.93, 6.73, 0.45, 3, { path: [[-0.25, 0], [0.25, 0]], inWoods: true }],
-  ['daisy', -10.75, 5.58, 0.5, 5, { inWoods: true }], ['orange', -11.6, 4.79, 0.55, 6], ['orange', -10.6, 4.3, 0.5, 7],
+  ['daisy', -10.75, 5.58, 0.5, 5, { inWoods: true }], ['gladiolus', -11.6, 4.79, 0.55, 6], ['gladiolus', -10.6, 4.3, 0.5, 7],
   ['yellow', -10.11, 7.79, 0.3, 13, { inWoods: true }],
   ['bed', -9.2, 11.49, 0.35, 4, { path: [[-0.2, 0], [0.2, 0]], inWoods: true }],
   ['bed', -9.53, 10.34, 0.3, 5, { path: [[-0.2, 0], [0.2, 0]], inWoods: true }],
-  ['orange', -5.42, 9.7, 0.5, 8, { inWoods: true }], ['bed', -4.84, 7.82, 0.35, 6, { path: [[-0.22, 0], [0.22, 0]], inWoods: true }],
+  ['gladiolus', -5.42, 9.7, 0.5, 8, { inWoods: true }], ['bed', -4.84, 7.82, 0.35, 6, { path: [[-0.22, 0], [0.22, 0]], inWoods: true }],
   ['bed', -7.05, 2.17, 0.3, 2, { path: [[-0.61, 0.29], [0.61, -0.29]] }],
   ['yellow', -14.11, -5.85, 0.5, 2],
   // Across the river at the front: a little mixed clump at the water's edge on the left (moved up out of the painted
   // water onto the bank), and on the open bank further right, below the big bridge, a mixed bed with a tall orange
   // spike behind it, daisies and a small white clump; deep in the woods beyond, two clumps of pink and mixed flowers.
   ['bed', -7.25, -10.95, 0.3, 7, { path: [[-0.15, 0], [0.15, 0]] }],
-  ['bed', 2.98, -10.0, 0.4, 8, { path: [[-0.35, 0], [0.35, 0]] }], ['orange', 2.98, -9.43, 0.85, 9],
+  ['bed', 2.98, -10.0, 0.4, 8, { path: [[-0.35, 0], [0.35, 0]] }], ['gladiolus', 2.98, -9.43, 0.85, 9],
   ['daisy', 3.25, -11.0, 0.6, 6], ['daisy', 3.93, -9.88, 0.35, 7],
   ['bed', -2.51, -13.52, 0.35, 9, { path: [[-0.25, 0], [0.25, 0]], inWoods: true }],
   ['bed', 5.98, -12.55, 0.45, 10, { path: [[-0.3, 0], [0.3, 0]], inWoods: true }],
@@ -385,7 +385,7 @@ export const FLOWERS = [
   // painting's bank); and across the small bridge, two mixed beds above the road along the far bank.
   ['bed', 6.91, 3.2, 0.35, 11, { path: [[-1.0, 0.45], [0, 0], [1.0, -0.4]] }],
   ['purple', 9.53, 1.43, 0.35, 2], ['purple', 9.62, 0.15, 0.35, 1], ['bed', 9.2, -0.15, 0.3, 12, { path: [[-0.18, 0], [0.18, 0]] }],
-  ['yellow', 8.2, -0.94, 0.5, 14], ['orange', 5.9, -2.67, 0.4, 10],
+  ['yellow', 8.2, -0.94, 0.5, 14], ['gladiolus', 5.9, -2.67, 0.4, 10],
   ['bed', 12.65, 10.62, 0.35, 13, { path: [[-0.35, 0], [0.35, 0]] }], ['bed', 13.75, 10.05, 0.3, 14, { path: [[-0.55, 0], [0.55, 0]] }],
   // Behind the farm: yellow and purple clumps behind the cart and a mixed bed left of the barn, at the woods' edge;
   // pink spikes at the barn's left and a little bed between the cart and the ring road; a tall orange spike between
@@ -394,8 +394,8 @@ export const FLOWERS = [
   // reference's yellow at the bale's foot and orange at the silo's lie on the painted ring road, so they are left out.
   ['yellow', -2.15, 7.8, 0.45, 15], ['purple', -1.78, 8.25, 0.3, 3], ['bed', -0.75, 7.97, 0.35, 15, { path: [[-0.25, 0], [0.25, 0]] }],
   ['lupin', -0.8, 6.19, 0.5, 6], ['bed', -1.75, 6.12, 0.3, 16, { path: [[-0.2, 0], [0.2, 0]] }],
-  ['orange', 2.6, 7.3, 0.9, 11], ['bed', 3.75, 5.75, 0.3, 17, { path: [[-0.2, 0], [0.2, 0]] }],
-  ['yellow', 2.89, 10.07, 0.45, 16, { inWoods: true }], ['orange', 6.67, 10.95, 0.35, 12],
+  ['gladiolus', 2.6, 7.3, 0.9, 11], ['bed', 3.75, 5.75, 0.3, 17, { path: [[-0.2, 0], [0.2, 0]] }],
+  ['yellow', 2.89, 10.07, 0.45, 16, { inWoods: true }], ['gladiolus', 6.67, 10.95, 0.35, 12],
   ['yellow', 6.44, 9.7, 0.4, 17, { inWoods: true }],
 ];
 

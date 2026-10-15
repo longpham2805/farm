@@ -35,7 +35,8 @@ const KINDS = {
   daisy: (seed, height) => flowers(seed, height, 'daisy'),
   yellow: (seed, height) => flowers(seed, height, 'yellow'),
   purple: (seed, height) => flowers(seed, height, 'purple'),
-  orange: (seed, height) => flowers(seed, height, 'orange'),
+  // The orange spikes (the kind 'orange' in flowers.js); `orange` is the fruit tree.
+  gladiolus: (seed, height) => flowers(seed, height, 'orange'),
   lupin: (seed, height) => flowers(seed, height, 'lupin'),
   pinks: (seed, height, { length }) => flowerRow(seed, length, height, 'pink'),
   bed: (seed, height, { path }) => flowerBed(seed, path, height),
