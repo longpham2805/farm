@@ -329,6 +329,16 @@ export const FLOWERS = [
   ['sunflower', 11.15, -3.78, 0.8, 11],
   // A row of tomatoes on the grass behind the plots, along the ring road there, the pig rooting in front of it.
   ['tomatoes', 0.4, 4.12, 0.65, 1, { length: 2, turn: Math.atan2(0.45, 0.89) }],
+  // Clumps along the river's bank in front of the farm, from the pine in front of the well to the big bridge, on the
+  // grass between the ring road and the bank's edge. The painting's bank stands up to 0.7 further back than the
+  // reference's, so those at the edge are moved back onto its grass, and the red spikes beside the bench off the road.
+  // The lupins stand four together, as the reference's one broad clump of them.
+  ['yellow', -4.84, -5.7, 0.55, 3], ['yellow', -3.84, -5.7, 0.3, 4], ['yellow', -4.84, -6.5, 0.5, 1],
+  ['yellow', -3.96, -6.45, 0.45, 5], ['lupin', -2.4, -6.0, 0.55, 1], ['lupin', -2.1, -6.35, 0.45, 3],
+  ['lupin', -1.71, -6.25, 0.4, 2], ['lupin', -1.3, -6.4, 0.4, 4],
+  ['orange', -0.75, -5.8, 0.45, 2], ['yellow', -0.8, -6.3, 0.3, 6], ['orange', -0.35, -5.94, 0.35, 3],
+  ['yellow', 0.35, -6.19, 0.3, 7], ['daisy', 0.89, -6.37, 0.5, 2], ['daisy', 2.04, -6.06, 0.45, 3],
+  ['yellow', 2.71, -5.64, 0.55, 8],
 ];
 
 /**

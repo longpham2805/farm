@@ -13,6 +13,7 @@ import { fir } from './fir.js';
 import { bush } from './bush.js';
 import { sunflower } from './sunflower.js';
 import { tomatoRow } from './tomato.js';
+import { flowers } from './flowers.js';
 import { woods } from './woods.js';
 import { sway } from './sway.js';
 
@@ -30,6 +31,12 @@ const KINDS = {
   bush: (seed, height) => bush(seed, height),
   sunflower: (seed, height) => sunflower(seed, height),
   tomatoes: (seed, height, { length }) => tomatoRow(seed, length, height),
+  // The clumps of flowers, each kind of them in plants/flowers.js.
+  daisy: (seed, height) => flowers(seed, height, 'daisy'),
+  yellow: (seed, height) => flowers(seed, height, 'yellow'),
+  purple: (seed, height) => flowers(seed, height, 'purple'),
+  orange: (seed, height) => flowers(seed, height, 'orange'),
+  lupin: (seed, height) => flowers(seed, height, 'lupin'),
 };
 
 /** Puts the plants on the valley; at(u, b) is the map's point in the world. Returns the group and update(t). */
