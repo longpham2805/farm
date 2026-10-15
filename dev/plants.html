@@ -17,7 +17,7 @@
 <!-- The plants of step 2 of the redesign, one kind at a time (?set=pines): for each place the reference design draws
      one, the reference cut round it beside the model at the same scale, in the game's light and from its camera (the
      slider lays the reference over the model); then a few of the model close up, from other seeds
-     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence, ?set=daisies the white daisies (flowers.js). -->
+     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence, ?set=daisies the white daisies (flowers.js), ?set=pinks the row of tall pink flowers along the ring road. -->
 <div id="refs"></div>
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <main id="seeds"></main>
@@ -35,7 +35,7 @@ import { bush } from '../src/three/plants/bush.js';
 import { sunflower } from '../src/three/plants/sunflower.js';
 import { tomato, tomatoRow } from '../src/three/plants/tomato.js';
 import { birdPost } from '../src/three/buildings/birdPost.js';
-import { flowers } from '../src/three/plants/flowers.js';
+import { flowers, flowerRow } from '../src/three/plants/flowers.js';
 
 // The reference design (art/backdrop/2-style-reference.png) and how many of its pixels a world unit takes across the
 // screen and up it (REF in dev/buildings.html).
@@ -146,6 +146,28 @@ const SETS = {
     span: 1.6,
     low: 0.3,
     refs: [{ name: 'Khóm cúc trắng bên sông, phía trước bên trái', box: [330, 700, 425, 780], foot: [378, 765], height: 0.7, seed: 1 }],
+  },
+  pinks: {
+    // Close up, a short row of three.
+    make: (seed, h) => flowerRow(seed, 0.6, h, 'pink'),
+    h: 0.3,
+    span: 2.6,
+    low: 0.4,
+    refs: [
+      {
+        name: 'Hàng hoa hồng thân cao dọc vòng đường, cạnh các ô đất',
+        box: [550, 505, 690, 615],
+        foot: [616, 574],
+        height: 0.3,
+        seed: 1,
+        // About three units long, running along the ring road there.
+        make: (seed, h) => {
+          const row = flowerRow(seed, 3, h, 'pink');
+          row.rotation.y = 0.15;
+          return row;
+        },
+      },
+    ],
   },
 };
 const params = new URLSearchParams(location.search);
