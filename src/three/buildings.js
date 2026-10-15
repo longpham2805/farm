@@ -20,6 +20,7 @@ import { cart, hayBale, haystack, hayRack } from './buildings/hay.js';
 import { bridge as plankBridge } from './buildings/bridge.js';
 import { woodFence } from './buildings/fence.js';
 import { trough as waterTrough } from './buildings/trough.js';
+import { bench } from './buildings/bench.js';
 import { fields as fieldBeds } from './buildings/fields.js';
 import { landing } from './buildings/landing.js';
 import { spray } from './buildings/spray.js';
@@ -419,10 +420,11 @@ export function placeBuildings({ at }) {
   const hens = flock(place(PLACES.henYard, () => henYard(batch)), PLACES.henYard.hens);
   const wellParts = place(PLACES.well, () => well(batch));
   const hay = [place(PLACES.cart, () => cart(batch)), place(PLACES.bale, () => hayBale(batch)), place(PLACES.haystack, () => haystack(batch))];
-  // The meadow's fence on the painted meadow's edge, with a gate onto the road, its water trough and its hay rack.
+  // The meadow's fence on the painted meadow's edge, with a gate onto the road, its water trough, hay rack and bench.
   woodFence(batch, MEADOW.map(([u, b]) => [at(u, b).x, at(u, b).z]), seeded(71), { closed: true, gates: PLACES.meadow.gates });
   const water = place(PLACES.trough, () => waterTrough(batch, seeded(29)));
   hay.push(place(PLACES.hayRack, () => hayRack(batch)));
+  place(PLACES.meadowBench, () => bench(batch, seeded(73)));
   // The fields over the big bridge on their painted pad, square to the plots.
   const fieldsAt = at(...PLACES.fields.at);
   batch.push(fieldsAt.x, 0, fieldsAt.z);

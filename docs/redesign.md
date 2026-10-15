@@ -277,7 +277,14 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   slats of pale golden wood between rails, on four legs splayed a little, 0.46 by 0.3, heaped over its rim with hay
   dried pale (`straw` and `strawTexture` take `pale`; the golden hay is unchanged), a few straws hanging out of it and
   scraps on the grass round it. The herd keeps clear of it (a notch in `PLACES.meadow.area`). Built at first a third
-  bigger, its wood orange and its hay beige. The reference's bench and lamp in the meadow are not built.
+  bigger, its wood orange and its hay beige. A bench (`buildings/bench.js`, `PLACES.meadowBench`) stands in the meadow's
+  right corner, its end against the right fence, under where the reference's lamp stands, as it draws one there and
+  another beside the well: no back, a seat of four narrow planks along it, each its own width, length, thickness, lie
+  and tone, wide gaps between them, their rounded ends out past the legs, on a bearer at each end and four round legs
+  splayed out a little, in light warm wood; the herd keeps clear of it (a notch in `PLACES.meadow.area`). Tried first:
+  a back of two rails and arms (a park bench, the user said the reference's has no back), then planks broad and
+  close together, and planks rounded over along their whole length (skis). The reference's lamp in the meadow is not
+  built.
 - **The fields over the big bridge** (`buildings/fields.js`, in `placeBuildings`), on the painting's pad of dirt,
   which was measured again on the painting (`PLACES.fields`: its middle had been 0.8 units off), square to the plots:
   four raised beds of dark ridged soil, two by two, with paths of the pad between them, as the reference draws them:
