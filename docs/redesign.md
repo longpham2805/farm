@@ -417,8 +417,7 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     core (a `clump`) so the gaps show deep green; over it heads on slender stems from its foot, each stem with two
     leaves up it so the heads sit among leaves, spread over a low dome (the middle ones highest), turned up to the sky
     and a little to the camera. The heads are a mesh of their own that glows (in the warm sun the whites turned
-    cream); the leaves glow a little. Seen in the reference (not built yet): mixed beds of small flowers in front of
-    the well and along the road by the farmhouse.
+    cream); the leaves glow a little.
     - **Daisies** (`daisy`, `?set=daisies`), the white clump by the river at the front left: 0.7 tall and about 0.8
       across, eight to ten heads of six broad rounded petals, cupped up a little, round a domed orange heart; about
       2,000 triangles a clump. Tried first: a rosette of narrow leaves and long bare stems (daffodils); the heads
@@ -450,6 +449,13 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
         fourteen small four-petalled florets cupped nearly shut, packed close round the stalk, blue-violet and now
         and then pink. About 5,800 triangles, heavy for a clump: fewer florets, or none of their hearts, if need be.
         Tried first with five open petals, further out (loose and spiky, not columns).
+    - **Mixed beds** (`flowerBed`, `?set=beds`), curving round the front of the well and along the fence by the road
+      below the farmhouse: a low mound of deep green about 0.3 tall dotted with small five-petalled heads of every
+      colour (pink, magenta, white with a pink eye, purple, red, yellow, blue-violet), along any path of points:
+      clumps of the `bed` kind every 0.22 or so, a little to either side and each its own height, overlapping, merged
+      into two meshes. The clumps are not turned, so the heads keep facing the camera. About 7,200 triangles a bed
+      1.2 long, heavy: fewer leaves to a clump if need be. Tried first: the clumps turned every way (heads edge on),
+      further apart (gaps) and with more heads (a carpet of flowers, where the reference shows green between them).
   - Pictures of low-poly leafy trees the user found, kept for later on the user's machine in `art/plants/found/` (not
     in git: stock previews): crowns of big separate leaves, pointed or rounded, laid over a few lobes like shingles,
     pale on top and deep under the crown, on twisted trunks forking into a few limbs that show under it; and one of
@@ -484,8 +490,8 @@ In this order:
    pine, the round tree, the fruit tree, the wood they all grow on, redone, and the pink blossom tree by the
    farmhouse, the birch, the slim upright trees by the river on the right, the bush, the sunflower, the
    tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
-   row of pinks along the ring road, the yellow clumps, the purple ones, and the orange and purple spikes by the
-   well. Next: the mixed beds of small flowers on the same model, then rocks and reeds.
+   row of pinks along the ring road, the yellow clumps, the purple ones, the orange and purple spikes by the well,
+   and the mixed beds. Next: rocks by the roads and the river, then reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's

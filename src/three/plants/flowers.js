@@ -7,12 +7,14 @@
 // petals round a dark brown heart, like black-eyed susans, a few golden orange or dark red among them; and the low
 // purple clumps by the river, like pansies, five broad flat petals, dark at the middle and pale at the edges, round a
 // yellow eye; and spikes of small flowers rising from a lower mound, orange like gladioli on the well's left, purple
-// like lupins by the bench beyond it.
+// like lupins by the bench beyond it; and beds of small flowers of every colour (flowerBed), in front of the well and
+// along the fence by the farmhouse.
 import * as THREE from 'three';
 import { seeded } from '../../util.js';
 import { TAU, SOFT_MATERIAL, mesher, palette, tube, glowing } from './parts.js';
 import { leaf } from './birch.js';
 import { clump } from './roundTree.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
 // Which way the heads face: up to the sky, and a little to the camera (FarmScene's camera looks from (1, 0.95, 1)).
@@ -70,6 +72,20 @@ export const FLOWERS = {
     colors: { petal: '#b48af0', petalFoot: '#5a2ab0', heart: '#3a1680', heartTop: '#5a2ab0', shade: '#18440f', dark: '#28621a', mid: '#468e28', light: '#80bc44' },
     mix: [['#9a86f0', '#3e2aa0', '#2a1a70'], ['#9a86f0', '#3e2aa0', '#2a1a70'], ['#b48af0', '#5a2ab0', '#3a1680'], ['#e6a0e0', '#a03aa0', '#701a70']],
     petals: 4, petalWide: 1.1, cup: 1.3, spikes: [3, 5], florets: 14, floret: 0.055, spike: 0.5, mound: 0.6, glow: 0.3,
+  },
+  // Small flowers of every colour, the clumps of a bed (flowerBed).
+  bed: {
+    colors: { petal: '#ff8cc0', petalFoot: '#d42c78', heart: '#ffd23a', heartTop: '#ffe680', shade: '#143c0c', dark: '#225a16', mid: '#3a8224', light: '#6eac3e' },
+    mix: [
+      ['#ff8cc0', '#d42c78', '#ffd23a', '#ffe680'],
+      ['#f05aa8', '#a0105a', '#ffd23a', '#ffe680'],
+      ['#f6f0f4', '#e05a96', '#c83a78'],
+      ['#b48af0', '#5a2ab0', '#ffd23a', '#ffe680'],
+      ['#ff5a3a', '#c01e10', '#ffd23a', '#ffe680'],
+      ['#ffe23a', '#f0b000', '#c86a08', '#e08a10'],
+      ['#9aa4f2', '#3a3a9a', '#ffd23a', '#ffe680'],
+    ],
+    petals: 5, petalWide: 1, cup: 0.3, eye: 0.18, heads: [5, 7], head: 0.16, glow: 0.3,
   },
 };
 
@@ -333,6 +349,48 @@ export function flowerRow(seed = 1, length = 2, height = 0.5, kind = 'pink') {
     head(hm, rand, C, F, R, k, cc);
   }
   const group = build(m, hm, 1, k.glow);
+  group.userData.height = height;
+  return group;
+}
+
+/**
+ * A bed of small flowers of a kind (a name in FLOWERS, `bed` by default) along `path` ([x, z] points round the
+ * origin, world units), about `height` tall, laid out by `seed`: clumps of the kind every 0.22 or so along it, a
+ * little to either side, each its own height, overlapping into one bed. They are not turned, so their heads keep
+ * facing the camera. Returns a group of two meshes,
+ * the leaves and the heads, standing on the ground.
+ */
+export function flowerBed(seed = 1, path = [[-0.6, 0], [0.6, 0]], height = 0.3, kind = 'bed') {
+  const rand = seeded(seed);
+  // Where along the path the clumps go: evenly by length.
+  const pts = path.map(([x, z]) => new THREE.Vector3(x, 0, z));
+  const lens = pts.slice(1).map((p, i) => p.distanceTo(pts[i]));
+  const total = lens.reduce((a, b) => a + b, 0);
+  const n = Math.max(1, Math.round(total / 0.22));
+  const at = (d) => {
+    for (let i = 0; i < lens.length; i++) {
+      if (d <= lens[i] || i === lens.length - 1) return pts[i].clone().lerp(pts[i + 1], Math.min(1, d / lens[i]));
+      d -= lens[i];
+    }
+    return pts[0].clone();
+  };
+  const parts = [[], []];
+  let materials = null;
+  for (let i = 0; i < n; i++) {
+    const p = at(((i + 0.5) / n) * total).add(new THREE.Vector3((rand() - 0.5) * 0.08, 0, (rand() - 0.5) * 0.08));
+    const clumpOf = flowers(seed * 101 + i, height * (0.8 + rand() * 0.4), kind);
+    const place = new THREE.Matrix4().makeTranslation(p);
+    clumpOf.children.forEach((mesh, j) => parts[j].push(mesh.geometry.applyMatrix4(place)));
+    materials ??= clumpOf.children.map((mesh) => mesh.material);
+  }
+  const group = new THREE.Group();
+  parts.forEach((list, j) => {
+    const mesh = new THREE.Mesh(mergeGeometries(list, false), materials[j]);
+    for (const g of list) g.dispose();
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+  });
   group.userData.height = height;
   return group;
 }

@@ -17,7 +17,7 @@
 <!-- The plants of step 2 of the redesign, one kind at a time (?set=pines): for each place the reference design draws
      one, the reference cut round it beside the model at the same scale, in the game's light and from its camera (the
      slider lays the reference over the model); then a few of the model close up, from other seeds
-     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence, ?set=daisies the white daisies (flowers.js), ?set=pinks the row of tall pink flowers along the ring road, ?set=yellow the yellow clumps, ?set=purple the purple ones, ?set=orange and ?set=lupins the spikes by the well. -->
+     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence, ?set=daisies the white daisies (flowers.js), ?set=pinks the row of tall pink flowers along the ring road, ?set=yellow the yellow clumps, ?set=purple the purple ones, ?set=orange and ?set=lupins the spikes by the well, ?set=beds the mixed beds. -->
 <div id="refs"></div>
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <main id="seeds"></main>
@@ -35,7 +35,7 @@ import { bush } from '../src/three/plants/bush.js';
 import { sunflower } from '../src/three/plants/sunflower.js';
 import { tomato, tomatoRow } from '../src/three/plants/tomato.js';
 import { birdPost } from '../src/three/buildings/birdPost.js';
-import { flowers, flowerRow } from '../src/three/plants/flowers.js';
+import { flowers, flowerRow, flowerBed } from '../src/three/plants/flowers.js';
 
 // The reference design (art/backdrop/2-style-reference.png) and how many of its pixels a world unit takes across the
 // screen and up it (REF in dev/buildings.html).
@@ -197,6 +197,19 @@ const SETS = {
     span: 1.3,
     low: 0.2,
     refs: [{ name: 'Ngọn hoa tím cạnh ghế, bên phải giếng', box: [655, 650, 725, 715], foot: [674, 700], height: 0.55, seed: 1 }],
+  },
+  beds: {
+    // Close up, a short straight bed.
+    make: (seed, h) => flowerBed(seed, [[-0.4, 0], [0.4, 0]], h),
+    h: 0.3,
+    span: 3,
+    low: 1,
+    refs: [
+      // Curving round the front of the well, from its left to its right (measured on the reference).
+      { name: 'Luống hoa trộn trước giếng', box: [415, 635, 505, 695], foot: [462, 680], height: 0.3, seed: 1, make: (seed, h) => flowerBed(seed, [[-0.71, -0.07], [-0.3, 0.02], [0, 0], [0.08, -0.59]], h) },
+      // Along the fence by the road below the farmhouse.
+      { name: 'Luống hoa trộn dọc hàng rào cạnh nhà', box: [350, 400, 455, 465], foot: [405, 440], height: 0.3, seed: 2, make: (seed, h) => flowerBed(seed, [[-0.61, 0.29], [0.61, -0.29]], h) },
+    ],
   },
 };
 const params = new URLSearchParams(location.search);
