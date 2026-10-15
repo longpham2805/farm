@@ -26,7 +26,7 @@
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <script type="module">
 import * as THREE from 'three';
-import { at, SUN_DIR, SHADOW_BOX, SHADOW_GROUND } from '../src/three/countryside.js';
+import { at, SUN_DIR, fitShadow, SHADOW_GROUND } from '../src/three/countryside.js';
 import { buildBackdrop, shadowCatcher } from '../src/three/backdrop.js';
 import { placeBuildings } from '../src/three/buildings.js';
 import { placePlants } from '../src/three/plants/valley.js';
@@ -87,10 +87,8 @@ const sun = new THREE.DirectionalLight('#ffe2a4', 3.2);
 sun.position.copy(SUN_DIR).multiplyScalar(15);
 sun.castShadow = true;
 sun.shadow.mapSize.set(3072, 3072);
-Object.assign(sun.shadow.camera, SHADOW_BOX, { near: 1, far: 30 });
-sun.shadow.bias = -0.0006;
 sun.shadow.normalBias = 0.02;
-scene.add(sun);
+scene.add(sun, sun.target);
 
 const backdrop = buildBackdrop();
 scene.add(backdrop.mesh, shadowCatcher(SHADOW_GROUND));
@@ -104,6 +102,8 @@ const spot = at(u, b);
 const camera = new THREE.OrthographicCamera(-span / 2, span / 2, up + viewH / 2, up - viewH / 2, 0.1, 100);
 camera.position.copy(spot).addScaledVector(CAM_DIR, 30);
 camera.lookAt(spot);
+// The sun's shadows cover what the camera sees, as in the game.
+fitShadow(sun, camera);
 
 const clock = new THREE.Timer();
 // ?t=6.3 holds the moving parts still at that moment, to look at it.

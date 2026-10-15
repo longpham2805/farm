@@ -528,10 +528,14 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     faceted gem-like clumps on a ridged, twisted trunk.
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
-  sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
-  the small bridge's shadow in half, and is now fitted round everything in `PLACES`, `BRIDGES` and `TREES` (the small
-  bridge at its top, the fields over the big bridge at its right, the trees behind the hen yard at its left), 23.5 × 25
-  units, so a little less sharp. Something placed outside it later needs the box widened.
+  sun's shadow box cast them. The box now follows the view (`fitShadow` in `countryside.js`, called from
+  `FarmScene.applyView` and in `dev/buildings.html`): it takes in the ground in view and whatever stands up to 4 above
+  it, as the sun sees them, moves in steps of one texel so the shadows stay still while the view pans, and keeps a
+  bias of 0.017 in the world whatever depth it takes. On a wide screen at the usual zoom it is about 26 × 16 units,
+  some 115 texels a unit on "Đẹp"; zoomed out it grows, but its texels take no more of the screen. Before, it was a
+  fixed box round the farm (first a square 10 units round the middle, which cut the small bridge's shadow in half,
+  then 23.5 × 25 round everything in `PLACES`, `BRIDGES` and `TREES`), and with the woods four trees in five stood
+  outside it with no shadow. `SHADOW_GROUND` is 60, all of the painting.
 - **Placing the plants** (`plants/valley.js`, `placePlants`, in `countryside.js` beside `placeBuildings` and in
   `dev/buildings.html`), in groups, each looked at before the next. First the trees and bushes round the farm
   (`TREES` in `valleyMap.js`: `[kind, u, b, height, seed]`), each where the reference draws it, its foot's pixel
@@ -546,6 +550,28 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   its own `onBeforeCompile` does and leans every vertex downwind as the wheat does, by 0.01 × its height squared, on a
   beat set by where the tree stands, so a tree bends rather than wobbles; instanced meshes sway too. The shadows stay
   still.
+  Then the woods (`plants/woods.js`, `WOODS` in `valleyMap.js`), where the painting left grass the reference fills
+  with trees: behind the farm up to the painted forest's edge (left of the farmhouse above the meadow, and behind the
+  buildings along the back of the ring road), the front past the river (`FOREST.dense[1]`), the far bank on the right,
+  the grass right of the fields below the ledge over the small fall, down to the front woods (keeping 1.8 from the
+  fields' fence, for the sunflowers to come), the strip between the meadow road and the river, and the left edge (the
+  three `FOREST.medium`). Each area has a
+  spacing (1.1 behind the farm to 1.7 by the meadow road), how often each kind grows (pines, firs, slim trees,
+  birches, round trees lime or green), a range of heights (each kind grown to its own share of it: the round trees'
+  broad crowns 0.8 of a pine's, the firs 0.75) and how many bushes grow under the trees. Trees are thrown at random
+  (seeded) and kept if no nearer another than the spacing and clear of the river, the roads, the ring road, the
+  bridges, the falls, the cliff, every building's spot and yard, the meadow, the fields, the landing, the rock clusters
+  still to be placed (`ROCKS` from 4 on; the first four were in the painting's layout but it painted no rocks there)
+  and the trees placed by hand; bushes then keep 0.55 from a trunk. About 250 trees and 37 bushes. A few models of
+  each kind are built once and drawn for all their trees (`InstancedMesh`), each tree sized, a little lighter or
+  darker, and turned (not the birches and slim trees, whose leaves face the camera). At the front the trees stand back
+  from the water (`shore` 1.5) and low near it, rising to full height (2.4 to 3.6) 4.5 from it (`water`), so the river
+  and its bank show as in the reference; the first try, as thick as behind the farm and up to the water, hid the bank.
+  The front is mostly pines (cheap, 400 triangles against a round tree's 3,400) and a little darker. Behind the farm
+  the woods reach back to the painted trees' feet: where the painted forest stands back (u -9 to -5 and 0 to 6) the
+  first outline left bare grass the user saw as a hole. Behind the farm the reference draws mostly pines with round
+  trees among them; a first mix of pines and big lime round trees alone looked heavy and samey, so firs, slim trees and
+  birches came in and the lime ones went down to a tenth. About 550,000 triangles in all.
 
 ### Loose ends
 
@@ -572,10 +598,8 @@ In this order:
    the sunflower, the
    tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
    row of pinks along the ring road, the yellow clumps, the purple ones, the orange and purple spikes by the well,
-   the mixed beds, the rocks by the river and the cattails. Placed, swaying: the trees round the farm. Next: the
-   woods (behind the buildings up to the painted forest, on the left, across the river at the front and on the far
-   bank on the right, the `FOREST` areas the painting left as grass), then the flowers, crops and props, then the
-   rocks and the cattails.
+   the mixed beds, the rocks by the river and the cattails. Placed, swaying: the trees round the farm and the woods.
+   Next: the flowers, crops and props, then the rocks and the cattails.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's

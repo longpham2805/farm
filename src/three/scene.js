@@ -5,7 +5,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { buildFarm, plotCenter, SOIL_TOP, PLANT_SCALE, butterfly } from './farm.js';
-import { buildCountryside, VIEW_BOUNDS, SHADOW_BOX, SUN_DIR, at } from './countryside.js';
+import { buildCountryside, VIEW_BOUNDS, SUN_DIR, fitShadow, at } from './countryside.js';
 import { buildPlant } from './models.js';
 import { updateRainbow } from './materials.js';
 import { glowTexture, starTexture, skyTexture, ringTexture, sunRaysTexture, sunFaceTexture } from './textures.js';
@@ -78,11 +78,9 @@ export class FarmScene {
     const sun = new THREE.DirectionalLight('#ffe2a4', 3.2);
     sun.position.copy(SUN_DIR).multiplyScalar(15);
     sun.castShadow = true;
-    // Shadows cover the farm and everything 3D round it; the far valley does without.
-    Object.assign(sun.shadow.camera, SHADOW_BOX, { near: 1, far: 30 });
-    sun.shadow.bias = -0.0006;
+    // Shadows cover what is in view (fitShadow, in applyView).
     sun.shadow.normalBias = 0.02;
-    scene.add(sun);
+    scene.add(sun, sun.target);
     this.sun = sun;
 
     this.world = new THREE.Group();
@@ -148,7 +146,8 @@ export class FarmScene {
     this.quality = q;
     const high = q === 'high';
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, high ? 2 : 1.25));
-    // The shadow box is 23.5 × 25 units (SHADOW_BOX): about 125 texels a unit on "Đẹp", 60 on "Nhanh".
+    // The shadow box fits the view (fitShadow): on a wide screen at the usual zoom about 26 × 16 units, some 115 texels
+    // a unit on "Đẹp", 60 on "Nhanh"; zoomed out it grows, but its texels take up no more of the screen.
     const shadowSize = Math.min(high ? 3072 : 1536, this.renderer.capabilities.maxTextureSize);
     this.sun.shadow.mapSize.set(shadowSize, shadowSize);
     if (this.sun.shadow.map) {
@@ -213,6 +212,7 @@ export class FarmScene {
     this.camera.bottom = cy - viewH / 2;
     this.camera.updateProjectionMatrix();
     this.viewH = viewH;
+    fitShadow(this.sun, this.camera);
   }
 
   /** Zooming out stops once the screen spans the whole valley across or up and down. */

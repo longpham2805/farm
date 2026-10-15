@@ -185,8 +185,9 @@ export const PLACES = {
   // The animals grazing in the meadow, where the reference draws them: two black and white cows, side on, facing
   // right and a little towards the camera (animals/cow.js), and two ewes, the one in view walking away to the back
   // right (animals/sheep.js). They wander about `area`, the meadow inside its fence, clear of the trough, the hay
-  // rack, the bench and the round tree inside its right side (TREES). The fence (MEADOW) has `gates`: [side, how far along it, how wide], here one onto the road at its front
-  // right (the right side, square to the camera, would show a gate only edge on).
+  // rack, the bench and the round tree inside its right side (TREES). The fence (MEADOW) has `gates`: [side, how far
+  // along it, how wide], here one onto the road at its front right (the right side, square to the camera, would show
+  // a gate only edge on).
   meadow: {
     gates: [[3, 0.5, 0.62]],
     herd: [
@@ -309,4 +310,58 @@ export const TREES = [
   ['slim', 10.27, -4.49, 2.3, 1], ['slim', 10.67, -4.18, 1.85, 2], ['bush', 10.25, -4.28, 0.4, 2], ['birch', 15.0, -1.4, 2.5, 3],
   // The fir on the upper riverbank, between the riverside road and the water.
   ['fir', 11.2, 2.4, 1.6, 1],
+];
+
+/**
+ * The woods of 3D trees (plants/woods.js), where the painting left grass the reference fills with trees. Each is an
+ * area, how far apart its trees stand, how often each kind grows there and the range of their heights. `water`: how
+ * far from the river its tall trees begin; nearer, they stand lower, so the river and its banks still show over them.
+ * `shore`: how far from the river its nearest trees stand (0.6 if not given); `shade`: how light or dark its trees
+ * are, from a little darker to a little lighter than their models if not given; `bushes`: how many bushes grow under
+ * them, for each square unit; `fields`: how far from the fields' fence they keep (0.8 if not given).
+ */
+export const WOODS = [
+  // Behind the farm, up to the painted trees' feet: left of the farmhouse above the meadow, and behind the buildings
+  // along the back of the ring road, as far as the road up to the small bridge. Where the painted forest stands back
+  // (between u -9 and -5, and between 0 and 6), the woods reach back to it. Mostly pines, as the reference draws them,
+  // with firs, slim trees, birches and round trees among them.
+  {
+    poly: [
+      [-19, 1.9], [-14.5, 1.9], [-10.8, 2.7], [-10.6, 4.2], [-10.4, 5.4], [-9.6, 6.6], [-7.0, 7.0], [-4.5, 7.3],
+      [-2.5, 7.6], [-1.2, 8.5], [2.0, 8.5], [3.3, 7.9], [5.5, 7.6], [6.6, 8.2], [6.9, 9.6], [6.2, 11.6], [5.6, 11.9],
+      [4.6, 12.6], [3.4, 12.6], [2.2, 12.2], [1.2, 12.0], [0.2, 12.1], [-1.0, 11.4], [-1.8, 10.8], [-3.0, 10.8],
+      [-4.0, 11.6], [-4.8, 12.5], [-5.8, 13.6], [-7.0, 14.2], [-8.0, 13.6], [-8.6, 12.0], [-8.9, 10.6], [-10.0, 9.1],
+      [-12.0, 8.7], [-13.5, 8.4], [-15.0, 8.1], [-15.8, 6.9], [-16.6, 6.4], [-19, 6.2],
+    ],
+    spacing: 1.1, height: [1.4, 2.9], bushes: 0.12,
+    kinds: { pine: 0.3, fir: 0.17, slim: 0.15, birch: 0.1, roundGreen: 0.18, round: 0.1 },
+  },
+  // The front, past the river: mostly big pines, some round trees among them, deeper green than elsewhere, as the
+  // reference draws them, the first of them small and a way back from the water, leaving its bank open.
+  {
+    poly: FOREST.dense[1], spacing: 1.35, kinds: { pine: 0.55, roundGreen: 0.25, fir: 0.1, slim: 0.1 }, height: [2.4, 3.6],
+    water: 4.5, shore: 1.5, shade: [0.78, 0.95],
+  },
+  // The far bank on the right, down to the fields.
+  {
+    poly: FOREST.medium[0], spacing: 1.3, height: [1.5, 2.7], bushes: 0.1,
+    kinds: { pine: 0.3, round: 0.25, birch: 0.15, slim: 0.15, fir: 0.15 },
+  },
+  // Right of the fields, below the ledge over the small fall, down to the front woods on both sides of the road, clear
+  // of a strip along the fields' right sides for the sunflowers.
+  {
+    poly: [[13.0, -2.6], [15.6, -3.5], [24, -3.6], [24, -16], [13.5, -14.5], [11.2, -12.2]],
+    spacing: 1.35, height: [1.6, 3.0], bushes: 0.1, fields: 1.8,
+    kinds: { pine: 0.3, round: 0.2, roundGreen: 0.15, birch: 0.12, slim: 0.1, fir: 0.13 },
+  },
+  // Between the meadow road and the river on the left, open, with birches by the water.
+  {
+    poly: FOREST.medium[1], spacing: 1.7, height: [1.5, 2.6], water: 2.5, bushes: 0.1,
+    kinds: { pine: 0.3, round: 0.25, birch: 0.3, slim: 0.15 },
+  },
+  // Along the left edge, past the meadow.
+  {
+    poly: FOREST.medium[2], spacing: 1.3, height: [1.6, 2.8], bushes: 0.06,
+    kinds: { pine: 0.35, round: 0.25, roundGreen: 0.15, birch: 0.1, fir: 0.15 },
+  },
 ];

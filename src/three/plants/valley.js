@@ -1,5 +1,5 @@
 // The plants on the painted valley: the trees and bushes round the farm, where TREES in valleyMap.js puts them, each
-// standing as it was modelled to be seen from the camera, and swaying gently in the wind.
+// standing as it was modelled to be seen from the camera, and the woods (woods.js), all swaying gently in the wind.
 import * as THREE from 'three';
 import { TREES } from '../valleyMap.js';
 import { pine } from './pine.js';
@@ -10,6 +10,7 @@ import { birch } from './birch.js';
 import { slimTree } from './slimTree.js';
 import { fir } from './fir.js';
 import { bush } from './bush.js';
+import { woods } from './woods.js';
 import { sway } from './sway.js';
 
 /** Each kind in TREES: builds one from its seed and height. */
@@ -34,5 +35,6 @@ export function placePlants({ at }) {
     plant.position.copy(at(u, b));
     group.add(plant);
   }
+  group.add(woods(at));
   return { group, update: sway(group) };
 }
