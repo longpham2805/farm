@@ -12,10 +12,11 @@ import { slimTree } from './slimTree.js';
 import { fir } from './fir.js';
 import { bush } from './bush.js';
 import { sunflower } from './sunflower.js';
+import { tomatoRow } from './tomato.js';
 import { woods } from './woods.js';
 import { sway } from './sway.js';
 
-/** Each kind in TREES and FLOWERS: builds one from its seed and height. */
+/** Each kind in TREES and FLOWERS: builds one from its seed, height and the rest of its entry (`more`). */
 const KINDS = {
   pine: (seed, height) => pine(seed, height),
   round: (seed, height) => roundTree(seed, height, ROUND_TREES.lime),
@@ -28,14 +29,16 @@ const KINDS = {
   fir: (seed, height) => fir(seed, height),
   bush: (seed, height) => bush(seed, height),
   sunflower: (seed, height) => sunflower(seed, height),
+  tomatoes: (seed, height, { length }) => tomatoRow(seed, length, height),
 };
 
 /** Puts the plants on the valley; at(u, b) is the map's point in the world. Returns the group and update(t). */
 export function placePlants({ at }) {
   const group = new THREE.Group();
-  for (const [kind, u, b, height, seed] of [...TREES, ...FLOWERS]) {
-    const plant = KINDS[kind](seed, height);
+  for (const [kind, u, b, height, seed, more = {}] of [...TREES, ...FLOWERS]) {
+    const plant = KINDS[kind](seed, height, more);
     plant.position.copy(at(u, b));
+    if (more.turn) plant.rotation.y = more.turn;
     group.add(plant);
   }
   group.add(woods(at));

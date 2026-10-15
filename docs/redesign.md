@@ -583,6 +583,11 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   lower trees in front, which only hide the stems, stay, as in the reference. They are left out after the woods are
   laid out, so every other tree stands where it did; two pines went. The reference draws bigger heads and fuller
   leaves than the approved model; kept as it is.
+  Then the row of tomatoes behind the plots, along the ring road where the reference draws it (two units long, turned
+  as `dev/plants.html` turns it; a `FLOWERS` entry's last item, `more`, gives a row its `turn` and `length`). The pig's
+  patch ran across it: it is now the grass between the plots' back corner and the front of the row, about 0.84
+  square units, the pig standing in front of the row's left end as in the reference (moved 0.08 to be inside it),
+  and the lawn hens' patch keeps off the row's right end.
 
 ### Loose ends
 
@@ -610,7 +615,7 @@ In this order:
    tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
    row of pinks along the ring road, the yellow clumps, the purple ones, the orange and purple spikes by the well,
    the mixed beds, the rocks by the river and the cattails. Placed, swaying: the trees round the farm, the woods and
-   the sunflowers round the fields. Next: the rest of the flowers, crops and props, then the rocks and the cattails.
+   the sunflowers round the fields and the tomatoes by the pig. Next: the rest of the flowers, crops and props, then the rocks and the cattails.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's

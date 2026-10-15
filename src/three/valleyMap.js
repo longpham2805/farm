@@ -162,14 +162,14 @@ export const PLACES = {
     area: [[5.35, -3.53], [6.06, -2.71], [6.82, -1.49], [7.35, -0.37], [8.29, 0.14], [9.24, -0.01], [9.59, -0.47], [8.59, -1.45], [7.24, -3.1], [6.06, -3.63]],
   },
   calf: { at: [6.4, -2.3], turn: -1.35 },
-  // The pig on the grass behind the plots, side on, facing right (animals/pig.js). It roots about `area`, between the
-  // back plots and the ring road, keeping off the plots, and leaving the grass on its right to two brown hens
-  // (`lawnHens`, animals/chicken.js), as the reference draws them.
+  // The pig on the grass behind the plots, side on, facing right (animals/pig.js). It roots about `area`, the grass
+  // between the back plots and the row of tomatoes behind them (FLOWERS), keeping off both, and leaving the grass on
+  // the row's right to two brown hens (`lawnHens`, animals/chicken.js), as the reference draws them.
   pig: {
-    at: [-0.3, 3.95], turn: 1.4,
-    area: [[-1.3, 2.85], [0, 4.1], [0.9, 3.23], [1.0, 4.4], [0, 4.85], [-1.0, 4.5], [-1.5, 3.4]],
+    at: [-0.34, 3.88], turn: 1.4,
+    area: [[-1.3, 2.85], [-0.21, 3.9], [-0.85, 4.11], [-1.12, 4.24], [-1.5, 3.4]],
   },
-  lawnHens: { area: [[1.25, 3.05], [2.1, 2.2], [2.6, 2.6], [2.3, 3.9], [1.5, 4.3]], hens: ['brown', 'brown'] },
+  lawnHens: { area: [[1.25, 3.05], [2.1, 2.2], [2.6, 2.6], [2.3, 3.9], [1.85, 4.2]], hens: ['brown', 'brown'] },
   // A mother duck and her ducklings (animals/duck.js) paddling about the river between the small fall's pool and the
   // big bridge: `way` down the middle of that stretch, `half` how far either side of it they swim.
   ducks: { way: [[10.2, -2.2], [9.5, -2.9], [7.4, -4.8], [6.75, -5.25]], half: 0.45 },
@@ -314,7 +314,8 @@ export const TREES = [
 
 /**
  * The flowers and crops the reference design draws round the farm, each where it stands there (as TREES), moved to fit
- * the painting: [kind, u, b, height, seed] (kinds in plants/valley.js).
+ * the painting: [kind, u, b, height, seed, more] (kinds in plants/valley.js), `more` giving the way a row runs (`turn`,
+ * its rotation.y in the world, as dev/plants.html turns it) and how long it is (`length`).
  */
 export const FLOWERS = [
   // Sunflowers round the fields over the big bridge, as far from the painting's fence as the reference draws them from
@@ -326,6 +327,8 @@ export const FLOWERS = [
   ['sunflower', 14.4, -8.82, 1.3, 8], ['sunflower', 15.1, -7.9, 1.2, 10],
   ['sunflower', 14.63, -5.37, 1.1, 2], ['sunflower', 15.34, -6.07, 1.0, 9],
   ['sunflower', 11.15, -3.78, 0.8, 11],
+  // A row of tomatoes on the grass behind the plots, along the ring road there, the pig rooting in front of it.
+  ['tomatoes', 0.4, 4.12, 0.65, 1, { length: 2, turn: Math.atan2(0.45, 0.89) }],
 ];
 
 /**
