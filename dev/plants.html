@@ -17,7 +17,7 @@
 <!-- The plants of step 2 of the redesign, one kind at a time (?set=pines): for each place the reference design draws
      one, the reference cut round it beside the model at the same scale, in the game's light and from its camera (the
      slider lays the reference over the model); then a few of the model close up, from other seeds
-     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence. -->
+     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence, ?set=daisies the white daisies (flowers.js). -->
 <div id="refs"></div>
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <main id="seeds"></main>
@@ -35,6 +35,7 @@ import { bush } from '../src/three/plants/bush.js';
 import { sunflower } from '../src/three/plants/sunflower.js';
 import { tomato, tomatoRow } from '../src/three/plants/tomato.js';
 import { birdPost } from '../src/three/buildings/birdPost.js';
+import { flowers } from '../src/three/plants/flowers.js';
 
 // The reference design (art/backdrop/2-style-reference.png) and how many of its pixels a world unit takes across the
 // screen and up it (REF in dev/buildings.html).
@@ -138,6 +139,13 @@ const SETS = {
       { name: 'Cột có chim đậu cạnh hàng rào sau ruộng, cạnh bù nhìn (gốc bị che)', box: [1470, 570, 1540, 650], foot: [1502, 640], height: 1.13, seed: 1 },
       { name: 'Cùng chỗ đó, nhìn rộng hơn', box: [1440, 545, 1580, 680], foot: [1502, 640], height: 1.13, seed: 1 },
     ],
+  },
+  daisies: {
+    make: (seed, h) => flowers(seed, h, 'daisy'),
+    h: 0.7,
+    span: 1.6,
+    low: 0.3,
+    refs: [{ name: 'Khóm cúc trắng bên sông, phía trước bên trái', box: [330, 700, 425, 780], foot: [378, 765], height: 0.7, seed: 1 }],
   },
 };
 const params = new URLSearchParams(location.search);

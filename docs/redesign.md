@@ -411,6 +411,19 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     (`update`). As it may be placed facing any way, `dev/animals.html?set=robins` shows it from the game's camera
     turned eight ways. Seen only from the front at first, the tail was a thin plank and the wings stuck out like
     ears from behind.
+  - **Flowers** (`plants/flowers.js`), one model for every kind the reference draws in clumps along the roads and
+    the river (kinds in `FLOWERS`, which differ in their heads and colours): a mound of broad pointed leaves (the
+    birch's `leaf`), the inner ones from higher up and more upright, the outer ones low and spreading, over a dark
+    core (a `clump`) so the gaps show deep green; over it heads on slender stems from its foot, each stem with two
+    leaves up it so the heads sit among leaves, spread over a low dome (the middle ones highest), turned up to the sky
+    and a little to the camera. The heads are a mesh of their own that glows (in the warm sun the whites turned
+    cream); the leaves glow a little. Seen in the reference (not built yet): pink heads on tall bare stems in a row
+    along the ring road, yellow five-petalled flowers on low clumps, purple ones like pansies, an orange spike by
+    the well, and mixed beds of small flowers in front of the well and along the road by the farmhouse.
+    - **Daisies** (`daisy`, `?set=daisies`), the white clump by the river at the front left: 0.7 tall and about 0.8
+      across, eight to ten heads of six broad rounded petals, cupped up a little, round a domed orange heart; about
+      2,000 triangles a clump. Tried first: a rosette of narrow leaves and long bare stems (daffodils); the heads
+      bunched on top (a bouquet); heads on long stems over a round tuft of leaves (a pot).
   - Pictures of low-poly leafy trees the user found, kept for later on the user's machine in `art/plants/found/` (not
     in git: stock previews): crowns of big separate leaves, pointed or rounded, laid over a few lobes like shingles,
     pale on top and deep under the crown, on twisted trunks forking into a few limbs that show under it; and one of
@@ -444,8 +457,9 @@ In this order:
    rocks and reeds. The trees are designed one kind at a time first (above), then placed all together. Done: the
    pine, the round tree, the fruit tree, the wood they all grow on, redone, and the pink blossom tree by the
    farmhouse, the birch, the slim upright trees by the river on the right, the bush, the sunflower, the
-   tomatoes by the pig, and the post with a birdhouse and a robin by the fields' back fence. Next: the flowers along
-   the roads and the river, rocks and reeds.
+   tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, and the white daisies.
+   Next: the other flowers along the roads and the river on the same model (pink, yellow, purple, orange, and the
+   mixed beds), then rocks and reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
