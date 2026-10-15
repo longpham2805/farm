@@ -13,7 +13,8 @@
      then; ?set=buffaloes shows the buffaloes in src/three/animals/buffalo.js instead, grazing (?walk=1, walking on
      the spot), ?set=cows two cows from src/three/animals/cow.js, their patches laid out differently, ?set=sheep
      two ewes from src/three/animals/sheep.js, ?set=pigs the pig in src/three/animals/pig.js, ?set=ducks and
-     ?set=birds the ducks and the swallow in src/three/animals/duck.js and birds.js. ?cols=4 sets the grid width,
+     ?set=birds the ducks and the swallow in src/three/animals/duck.js and birds.js, ?set=robins the robin in
+     src/three/animals/robin.js, turned every way it may be placed (each cell its own turn). ?cols=4 sets the grid width,
      ?turn=0 turns them all to face the camera (1.1 by default), ?t=10 holds them at that moment, ?view=0.8 looks
      closer. -->
 <div id="grid"></div>
@@ -27,6 +28,7 @@ import { sheep } from '../src/three/animals/sheep.js';
 import { pig, PIGS } from '../src/three/animals/pig.js';
 import { duck, DUCKS } from '../src/three/animals/duck.js';
 import { bird, BIRDS } from '../src/three/animals/birds.js';
+import { robin } from '../src/three/animals/robin.js';
 
 // The game's sun (SUN_DIR in countryside.js).
 const SUN_DIR = new THREE.Vector3(-0.414, 1.11, 0.91).normalize();
@@ -54,6 +56,16 @@ const SETS = {
     b.position.y = 0.3;
     return b;
   }, view: 1.0, move: (a, t, phase) => a.userData.flap(t * (still === null ? 14 : 1) + phase, (t + phase) % 6 > 3 ? 1 : 0) },
+  // The robin as it sits on the post (1.4 times its size), each cell turned its own way from facing the camera, as it
+  // may be placed: the names are those turns, ?turn is not used.
+  robins: { kinds: { 'quay phải': Math.PI / 2, 'chếch phải': 0.8, 'nhìn thẳng': 0, 'chếch trái': -0.8, 'quay trái': -Math.PI / 2, 'quay lưng chếch trái': -2.3, 'quay lưng': Math.PI, 'quay lưng chếch phải': 2.3 }, make: (name) => {
+    const g = new THREE.Group();
+    const r = robin(1.4);
+    r.rotation.y = SETS.robins.kinds[name] - turn;
+    g.add(r);
+    g.userData.update = r.userData.update;
+    return g;
+  }, view: 0.4, move: (a, t, phase) => a.userData.update(t + phase) },
 };
 const set = SETS[params.get('set') || 'chickens'];
 

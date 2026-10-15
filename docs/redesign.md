@@ -284,7 +284,7 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   on a crossbar, straw hands) stands by the back fence. The wheat sways in gusts of wind that roll across the field
   (`wind`: a vertex shader bending it by its height). Left for step 2, with the other plants: the reference's big
   sunflowers along the front right side and round the front corner (they were built here, then taken out to come
-  with the plants), and its post with a bird on it by the back fence.
+  with the plants), and its post with a bird on it by the back fence (now `buildings/birdPost.js`, not placed yet).
 - **The landing** (`buildings/landing.js`, in `placeBuildings`) at the end of the riverside road, beside the small
   fall, where the painted road runs down to the water (the reference draws only rocks there): a jetty of planks laid
   across two beams, running on from the road out over the river between `PLACES.landing.ends`, on posts standing in
@@ -395,6 +395,22 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     along a line, a little out of line as planted by hand (about 11,400 triangles a row); placing them, turn the row
     along the road. On `dev/plants.html` a place can make its own model (the row, here). Tried first: thin plants
     with few leaves (all stakes), pale leaves, many tomatoes (the row all red).
+  - **Post with a bird** (`buildings/birdPost.js`, `?set=post`), by the fields' back fence just left of the
+    scarecrow, where the back fence's line runs (foot about painting px (1502, 640)). The reference is blurred there:
+    a tall post with a brown mass on top that comes to a point, as big as a birdhouse, and an orange spot on its
+    right about three fifths of the way up, read as a robin's breast. So: a post of the fence's wood, a good deal
+    taller, leaning a little, 1.13 tall to the top of a birdhouse on it (a box of boards on a base board, a steep roof
+    of three courses of boards a side and a bar along the ridge, a round door and a perch under it), turned to the
+    camera; and a peg out of the post's side to the right of the screen, 0.48 up, with a robin on it. Tried first: a
+    plain post with the robin on its top, which left the reference's brown mass unexplained. `?set=post` also shows
+    the place wider, beside the reference's scarecrow.
+  - **Robin** (`animals/robin.js`, kinds in `ROBIN`'s colours), built smooth like the chickens: a round body tipped up
+    at the front, brown over the back, an orange breast and face, a pale belly, wings folded close, a flat oval of a
+    tail down behind, big dark eyes; 0.2 tall, drawn 1.4 times that on the post (bigger than life, as the swallows).
+    It holds each look for most of a second, then turns its head quickly to the next, now and then cocking it
+    (`update`). As it may be placed facing any way, `dev/animals.html?set=robins` shows it from the game's camera
+    turned eight ways. Seen only from the front at first, the tail was a thin plank and the wings stuck out like
+    ears from behind.
   - Pictures of low-poly leafy trees the user found, kept for later on the user's machine in `art/plants/found/` (not
     in git: stock previews): crowns of big separate leaves, pointed or rounded, laid over a few lobes like shingles,
     pale on top and deep under the crown, on twisted trunks forking into a few limbs that show under it; and one of
@@ -427,9 +443,9 @@ In this order:
    olive areas and round the farm; bushes, flowers (the sunflowers along the fields' front right side among them),
    rocks and reeds. The trees are designed one kind at a time first (above), then placed all together. Done: the
    pine, the round tree, the fruit tree, the wood they all grow on, redone, and the pink blossom tree by the
-   farmhouse, the birch, the slim upright trees by the river on the right, the bush, the sunflower and the
-   tomatoes by the pig. Next: the post with a bird by the fields' back fence, the flowers along the roads and the
-   river, rocks and reeds.
+   farmhouse, the birch, the slim upright trees by the river on the right, the bush, the sunflower, the
+   tomatoes by the pig, and the post with a birdhouse and a robin by the fields' back fence. Next: the flowers along
+   the roads and the river, rocks and reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
