@@ -358,6 +358,20 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     small leaves sticking out every way (a spiky bush), then in leaves lying down them as scales (too thick, and the
     leaves' shape not pretty); twenty-odd twigs of six to nine leaves each from one point (a sapling, its leaves in
     stars).
+  - **Slim tree** (`plants/slimTree.js`, `?set=slim`), the two slim upright trees the reference draws together by the
+    river on the right, by the fields' fence (a kind of their own: slimmer, lighter and more open than the pine): 2.3
+    and 1.85 tall, a long slender trunk on four short roots, bare about two fifths of the way up, and five tiers of
+    leafy lobes hanging out from it, three to five to a tier, smaller up the tree, then a narrow pointed top of five
+    sides; the trunk shows between the tiers, and a lobe or two of the lowest is often missing. Each lobe is a thick
+    leaf shape from the bark, widest a little before its middle and drooping to a point, folded down its middle, its
+    edges gently notched, so one half takes the light, yellow-green, and the other is a deep green; each facet one
+    colour, by how it faces the sky and the sun. About a thousand triangles a tree. Tried first: clumps as the round tree's
+    stretched out along each lobe (lumpy, and the top a big egg); long lobes drooping steeply (a weeping tree); many
+    lobes with deep notches (crumpled paper).
+  - Pictures of low-poly leafy trees the user found, kept for later on the user's machine in `art/plants/found/` (not
+    in git: stock previews): crowns of big separate leaves, pointed or rounded, laid over a few lobes like shingles,
+    pale on top and deep under the crown, on twisted trunks forking into a few limbs that show under it; and one of
+    faceted gem-like clumps on a ridged, twisted trunk.
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
   sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
@@ -386,8 +400,8 @@ In this order:
    olive areas and round the farm; bushes, flowers (the sunflowers along the fields' front right side among them),
    rocks and reeds. The trees are designed one kind at a time first (above), then placed all together. Done: the
    pine, the round tree, the fruit tree, the wood they all grow on, redone, and the pink blossom tree by the
-   farmhouse, and the birch. Next: the slim upright trees by the river on the
-   right, if they are a kind of their own, then the bushes, flowers, rocks and reeds.
+   farmhouse, the birch, and the slim upright trees by the river on the right. Next: the bushes, flowers, rocks and
+   reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's

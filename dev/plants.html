@@ -17,7 +17,7 @@
 <!-- The plants of step 2 of the redesign, one kind at a time (?set=pines): for each place the reference design draws
      one, the reference cut round it beside the model at the same scale, in the game's light and from its camera (the
      slider lays the reference over the model); then a few of the model close up, from other seeds
-     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches. -->
+     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river. -->
 <div id="refs"></div>
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <main id="seeds"></main>
@@ -30,6 +30,7 @@ import { roundTree, ROUND_TREES } from '../src/three/plants/roundTree.js';
 import { fruitTree, FRUIT_TREES } from '../src/three/plants/fruitTree.js';
 import { blossomTree } from '../src/three/plants/blossomTree.js';
 import { birch } from '../src/three/plants/birch.js';
+import { slimTree } from '../src/three/plants/slimTree.js';
 
 // The reference design (art/backdrop/2-style-reference.png) and how many of its pixels a world unit takes across the
 // screen and up it (REF in dev/buildings.html).
@@ -76,6 +77,14 @@ const SETS = {
     refs: [
       { name: 'Bạch dương bên sông, phía trước bên trái', box: [200, 635, 315, 795], foot: [256, 788], height: 2.4, seed: 1 },
       { name: 'Bạch dương cạnh ruộng, bên phải', box: [1510, 445, 1644, 612], foot: [1575, 603], height: 2.5, seed: 2 },
+    ],
+  },
+  slim: {
+    make: (seed, h) => slimTree(seed, h),
+    h: 2.1,
+    refs: [
+      { name: 'Cây mảnh bên sông, cạnh hàng rào ruộng (cây trước, gốc bị che)', box: [1335, 525, 1410, 660], foot: [1371, 650], height: 2.3, seed: 1 },
+      { name: 'Cây mảnh bên sông, cạnh hàng rào ruộng (cây sau)', box: [1360, 535, 1430, 650], foot: [1393, 640], height: 1.85, seed: 2 },
     ],
   },
 };
