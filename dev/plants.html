@@ -17,7 +17,7 @@
 <!-- The plants of step 2 of the redesign, one kind at a time (?set=pines): for each place the reference design draws
      one, the reference cut round it beside the model at the same scale, in the game's light and from its camera (the
      slider lays the reference over the model); then a few of the model close up, from other seeds
-     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=fir the full light green fir on the upper riverbank, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence, ?set=daisies the white daisies (flowers.js), ?set=pinks the row of tall pink flowers along the ring road, ?set=yellow the yellow clumps, ?set=purple the purple ones, ?set=orange and ?set=lupins the spikes by the well, ?set=beds the mixed beds, ?set=rocks the boulders along the river (rock.js). -->
+     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=fir the full light green fir on the upper riverbank, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence, ?set=daisies the white daisies (flowers.js), ?set=pinks the row of tall pink flowers along the ring road, ?set=yellow the yellow clumps, ?set=purple the purple ones, ?set=orange and ?set=lupins the spikes by the well, ?set=beds the mixed beds, ?set=rocks the boulders along the river (rock.js), ?set=reeds the cattails at the water's edge (reeds.js). -->
 <div id="refs"></div>
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <main id="seeds"></main>
@@ -38,6 +38,7 @@ import { tomato, tomatoRow } from '../src/three/plants/tomato.js';
 import { birdPost } from '../src/three/buildings/birdPost.js';
 import { flowers, flowerRow, flowerBed } from '../src/three/plants/flowers.js';
 import { rock } from '../src/three/plants/rock.js';
+import { reeds } from '../src/three/plants/reeds.js';
 
 // The reference design (art/backdrop/2-style-reference.png) and how many of its pixels a world unit takes across the
 // screen and up it (REF in dev/buildings.html).
@@ -229,6 +230,15 @@ const SETS = {
     refs: [
       { name: 'Tảng đá mặt phẳng bên sông, phía trước bên trái', box: [395, 698, 482, 755], foot: [437, 742], height: 0.45, seed: 1, make: (seed, h) => rock(seed, h, rockLook(Math.PI / 4)) },
       { name: 'Tảng đá lớn bên sông, góc trái phía dưới', box: [150, 772, 232, 852], foot: [190, 832], height: 0.65, seed: 2, make: (seed, h) => rock(seed, h, rockLook(Math.PI / 4)) },
+    ],
+  },
+  reeds: {
+    make: (seed, h) => reeds(seed, h),
+    h: 1.2,
+    refs: [
+      { name: 'Ba cây cỏ nến bên bờ sông, dưới ao ếch', box: [855, 640, 935, 730], foot: [893, 718], height: 1.27, seed: 1, make: (seed, h) => reeds(seed, h, { stalks: 3, leaves: 4 }) },
+      { name: 'Khóm cỏ nến lớn bên bờ sông phía trước', box: [668, 758, 778, 868], foot: [722, 858], height: 1.75, seed: 2, make: (seed, h) => reeds(seed, h, { stalks: 6, leaves: 9 }) },
+      { name: 'Hai cỏ nến mảnh phía trên cây linh sam (gốc bị che)', box: [1350, 350, 1412, 420], foot: [1381, 408], height: 0.8, seed: 3, make: (seed, h) => reeds(seed, h, { stalks: 2, leaves: 3 }) },
     ],
   },
 };

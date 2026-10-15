@@ -504,6 +504,15 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     pictures of low-poly rocks show chunky lumps with bevelled edges); then wide bright bevels (a net of lines) and a
     peak on top (a gem). The foot's shadow is darker than the painting's shadows (`shadowCatcher`, 0.36): look at it
     there when placing.
+  - **Cattails** (`plants/reeds.js`, `?set=reeds`), as the reference draws them at the water's edge: three on the
+    bank below the frog's pond (1.27 tall), a big clump of six on the river's near bank at the front (1.75), two slim
+    ones on the upper riverbank above the fir (0.8). Two to six slender green stalks, the first the tallest and nearly
+    upright, the others shorter and fanning out to either side of the camera, each leaning out most near its foot and
+    straightening up, so its head stands nearly upright; each head a slim dark brown sausage about a quarter of the
+    clump's height, rounded at either end, with a short spike above it. Round their foot four to nine long strap
+    leaves rising and arching over, their faces turned to the camera. `reeds(seed, h, { stalks, leaves })`; about 420
+    to 740 triangles a clump. Tried first: fat orange-rust heads; stalks leaning most near the top (the heads slanted);
+    leaves turned edge on to the camera (blades of grass lying on the ground).
   - Pictures of low-poly leafy trees the user found, kept for later on the user's machine in `art/plants/found/` (not
     in git: stock previews): crowns of big separate leaves, pointed or rounded, laid over a few lobes like shingles,
     pale on top and deep under the crown, on twisted trunks forking into a few limbs that show under it; and one of
@@ -540,7 +549,7 @@ In this order:
    the sunflower, the
    tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
    row of pinks along the ring road, the yellow clumps, the purple ones, the orange and purple spikes by the well,
-   the mixed beds and the rocks by the river. Next: reeds.
+   the mixed beds, the rocks by the river and the cattails. Next: place them all in the valley, swaying.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
