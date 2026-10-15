@@ -17,7 +17,7 @@
 <!-- The plants of step 2 of the redesign, one kind at a time (?set=pines): for each place the reference design draws
      one, the reference cut round it beside the model at the same scale, in the game's light and from its camera (the
      slider lays the reference over the model); then a few of the model close up, from other seeds
-     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence, ?set=daisies the white daisies (flowers.js), ?set=pinks the row of tall pink flowers along the ring road, ?set=yellow the yellow clumps. -->
+     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence, ?set=daisies the white daisies (flowers.js), ?set=pinks the row of tall pink flowers along the ring road, ?set=yellow the yellow clumps, ?set=purple the purple ones. -->
 <div id="refs"></div>
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <main id="seeds"></main>
@@ -178,6 +178,13 @@ const SETS = {
       { name: 'Khóm hoa vàng phía trước, bên trái giếng', box: [515, 670, 605, 745], foot: [548, 735], height: 0.5, seed: 1 },
       { name: 'Khóm hoa vàng ở mép trái', box: [0, 645, 70, 705], foot: [30, 695], height: 0.5, seed: 2 },
     ],
+  },
+  purple: {
+    make: (seed, h) => flowers(seed, h, 'purple'),
+    h: 0.35,
+    span: 1.6,
+    low: 0.3,
+    refs: [{ name: 'Khóm hoa tím cạnh tảng đá bên sông, bên phải', box: [1280, 455, 1360, 515], foot: [1335, 497], height: 0.35, seed: 1 }],
   },
 };
 const params = new URLSearchParams(location.search);

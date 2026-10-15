@@ -417,8 +417,9 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     core (a `clump`) so the gaps show deep green; over it heads on slender stems from its foot, each stem with two
     leaves up it so the heads sit among leaves, spread over a low dome (the middle ones highest), turned up to the sky
     and a little to the camera. The heads are a mesh of their own that glows (in the warm sun the whites turned
-    cream); the leaves glow a little. Seen in the reference (not built yet): purple flowers like pansies, an orange
-    spike by the well, and mixed beds of small flowers in front of the well and along the road by the farmhouse.
+    cream); the leaves glow a little. Seen in the reference (not built yet): upright spikes of small flowers, orange
+    on the well's left and purple on its right, and mixed beds of small flowers in front of the well and along the
+    road by the farmhouse.
     - **Daisies** (`daisy`, `?set=daisies`), the white clump by the river at the front left: 0.7 tall and about 0.8
       across, eight to ten heads of six broad rounded petals, cupped up a little, round a domed orange heart; about
       2,000 triangles a clump. Tried first: a rosette of narrow leaves and long bare stems (daffodils); the heads
@@ -435,6 +436,11 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
       round a domed dark brown heart; each head takes its colours from the kind's `mix` (as the pinks do), mostly
       lemon yellow, now and then golden orange or dark red. About 3,100 triangles a clump. Tried first: many small
       heads of narrow petals (stars, peach in the warm sun); orange at the petals' foot (the heads read orange).
+    - **Purple** (`purple`, `?set=purple`), the low clump beside a rock by the river on the right, like pansies:
+      0.35 tall, seven to nine heads of five broad, nearly flat petals, deep purple at the middle and pale at the
+      edges, round a small yellow eye (`eye` in the kind, the heart's width); each head pale violet, deep purple,
+      white flushed violet or blue-violet (`mix`). About 1,750 triangles a clump. Tried first with the daisies' big
+      heart (violets, not pansies). The white ones turn cream and pink in the warm sun.
   - Pictures of low-poly leafy trees the user found, kept for later on the user's machine in `art/plants/found/` (not
     in git: stock previews): crowns of big separate leaves, pointed or rounded, laid over a few lobes like shingles,
     pale on top and deep under the crown, on twisted trunks forking into a few limbs that show under it; and one of
@@ -469,8 +475,8 @@ In this order:
    pine, the round tree, the fruit tree, the wood they all grow on, redone, and the pink blossom tree by the
    farmhouse, the birch, the slim upright trees by the river on the right, the bush, the sunflower, the
    tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
-   row of pinks along the ring road and the yellow clumps. Next: the other flowers along the roads and the river on
-   the same model (purple, orange, and the mixed beds), then rocks and reeds.
+   row of pinks along the ring road, the yellow clumps and the purple ones. Next: the other flowers on the same
+   model (the orange and purple spikes by the well, and the mixed beds), then rocks and reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's

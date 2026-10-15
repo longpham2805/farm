@@ -4,7 +4,9 @@
 // front left, big heads of six broad rounded petals, cupped up a little, round an orange heart; and the pinks along the
 // ring road, which stand alone in a row (flowerRow), each on its own tall stem, a round head of three rings of cupped
 // petals, pink, magenta, purple or white flushed pink; and the yellow clumps along the roads, round heads of many short
-// petals round a dark brown heart, like black-eyed susans, a few golden orange or dark red among them.
+// petals round a dark brown heart, like black-eyed susans, a few golden orange or dark red among them; and the low
+// purple clumps by the river, like pansies, five broad flat petals, dark at the middle and pale at the edges, round a
+// yellow eye.
 import * as THREE from 'three';
 import { seeded } from '../../util.js';
 import { TAU, SOFT_MATERIAL, mesher, palette, tube, glowing } from './parts.js';
@@ -19,8 +21,9 @@ const FACING = new THREE.Vector3(1, 2.2, 1).normalize();
  * The kinds: their colours (the petals at the tip and at the foot, the heart and its top, the leaves and stems: shade,
  * dark, mid, light); their heads' petals (how many, how wide of the head's radius, how far they cup up, of it), and
  * `rings` more inside them, each [how many, how long of the outer ones, how far they cup up], deeper in colour; how
- * many heads ([least, most]) and how big (their radius, of the clump's height); how much it glows in its own colours,
- * so the white stays white in the warm sun (see glowing). A kind that stands in a row (flowerRow) gives its sizes in
+ * wide the heart is, of the head's radius (`eye`, 0.26 if not given); how many heads ([least, most]) and how big
+ * (their radius, of the clump's height); how much it glows in its own colours, so the white stays white in the warm
+ * sun (see glowing). A kind that stands in a row (flowerRow) gives its sizes in
  * world units: the heads' radius, the stems' radius, its leaves' length, how many plants to a unit of the row.
  * `mix`: the colours ([petals' tip, petals' foot, heart, heart's top, the foot's colour if not given]) each head takes
  * one of, in place of those in `colors`.
@@ -44,6 +47,16 @@ export const FLOWERS = {
       ['#d2401a', '#801a0c', '#2e1408', '#5a2a10'],
     ],
     petals: 9, petalWide: 0.6, cup: 0.35, rings: [[8, 0.72, 0.6]], heads: [7, 9], head: 0.16, glow: 0.4,
+  },
+  purple: {
+    colors: { petal: '#b8a4f0', petalFoot: '#4a1a8a', heart: '#ffc61e', heartTop: '#ffe066', shade: '#18440f', dark: '#28621a', mid: '#468e28', light: '#80bc44' },
+    mix: [
+      ...Array(2).fill(['#b8a4f0', '#4a1a8a', '#ffc61e', '#ffe066']),
+      ['#9a6ae0', '#2e0e5e', '#ffc61e', '#ffe066'],
+      ['#ece4fc', '#6a3ab0', '#ffc61e', '#ffe066'],
+      ['#a4aaf2', '#3a2a90', '#ffc61e', '#ffe066'],
+    ],
+    petals: 5, petalWide: 1.1, cup: 0.15, eye: 0.14, heads: [7, 9], head: 0.17, glow: 0.3,
   },
 };
 
@@ -70,7 +83,7 @@ function head(m, rand, C, F, R, k, c) {
   const at = (r, a, up) => C.clone().addScaledVector(e1, Math.cos(a) * r).addScaledVector(e2, Math.sin(a) * r).addScaledVector(F, up * R);
   const front = () => F;
   const back = () => F.clone().negate();
-  const r0 = R * 0.26;
+  const r0 = R * (k.eye ?? 0.26);
   // The petals: along each, how far out (0 at its foot, 1 at its tip) and how wide there, of its widest.
   const edge = [[0, 0.35], [0.3, 0.85], [0.62, 1], [0.88, 0.7]];
   // A ring of n petals `scale` as long as the outer ones, cupped up `cup`, `deep` of the way to the foot's colour.
