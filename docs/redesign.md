@@ -282,7 +282,11 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   right corner, its end against the right fence, under where the reference's lamp stands, as it draws one there and
   another beside the well: no back, a seat of four narrow planks along it, each its own width, length, thickness, lie
   and tone, wide gaps between them, their rounded ends out past the legs, on a bearer at each end and four round legs
-  splayed out a little, in light warm wood; the herd keeps clear of it (a notch in `PLACES.meadow.area`). Tried first:
+  splayed out a little, in light warm wood; the herd keeps clear of it (a notch in `PLACES.meadow.area`). On its seat,
+  towards its right end and front, a folded newspaper, the user's reading of the white patch the reference draws there
+  (a folded cloth, or only sunlight, were the others): two sheets, the upper a little short of the lower, rounded over
+  at the fold, a faint headline along it and columns of print, a mesh of its own (`bench(…, { paper: true })`) that
+  glows a little (0.35) so the warm sun does not turn its white to cream. Tried first:
   a back of two rails and arms (a park bench, the user said the reference's has no back), then planks broad and
   close together, and planks rounded over along their whole length (skis). Behind the bench, near the right fence, a
   lamp post (`buildings/lamp.js`, `PLACES.meadowLamp`), as the reference draws it there and beside the well: a dark

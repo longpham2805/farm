@@ -425,7 +425,7 @@ export function placeBuildings({ at }) {
   woodFence(batch, MEADOW.map(([u, b]) => [at(u, b).x, at(u, b).z]), seeded(71), { closed: true, gates: PLACES.meadow.gates });
   const water = place(PLACES.trough, () => waterTrough(batch, seeded(29)));
   hay.push(place(PLACES.hayRack, () => hayRack(batch)));
-  place(PLACES.meadowBench, () => bench(batch, seeded(73)));
+  const paper = place(PLACES.meadowBench, () => bench(batch, seeded(73), { paper: true }));
   // The fields over the big bridge on their painted pad, square to the plots.
   const fieldsAt = at(...PLACES.fields.at);
   batch.push(fieldsAt.x, 0, fieldsAt.z);
@@ -505,7 +505,7 @@ export function placeBuildings({ at }) {
       { count: 8, up: [0.1, 0.25], out: [0.03, 0.12], spread: 0.1, gravity: 0, life: [1.8, 2.8], size: [0.25, 0.55], strength: 0.08, seed: 17 }),
   ];
   const group = new THREE.Group();
-  group.add(...falls.map((f) => f.group), batch.build(), buildGlow(glow), glows.group, smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, water, crops.group, jetty.group, buffaloes.group, meadow.group, pigs.group, lawnHens.group, ducks.group, birds.group);
+  group.add(...falls.map((f) => f.group), batch.build(), buildGlow(glow), glows.group, paper, smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, water, crops.group, jetty.group, buffaloes.group, meadow.group, pigs.group, lawnHens.group, ducks.group, birds.group);
   const update = (t, dt) => {
     smoke.update(t);
     sails.children[0].rotation.z = -t * 0.9;
