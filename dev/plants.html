@@ -17,7 +17,7 @@
 <!-- The plants of step 2 of the redesign, one kind at a time (?set=pines): for each place the reference design draws
      one, the reference cut round it beside the model at the same scale, in the game's light and from its camera (the
      slider lays the reference over the model); then a few of the model close up, from other seeds
-     (?seeds=1,2,3,4, ?h=1.4 their height); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange). -->
+     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree. -->
 <div id="refs"></div>
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <main id="seeds"></main>
@@ -28,6 +28,7 @@ import { SUN_DIR } from '../src/three/countryside.js';
 import { pine } from '../src/three/plants/pine.js';
 import { roundTree, ROUND_TREES } from '../src/three/plants/roundTree.js';
 import { fruitTree, FRUIT_TREES } from '../src/three/plants/fruitTree.js';
+import { blossomTree } from '../src/three/plants/blossomTree.js';
 
 // The reference design (art/backdrop/2-style-reference.png) and how many of its pixels a world unit takes across the
 // screen and up it (REF in dev/buildings.html).
@@ -62,6 +63,11 @@ const SETS = {
       { name: 'Cây ăn quả trong vòng đường, bên trái', box: [525, 545, 615, 645], foot: [571, 636], height: 1.6, seed: 1 },
       { name: 'Cây ăn quả trong vòng đường, bên phải', box: [960, 350, 1060, 450], foot: [1009, 446], height: 1.6, seed: 2 },
     ],
+  },
+  blossom: {
+    make: (seed, h) => blossomTree(seed, h),
+    h: 1.9,
+    refs: [{ name: 'Cây anh đào hồng cạnh nhà', box: [295, 315, 410, 440], foot: [355, 428], height: 1.9, seed: 1 }],
   },
 };
 const params = new URLSearchParams(location.search);
@@ -119,8 +125,9 @@ document.getElementById('mix').addEventListener('input', (e) => document.querySe
 for (const seed of seeds) {
   const ch = Math.min(Math.round(half * 1.25), Math.round(window.innerHeight * 0.85));
   const f = figure(document.getElementById('seeds'), `seed ${seed}`, half, ch);
-  const w = (seedHeight * 1.05 * half) / ch;
-  views.push({ f, tree: set.make(seed, seedHeight), left: -w / 2, right: w / 2, top: seedHeight * 0.95, bottom: -seedHeight * 0.1 });
+  const span = params.has('close') ? 0.5 : 1.05;
+  const w = (seedHeight * span * half) / ch;
+  views.push({ f, tree: set.make(seed, seedHeight), left: -w / 2, right: w / 2, top: seedHeight * (span - 0.1), bottom: -seedHeight * 0.1 });
 }
 
 // The game's renderer settings and lights (see FarmScene and dev/buildings.html), on a plain grassy ground.

@@ -18,7 +18,7 @@ export const FRUIT_TREES = {
 
 // More, smaller clumps than the woods' trees, a crown wider for its height and hanging lower, on a stouter trunk
 // forking a little lower, its edges rounded over a little (as ROUND_FORM).
-const FORM = { crown: 0.36, clumps: [26, 32], size: [0.28, 0.36], core: 0.7, fork: 0.22, trunk: [0.06, 0.045], limbs: [0.036, 0.026, 0.014], soft: 0.4 };
+const FORM = { crown: 0.36, clumps: [26, 32], size: [0.28, 0.36], core: 0.7, fork: 0.22, trunk: [0.06, 0.045], tip: 0.014, soft: 0.4 };
 
 const FRUIT = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.35 });
 const BERRY = new THREE.IcosahedronGeometry(1, 2);

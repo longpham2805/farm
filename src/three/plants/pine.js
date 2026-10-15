@@ -4,10 +4,13 @@
 // low-poly trees.
 import * as THREE from 'three';
 import { seeded } from '../../util.js';
-import { TAU, MATERIAL, mesher, OUT, DOWN } from './parts.js';
+import { TAU, MATERIAL, mesher, OUT, DOWN, trunk } from './parts.js';
 
 /** Needles: deep in the shade under a tier, mid on its panels, light at their tips; the bark. */
 export const PINE = { shade: '#123f24', dark: '#1f6232', mid: '#2f8a45', light: '#5cae4c', bark: '#a06c40', barkDark: '#6b4426' };
+
+// Its trunk (see WOOD in parts.js): straighter and plainer than a leafy tree's, on four short roots.
+const PINE_WOOD = { trunk: [0.045, 0.028], roots: 4, flare: 1.1, kink: 0.04, twist: 0.08, soft: 0, ridges: 0.06 };
 
 /**
  * One tier: K panels round the trunk, their tips at radius R and height y (drooping a little below it), the notches
@@ -51,21 +54,6 @@ function tier(m, rand, c, { y, h, R, K, light }) {
   }
 }
 
-/** A tapering trunk of `sides` flat sides from the ground up to `top`. */
-function trunk(m, c, top, r0, r1, sides = 6) {
-  const ring = (y, r) => Array.from({ length: sides }, (_, k) => new THREE.Vector3(Math.cos((k / sides) * TAU) * r, y, Math.sin((k / sides) * TAU) * r));
-  const lo = ring(-0.02, r0);
-  const hi = ring(top, r1);
-  for (let k = 0; k < sides; k++) {
-    const k1 = (k + 1) % sides;
-    // Lit on the sun's side (upper left of the screen), darker round the back.
-    const f = 0.5 + 0.5 * Math.cos((k / sides) * TAU - 2.4);
-    const col = c.barkDark.clone().lerp(c.bark, f);
-    m.tri(lo[k], lo[k1], hi[k1], col, col, col, OUT);
-    m.tri(lo[k], hi[k1], hi[k], col, col, col, OUT);
-  }
-}
-
 /**
  * A pine `height` tall (world units), laid out by `seed`: five or six tiers, the crown half to two thirds as wide as
  * it is tall, its lowest tier a quarter of the height up, so the trunk shows under it from the camera. Returns a mesh
@@ -83,7 +71,10 @@ export function pine(seed = 1, height = 1.4, colors = PINE) {
   const foot = 0.24 + rand() * 0.04;
   const topH = 0.24;
   const Rmax = 0.26 + rand() * 0.07;
-  trunk(m, c, foot + 0.25, 0.045, 0.028);
+  // The trunk on a few roots flaring into the ground, laid out by random numbers of its own so the tiers stay as
+  // they were.
+  const grain = seeded(seed * 7919 + 1);
+  trunk(m, grain, new THREE.Vector3((grain() - 0.5) * 0.03, foot + 0.25, (grain() - 0.5) * 0.03), { dark: c.barkDark, light: c.bark }, PINE_WOOD);
   // The bands of the tiers below the top one, a little deeper low down.
   const weights = Array.from({ length: n - 1 }, (_, i) => 1 - 0.3 * (i / Math.max(1, n - 2)));
   const total = weights.reduce((s, w) => s + w, 0);

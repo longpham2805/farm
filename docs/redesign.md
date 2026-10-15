@@ -300,8 +300,9 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     seven broad panels of needles, each folded down its middle so one half takes the light, their tips drooping a
     little over the tier below, darker up under the tier above, dark underneath; flat facets, as the reference's
     low-poly trees. A cool green (in the game's warm light a yellower one looked olive). The lowest tier stands a
-    quarter of the height up, so a brown trunk shows under it from the camera, as the reference draws it. Each seed
-    gives a tree a little different in tiers, turn, width and shade.
+    quarter of the height up, so a brown trunk shows under it from the camera, as the reference draws it, on four
+    short roots (`trunk` in `plants/parts.js`, plainer than the leafy trees'). Each seed gives a tree a little
+    different in tiers, turn, width and shade.
   - **Round tree** (`plants/roundTree.js`, `?set=round`): a brown trunk, leaning a little on flaring roots, forking a
     quarter of the way up into three limbs out to the lowest clumps and one up the middle; a crown a little wider
     than tall of twenty-odd clumps of leaves over a flattened ball round a big one in the middle, the lower ones
@@ -310,16 +311,39 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     looked like bunches of grapes or boulders, plain twelve-sided ones like gems), from yellow-green on top to deep
     green under the crown and in the gaps. The edges are rounded over a little, as the user wanted (`soft` 0.4 in the
     form: each facet split in four, the middles of its edges pushed out towards the ball, the light and colour
-    bending round the corners; 0.6 was too round); the limbs and roots are round too. Two sets of colours in
+    bending round the corners; 0.6 was too round); the wood (below) is rounded over a little too. Two sets of colours in
     `ROUND_TREES`: `lime`, as most of the woods, and `green`, darker, as in front (`?leaves=green`). `leafyTree` grows
     it from a form (`ROUND_FORM`), and the fruit tree from its own. What the plants share is in `plants/parts.js`: the
-    materials (flat, and soft), faces coloured at their corners, limbs, a palette shifted per tree.
+    materials (flat, and soft), faces coloured at their corners, the wood, a palette shifted per tree.
   - **Fruit tree** (`plants/fruitTree.js`, `?set=fruit`), as inside the ring road: smaller (1.6 tall), on a short
     stout trunk forking low, its crown wider for its height and hanging lower, of more and smaller clumps, a deep,
     rich green, rounded over as the round tree. Fourteen to eighteen big glossy fruit, a little flattened, round the
     sides and underneath rather than on top, each clear of the other clumps and fruit (more, and further out, looked
     like pompoms). Kinds in `FRUIT_TREES`: `apple`, mostly red with a few orange, and `orange` (`?fruit=orange`).
     Returns a group, the tree and its fruit (a smooth, glossy mesh of its own).
+  - **Wood** (`wood` and `trunk` in `plants/parts.js`), for every tree, redone from low-poly cherry trees the user
+    found drawn (their trunks and branches were better than ours): a trunk leaning a little and kinked on the way up,
+    twisted a little so its ridges wind round it (every other side a little darker), on roots flaring out into the
+    ground as ridges running out of its foot (two sides of the trunk to a root); forking into two or three limbs that
+    fork again, two ways at a time, until one bough reaches each point the crown asks for, each as thick as the number
+    of points it carries, setting off the way its parent went and bending round to where it goes. At a fork the bough
+    carries on into its biggest share and the others leave it from inside, through its side (ending the bough at the
+    fork and starting its boughs from its end left a rim, or splinters on a short trunk). Each tree lays its wood out
+    with random numbers of its own, so the round and fruit trees' crowns and fruit stayed as they were. Under a crown
+    the limbs are mostly in its shadow, as they should be.
+  - **Blossom tree** (`plants/blossomTree.js`, `?set=blossom`), the pink tree the reference draws by the farmhouse, a
+    cherry in flower, made as the cherry trees the user found: 1.9 tall, a crown as wide as the tree is tall of twelve
+    lobes in three rings (two on top, four, then six further out and lower), the lowest ring turned so the camera
+    looks between two of its lobes at the limbs under the crown; a bough of the wood ending inside each lobe. Each
+    lobe is a core and five to seven clumps round its outer side (as the round tree's, rounded over less), and a dark
+    clump deep in the middle of the crown so the gaps show deep rose, not the sky. Five-petalled flowers, each petal
+    folded down its middle and cupped up, pale pink to near white where the light falls, a deep pink eye, one or two
+    on every facet of the clumps that shows (the clumps' own facets, from `clump`'s `facets`), so the crown is all
+    flowers, as in the user's pictures: set at first over round balls round each lobe, some sank into the clumps'
+    lumps and left them bare. About 22,000 triangles a tree, a thousand-odd flowers. And thirty-odd petals fallen on
+    the grass under it. The pinks glow
+    a little in their own colours (`glowing` in `parts.js`), or the warm sun turns them salmon and grey. A first try,
+    a big core with small clumps stuck over it, looked like a blob with warts, on a plain post of a trunk.
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
   sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
@@ -347,7 +371,8 @@ In this order:
 2. **3D trees that sway** gently (wind in the vertex shader; `wind` in `buildings/fields.js` sways the wheat) in the
    olive areas and round the farm; bushes, flowers (the sunflowers along the fields' front right side among them),
    rocks and reeds. The trees are designed one kind at a time first (above), then placed all together. Done: the
-   pine, the round tree and the fruit tree. Next: the pink blossom tree by the farmhouse, then the birch.
+   pine, the round tree, the fruit tree, and the wood they all grow on, redone. The pink blossom tree by the
+   farmhouse is modelled, waiting on the user's review. Next: the birch.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
