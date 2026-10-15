@@ -118,6 +118,24 @@ export const CROPS = [
     name: { vi: 'Cherry', en: 'Cherry' }, color: '#c8102e', leaf: '#3fbf3a' },
   { id: 'melon', tier: 4, unlock: 40, price: 900, xp: 600, yield: 5, sell: 1600, grow: 51840, variants: 8,
     name: { vi: 'Dưa lưới', en: 'Melon' }, color: '#a8b860', leaf: '#45c23a' },
+
+  // Levels 41–45.
+  { id: 'kiwi', tier: 4, unlock: 41, price: 860, xp: 570, yield: 7, sell: 1180, grow: 52920, variants: 3,
+    name: { vi: 'Kiwi', en: 'Kiwi' }, color: '#8a6234', leaf: '#3fae35' },
+  { id: 'silverberry', tier: 4, unlock: 41, price: 840, xp: 560, yield: 8, sell: 1020, grow: 52200, variants: 3,
+    name: { vi: 'Nhót', en: 'Silverberry' }, color: '#e8361f', leaf: '#5a9e4a' },
+  { id: 'fig', tier: 4, unlock: 42, price: 900, xp: 600, yield: 7, sell: 1240, grow: 54000, variants: 8, tags: ['lucky'],
+    name: { vi: 'Sung', en: 'Cluster Fig' }, color: '#e0503f', leaf: '#33a835' },
+  { id: 'sugarApple', tier: 4, unlock: 42, price: 920, xp: 610, yield: 6, sell: 1480, grow: 54000, variants: 5,
+    name: { vi: 'Na', en: 'Sugar Apple' }, color: '#a8c86a', leaf: '#3fb83a' },
+  { id: 'sapodilla', tier: 4, unlock: 43, price: 520, xp: 1300, yield: 6, sell: 780, grow: 62640, variants: 5, tags: ['exp'],
+    name: { vi: 'Hồng xiêm', en: 'Sapodilla' }, color: '#9a6a3a', leaf: '#2f9e35' },
+  { id: 'soursop', tier: 4, unlock: 44, price: 980, xp: 650, yield: 5, sell: 1900, grow: 58320, variants: 5,
+    name: { vi: 'Mãng cầu', en: 'Soursop' }, color: '#4f8a2a', leaf: '#2f9e35' },
+  { id: 'pomelo', tier: 4, unlock: 44, price: 960, xp: 640, yield: 5, sell: 1860, grow: 58320, variants: 5,
+    name: { vi: 'Bưởi', en: 'Pomelo' }, color: '#b8d83a', leaf: '#2f9e35' },
+  { id: 'jackfruit', tier: 4, unlock: 45, price: 1050, xp: 720, yield: 4, sell: 2500, grow: 60480, variants: 8,
+    name: { vi: 'Mít', en: 'Jackfruit' }, color: '#a8b43a', leaf: '#2f9e35' },
 ];
 
 // Mystery packs: plant one and a random crop from the pool grows.

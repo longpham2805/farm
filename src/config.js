@@ -9,14 +9,15 @@ export const CLOUD = {
   apiKey: 'AIzaSyDk4jPGMPCexnoq5iHEfmul6zoe-2BiMpM',
 };
 export const GRID = 4; // 4 × 4 plots
-export const MAX_LEVEL = 40;
+export const MAX_LEVEL = 45;
 
 // XP needed to upgrade from level L to L+1 is LEVEL_XP[L - 1].
 export const LEVEL_XP = [
-  20, 60, 150, 400, 800, 1400, 2200, 3200, 4500, 6000,
-  7800, 9800, 12000, 14500, 17500, 21000, 25000, 29500, 34500, 40000,
-  46000, 52500, 59500, 67000, 75000, 84000, 94000, 105000, 117000, 130000,
-  144000, 159000, 175000, 192000, 210000, 229000, 249000, 270000, 292000,
+  14, 42, 105, 280, 560, 980, 1540, 2240, 3150, 4200,
+  5460, 6860, 8400, 10150, 12250, 14700, 17500, 20650, 24150, 28000,
+  32200, 36750, 41650, 46900, 52500, 58800, 65800, 73500, 81900, 91000,
+  100800, 111300, 122500, 134400, 147000, 160300, 174300, 189000, 204400, 220500,
+  237300, 254800, 273000, 291900,
 ];
 
 // Coins needed to upgrade from level L to L+1 is LEVEL_COST[L - 1].
@@ -24,7 +25,8 @@ export const LEVEL_COST = [
   50, 150, 400, 800, 1500, 2500, 4000, 6000, 8500, 11500,
   15000, 19000, 24000, 30000, 37000, 45000, 54000, 64000, 75000, 87000,
   100000, 115000, 130000, 150000, 170000, 195000, 220000, 250000, 280000, 315000,
-  350000, 390000, 430000, 475000, 520000, 570000, 620000, 675000, 730000,
+  350000, 390000, 430000, 475000, 520000, 570000, 620000, 675000, 730000, 790000,
+  850000, 915000, 980000, 1050000,
 ];
 
 // Some upgrades also need crops from the warehouse ("materials").
@@ -45,6 +47,7 @@ export const LEVEL_MATERIALS = {
   33: { crop: 'lime', n: 12 },
   36: { crop: 'passionFruit', n: 12 },
   39: { crop: 'rambutan', n: 12 },
+  42: { crop: 'kiwi', n: 12 },
 };
 
 // Level at which each plot (row-major index) opens.
@@ -88,5 +91,6 @@ export const MILESTONES = [
   { n: 125, reward: { coins: 90000, seeds: { pack4: 5 } } },
   { n: 150, reward: { coins: 120000, seeds: { pack4: 6 } } },
   { n: 180, reward: { coins: 160000, seeds: { pack4: 8 } } },
-  { n: Infinity, reward: { coins: 250000, seeds: { pack4: 12 } } },
+  { n: 220, reward: { coins: 200000, seeds: { pack4: 10 } } },
+  { n: Infinity, reward: { coins: 300000, seeds: { pack4: 15 } } },
 ];
