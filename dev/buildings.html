@@ -29,6 +29,7 @@ import * as THREE from 'three';
 import { at, SUN_DIR, SHADOW_BOX, SHADOW_GROUND } from '../src/three/countryside.js';
 import { buildBackdrop, shadowCatcher } from '../src/three/backdrop.js';
 import { placeBuildings } from '../src/three/buildings.js';
+import { placePlants } from '../src/three/plants/valley.js';
 import { PLACES, BRIDGES } from '../src/three/valleyMap.js';
 import { buildFarm } from '../src/three/farm.js';
 import { HOME_THEME } from '../src/three/scene.js';
@@ -96,7 +97,8 @@ scene.add(backdrop.mesh, shadowCatcher(SHADOW_GROUND));
 await backdrop.setDetail(true);
 const placed = placeBuildings({ at });
 const farm = buildFarm(HOME_THEME);
-scene.add(placed.group, farm.group);
+const plants = placePlants({ at });
+scene.add(placed.group, farm.group, plants.group);
 
 const spot = at(u, b);
 const camera = new THREE.OrthographicCamera(-span / 2, span / 2, up + viewH / 2, up - viewH / 2, 0.1, 100);
@@ -113,6 +115,7 @@ renderer.setAnimationLoop(() => {
   // Held still, the animals stay where they start.
   placed.update(t, still === null ? clock.getDelta() : 0);
   farm.update(t);
+  plants.update(t);
   renderer.render(scene, camera);
   window.__ready = true;
 });

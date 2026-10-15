@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { Batch } from './batch.js';
 import { cloud, FARM_CLEAR, BARN_SPOT, ringAt, ringDistance, ringPath } from './farm.js';
 import { addBuildings, placeBuildings } from './buildings.js';
+import { placePlants } from './plants/valley.js';
 import { addAnimals } from './animals.js';
 import { glowTexture } from './textures.js';
 import { pineTree, roundTree, birchTree, bush, LEAVES, YELLOW_LEAVES, DEEP_LEAVES, PINE_NEEDLES, FRESH_PINE } from './trees.js';
@@ -36,10 +37,10 @@ export const SUN_DIR = new THREE.Vector3(-0.414, 1.11, 0.91).normalize();
 /**
  * The sun's shadow box (see FarmScene): how far it reaches left, right, down and up from the middle of the plots, in
  * world units as the sun sees them. Only things inside it cast shadows. It is fitted round everything 3D that stands
- * on the painting (PLACES and BRIDGES in valleyMap.js), the small bridge under the falls at its top and the fields
- * over the big bridge at its right, with their shadows.
+ * on the painting (PLACES, BRIDGES and TREES in valleyMap.js): the small bridge under the falls at its top, the fields
+ * over the big bridge at its right and the trees behind the hen yard at its left, with their shadows.
  */
-export const SHADOW_BOX = { left: -8, right: 14, bottom: -12.5, top: 12.5 };
+export const SHADOW_BOX = { left: -9.5, right: 14, bottom: -12.5, top: 12.5 };
 /** How wide a square round the middle the ground under the shadow box takes, for the plane that shows the shadows. */
 export const SHADOW_GROUND = 44;
 // The old 3D valley's trees and stones cast shadows this close to the middle.
@@ -1116,12 +1117,14 @@ export function buildCountryside() {
   group.add(animals.group);
 
   // Trying out a painted backdrop: it stands in for everything built above, which is kept out of view.
-  // The buildings redone for it stand on it, and shadows fall on it wherever the sun works them out (SHADOW_BOX).
+  // The buildings and plants redone for it stand on it, and shadows fall on it wherever the sun works them out
+  // (SHADOW_BOX).
   const backdrop = STAGE.painted ? buildBackdrop() : null;
   const placed = backdrop ? placeBuildings({ at }) : null;
+  const plants = backdrop ? placePlants({ at }) : null;
   if (backdrop) {
     for (const child of [...group.children]) group.remove(child);
-    group.add(backdrop.mesh, shadowCatcher(SHADOW_GROUND), placed.group);
+    group.add(backdrop.mesh, shadowCatcher(SHADOW_GROUND), placed.group, plants.group);
   }
 
   const clouds = CLOUDS.map(([u, b, h, s]) => {
@@ -1143,6 +1146,7 @@ export function buildCountryside() {
     animals.update(t, dt);
     backdrop?.update(t);
     placed?.update(t, dt);
+    plants?.update(t);
     for (const c of clouds) {
       // Drift to the right across the screen and come back round from the left.
       c.position.x += dt * 0.1;

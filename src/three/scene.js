@@ -148,7 +148,7 @@ export class FarmScene {
     this.quality = q;
     const high = q === 'high';
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, high ? 2 : 1.25));
-    // The shadow box is 22 × 25 units (SHADOW_BOX): about 125 texels a unit on "Đẹp", 60 on "Nhanh".
+    // The shadow box is 23.5 × 25 units (SHADOW_BOX): about 125 texels a unit on "Đẹp", 60 on "Nhanh".
     const shadowSize = Math.min(high ? 3072 : 1536, this.renderer.capabilities.maxTextureSize);
     this.sun.shadow.mapSize.set(shadowSize, shadowSize);
     if (this.sun.shadow.map) {

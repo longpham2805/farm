@@ -529,9 +529,23 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
   sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
-  the small bridge's shadow in half, and is now fitted round everything in `PLACES` and `BRIDGES` (the small bridge
-  at its top, the fields over the big bridge at its right), 22 × 25 units, so a little less sharp. Something placed
-  outside it later needs the box widened.
+  the small bridge's shadow in half, and is now fitted round everything in `PLACES`, `BRIDGES` and `TREES` (the small
+  bridge at its top, the fields over the big bridge at its right, the trees behind the hen yard at its left), 23.5 × 25
+  units, so a little less sharp. Something placed outside it later needs the box widened.
+- **Placing the plants** (`plants/valley.js`, `placePlants`, in `countryside.js` beside `placeBuildings` and in
+  `dev/buildings.html`), in groups, each looked at before the next. First the trees and bushes round the farm
+  (`TREES` in `valleyMap.js`: `[kind, u, b, height, seed]`), each where the reference draws it, its foot's pixel
+  turned into the map by u = (x − 806) / 55, b = (502 − y) / 32.98. The buildings in `PLACES` stand where the
+  reference draws them, so this holds round the farm; where the painting's roads or river differ, or the farm's flower
+  beds are in the way, a tree is moved: the fruit trees just inside the ring road are pulled in to 1.3 inside the
+  road's middle (`ringDistance`), past the beds; the blossom tree onto the farmhouse's pad above its road; the pine by
+  the windmill and the one beyond the meadow off their roads; the fir between the riverside road and the water; the
+  birch past the fields up onto the ledge over the small fall (at the reference's spot it stood in the fall's pool). Each
+  stands as modelled, unturned, as `dev/plants.html` shows it to the camera. The round tree inside the meadow's fence
+  has a notch in the herd's `area`. They sway (`sway` in `plants/sway.js`): a copy of each material that keeps what
+  its own `onBeforeCompile` does and leans every vertex downwind as the wheat does, by 0.01 × its height squared, on a
+  beat set by where the tree stands, so a tree bends rather than wobbles; instanced meshes sway too. The shadows stay
+  still.
 
 ### Loose ends
 
@@ -558,7 +572,10 @@ In this order:
    the sunflower, the
    tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
    row of pinks along the ring road, the yellow clumps, the purple ones, the orange and purple spikes by the well,
-   the mixed beds, the rocks by the river and the cattails. Next: place them all in the valley, swaying.
+   the mixed beds, the rocks by the river and the cattails. Placed, swaying: the trees round the farm. Next: the
+   woods (behind the buildings up to the painted forest, on the left, across the river at the front and on the far
+   bank on the right, the `FOREST` areas the painting left as grass), then the flowers, crops and props, then the
+   rocks and the cattails.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's

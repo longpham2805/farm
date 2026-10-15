@@ -185,7 +185,7 @@ export const PLACES = {
   // The animals grazing in the meadow, where the reference draws them: two black and white cows, side on, facing
   // right and a little towards the camera (animals/cow.js), and two ewes, the one in view walking away to the back
   // right (animals/sheep.js). They wander about `area`, the meadow inside its fence, clear of the trough, the hay
-  // rack and the bench. The fence (MEADOW) has `gates`: [side, how far along it, how wide], here one onto the road at its front
+  // rack, the bench and the round tree inside its right side (TREES). The fence (MEADOW) has `gates`: [side, how far along it, how wide], here one onto the road at its front
   // right (the right side, square to the camera, would show a gate only edge on).
   meadow: {
     gates: [[3, 0.5, 0.62]],
@@ -195,7 +195,7 @@ export const PLACES = {
       { name: 'ewe', at: [-10.4, 0.1], turn: 2.0 },
       { name: 'ewe', at: [-12.9, 0.3], turn: 1.0 },
     ],
-    area: [[-14.0, 0.8], [-10.85, 1.45], [-10.45, 1.25], [-10.18, 0.8], [-9.4, 0.4], [-9.05, 0.53], [-8.2, 0.1], [-8.5, 0.0], [-9.0, -0.8], [-8.2, -1.6], [-8.2, -2.0], [-9.4, -3.3], [-10.0, -2.85], [-12.1, -2.85], [-12.5, -3.8], [-13.9, -4.4]],
+    area: [[-14.0, 0.8], [-10.85, 1.45], [-10.45, 1.25], [-10.18, 0.8], [-9.4, 0.4], [-9.05, 0.53], [-8.2, 0.1], [-8.5, 0.0], [-9.0, -0.8], [-9.9, -1.2], [-10.15, -1.75], [-9.9, -2.3], [-9.1, -2.3], [-8.2, -2.0], [-9.4, -3.3], [-10.0, -2.85], [-12.1, -2.85], [-12.5, -3.8], [-13.9, -4.4]],
   },
   // The meadow's water trough, by its fence at the front, along it (buildings/trough.js).
   trough: { at: [-11.35, -3.45], turn: 0.17 },
@@ -278,4 +278,35 @@ export const ROCKS = [
   [15.7, 2.4, 0.6, 4], [15.2, 5.6, 0.5, 3],
   // Big boulders among the trees at the front.
   [3.8, -11.0, 0.7, 3],
+];
+
+/**
+ * The trees and bushes the reference design draws round the farm, each where it stands there (u = (x − 806) / 55,
+ * b = (502 − y) / 32.98 from its foot in the reference's pixels), moved where the painting's roads or river, or the
+ * farm's flower beds, are not where the reference has them: [kind, u, b, height, seed] (kinds in plants/valley.js).
+ */
+export const TREES = [
+  // Between the buildings along the back of the ring road and the painted forest: round trees and a pine, and a bush at
+  // a round tree's foot behind the hen yard.
+  ['round', -3.67, 7.73, 2.4, 2], ['pine', -2.42, 8.1, 2.2, 3], ['round', -1.29, 8.7, 2.0, 3], ['bush', -1.96, 8.82, 0.35, 1],
+  ['round', 4.56, 8.64, 2.3, 4],
+  // A pine by the windmill, between its road and the riverside road.
+  ['pine', 9.3, 3.6, 2.3, 4],
+  // Fruit trees inside the ring road, apples and oranges by turns, clear of the farm's flower beds.
+  ['apple', -3.25, 1.39, 1.7, 3], ['orange', -4.74, -0.91, 1.4, 4], ['apple', -3.07, -2.59, 1.6, 1],
+  ['orange', -2.01, -3.5, 1.6, 2], ['apple', 3.69, 1.7, 1.6, 2], ['orange', 4.69, -0.96, 1.7, 5],
+  // The pink blossom tree beside the farmhouse, on its pad above the road.
+  ['blossom', -8.4, 3.3, 1.9, 1],
+  // Round the meadow: a round tree in the woods beyond it on the left, one inside its fence by its right side (the
+  // herd keeps clear of it), and pines and two birches together between its road and the river.
+  ['round', -13.33, 2.73, 2.5, 1], ['round', -9.51, -1.76, 1.65, 5],
+  ['pine', -13.3, -8.2, 3.0, 6], ['pine', -11.04, -8.7, 1.39, 1], ['birch', -10.0, -8.67, 2.4, 1], ['birch', -9.47, -8.58, 2.2, 2],
+  // A pine in front of the well, on its right.
+  ['pine', -5.47, -5.85, 1.75, 5],
+  // By the fields over the big bridge: two slim trees with a bush at their foot, by the river at the fields' back left
+  // corner; and a birch up on the ledge over the small fall, on its grass back from the edge (where the reference has
+  // it, past the fields' back right corner, the painting has the cliff's foot by the fall's pool).
+  ['slim', 10.27, -4.49, 2.3, 1], ['slim', 10.67, -4.18, 1.85, 2], ['bush', 10.25, -4.28, 0.4, 2], ['birch', 15.0, -1.4, 2.5, 3],
+  // The fir on the upper riverbank, between the riverside road and the water.
+  ['fir', 11.2, 2.4, 1.6, 1],
 ];
