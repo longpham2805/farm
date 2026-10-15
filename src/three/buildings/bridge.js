@@ -1,13 +1,14 @@
 // The bridges over the river, as the reference design draws them: a deck of planks laid across it, arching from bank
 // to bank on a thick beam down each side; a railing of square posts under a round rail that follows the arch, with
 // taller posts at the corners; and footings of grey stones at each end, where the deck meets the road. The big bridge
-// has a lamp post of two lanterns at its farm end; the small one carries a lantern on each of its back corner posts.
+// has a lamp post of two lanterns at its farm end; the small one carries a lantern on each of its four corner posts.
 //
 // Modelled along x from one end to the other, its deck across z; placed, it turns to run between its ends (BRIDGES in
 // valleyMap.js), and its back (-z) is the side away from the camera.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { BOX, BALL, cyl } from './parts.js';
+import { GLASS } from './lamp.js';
 import { seeded } from '../../util.js';
 
 const PLANKS = ['#d08a45', '#c47f3e', '#da9852', '#bf7a3a'];
@@ -16,7 +17,6 @@ const RAIL = '#a8642f';
 const UNDER = '#5e3519';
 const STONES = ['#d3cdbf', '#c4beb0', '#dcd6c9', '#b8b2a5'];
 const IRON = '#3b3a3c';
-const FLAME = '#ffe9a6';
 
 // The deck's ends rest END above the ground on their footings, and it reaches OVER past each of the bridge's ends onto
 // the road. Its planks are PLANK wide and THICK thick; the rail runs RAIL_H above it, on posts about POSTS apart.
@@ -47,20 +47,24 @@ function bentRail(len, r, y) {
 
 const stone = (w, h, d) => new RoundedBoxGeometry(w, h, d, 2, Math.min(0.03, Math.min(w, h, d) * 0.3));
 
-/** A lantern standing on its base at the origin: an iron frame round a lit glass, under a little pointed roof. */
-function lantern(batch, glow, s = 1) {
+/**
+ * A lantern standing on its base at the origin, s times its size: an iron frame round a lit glass, under a little
+ * pointed roof, and a glow over it (into `glows`).
+ */
+function lantern(batch, glow, glows, s = 1) {
   batch.add(BOX, IRON, [0, 0.012 * s, 0], [0.1 * s, 0.024 * s, 0.1 * s]);
   for (const x of [-1, 1]) for (const z of [-1, 1]) batch.add(BOX, IRON, [x * 0.04 * s, 0.085 * s, z * 0.04 * s], [0.01 * s, 0.13 * s, 0.01 * s]);
   batch.add(new THREE.ConeGeometry(1, 1, 4), IRON, [0, 0.175 * s, 0], [0.068 * s, 0.055 * s, 0.068 * s], [0, Math.PI / 4, 0], true);
   batch.add(BALL, IRON, [0, 0.21 * s, 0], 0.012 * s);
   // The glass goes into the glow batch, placed and turned as the lantern is.
   glow.stack.push(batch.origin.clone());
-  glow.add(BOX, FLAME, [0, 0.085 * s, 0], [0.074 * s, 0.13 * s, 0.074 * s]);
+  glow.add(BOX, GLASS, [0, 0.085 * s, 0], [0.074 * s, 0.13 * s, 0.074 * s]);
   glow.pop();
+  glows.add(new THREE.Vector3(0, 0.085 * s, 0).applyMatrix4(batch.origin), 0.8 * s);
 }
 
 /** A lamp post on a stone at the origin, two lanterns hanging from the arm across its top. */
-function lampPost(batch, glow) {
+function lampPost(batch, glow, glows) {
   batch.add(stone(0.16, 0.08, 0.16), STONES[1], [0, 0.03, 0]);
   batch.add(cyl(1, 1, 8), IRON, [0, 0.5, 0], [0.024, 0.9, 0.024]);
   batch.add(BOX, IRON, [0, 0.95, 0], [0.36, 0.025, 0.025]);
@@ -68,16 +72,17 @@ function lampPost(batch, glow) {
   for (const s of [-1, 1]) {
     batch.add(BOX, IRON, [s * 0.15, 0.92, 0], [0.008, 0.05, 0.008]);
     batch.push(s * 0.15, 0.72, 0);
-    lantern(batch, glow, 0.95);
+    lantern(batch, glow, glows, 0.95);
     batch.pop();
   }
 }
 
 /**
  * A bridge `span` long between its ends and `width` across, its deck rising `arch` from its ends to its middle. With
- * `lamp`, a lamp post stands behind its first end; with `lanterns`, its back corner posts carry lanterns.
+ * `lamp`, a lamp post stands behind its first end; with `lanterns`, its four corner posts carry lanterns. The
+ * lanterns' glass goes into `glow`, their glows into `glows` (lanternGlows in lamp.js).
  */
-export function bridge(batch, glow, { span, width, arch, lamp = false, lanterns = false }) {
+export function bridge(batch, glow, { span, width, arch, lamp = false, lanterns = false, glows }) {
   const rand = seeded(Math.round(span * 1000));
   const len = span + 2 * OVER;
   const deck = (x) => END + arch * (1 - ((2 * x) / len) ** 2);
@@ -117,9 +122,9 @@ export function bridge(batch, glow, { span, width, arch, lamp = false, lanterns 
       const top = deck(x) + RAIL_H + 0.12;
       batch.add(BOX, RAIL, [x, (top + END) / 2, s * side], [0.1, top - END, 0.1]);
       batch.add(BOX, BEAM, [x, top + 0.015, s * side], [0.125, 0.03, 0.125]);
-      if (lanterns && s < 0) {
+      if (lanterns) {
         batch.push(x, top + 0.03, s * side);
-        lantern(batch, glow);
+        lantern(batch, glow, glows);
         batch.pop();
       } else {
         batch.add(new THREE.ConeGeometry(1, 1, 4), BEAM, [x, top + 0.05, s * side], [0.08, 0.04, 0.08], [0, Math.PI / 4, 0], true);
@@ -144,7 +149,7 @@ export function bridge(batch, glow, { span, width, arch, lamp = false, lanterns 
 
   if (lamp) {
     batch.push(-len / 2 - 0.05, 0, -side - 0.3);
-    lampPost(batch, glow);
+    lampPost(batch, glow, glows);
     batch.pop();
   }
 }

@@ -95,7 +95,8 @@ const backdrop = buildBackdrop();
 scene.add(backdrop.mesh, shadowCatcher(SHADOW_GROUND));
 await backdrop.setDetail(true);
 const placed = placeBuildings({ at });
-scene.add(placed.group, buildFarm(HOME_THEME).group);
+const farm = buildFarm(HOME_THEME);
+scene.add(placed.group, farm.group);
 
 const spot = at(u, b);
 const camera = new THREE.OrthographicCamera(-span / 2, span / 2, up + viewH / 2, up - viewH / 2, 0.1, 100);
@@ -111,6 +112,7 @@ renderer.setAnimationLoop(() => {
   backdrop.update(t);
   // Held still, the animals stay where they start.
   placed.update(t, still === null ? clock.getDelta() : 0);
+  farm.update(t);
   renderer.render(scene, camera);
   window.__ready = true;
 });

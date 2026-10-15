@@ -168,7 +168,8 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   a round rail that follows the arch, with thicker, taller posts at the corners; and footings of pale stones at each
   end, a slab reaching out onto the road and a block under each corner post. The big bridge has a lamp post of two
   lanterns behind its farm end, as the reference draws it; the small one, under the main fall, a lantern on each of
-  its back corner posts (their glass glows, like the farm's lamps). `dev/buildings.html?b=main` (or `small`, names in
+  its four corner posts (only the back two had one at first, which looked odd). Their glass is the meadow lamp's deep
+  orange, lit, with the same soft glow over it (`lanternGlows` in `buildings/lamp.js`). `dev/buildings.html?b=main` (or `small`, names in
   `BRIDGES`) shows one; `?at=u,b` looks at any spot of the map. The old `bridge` in `buildings.js` belongs to the old
   3D valley.
 - **Animals apart from where they live**: the chickens are `src/three/animals/chicken.js`, breeds in `CHICKENS`
@@ -290,7 +291,11 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   hanging close to the post (the glass in the bridges' glow batch). Over each lantern a soft glow, two sprites added
   to what is behind them (`glowTexture`): a wide orange halo and a small yellow core, set a little towards the camera
   so the glass does not hide them. Tried first: the big bridge's lamp post (a T of an arm with small square lanterns,
-  pale glass), and a core near white (an electric bulb). The bridges' and the farm's lamps have no glow yet.
+  pale glass), and a core near white (an electric bulb). The bridges' lanterns and the farm's street lamps
+  (`streetLamp` in `farm.js`) take the same glass and glows, a little smaller over their smaller glass (`lanternGlows`
+  in `buildings/lamp.js`); their glass was pale yellow, which under the core looked like a bulb. Every glow flickers
+  a little, each on a beat of its own: three slow waves over each other, up to about a tenth brighter or dimmer, the
+  halo swelling a little with it. `buildFarm` returns an `update(t)` for its lamps.
 - **The fields over the big bridge** (`buildings/fields.js`, in `placeBuildings`), on the painting's pad of dirt,
   which was measured again on the painting (`PLACES.fields`: its middle had been 0.8 units off), square to the plots:
   four raised beds of dark ridged soil, two by two, with paths of the pad between them, as the reference draws them:

@@ -670,6 +670,7 @@ export class FarmScene {
 
     if (this.sunRays) this.sunRays.material.rotation = t * 0.15;
     this.countryside.update(t, dt);
+    this.farm.update(t);
     this.butterflies.forEach((b, k) => {
       const ph = t * 0.35 + b.userData.phase;
       const x = Math.sin(ph) * 2.6;

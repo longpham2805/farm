@@ -10,6 +10,7 @@ import { addNature, railFence, steppingStones } from './nature.js';
 import { seeded } from '../util.js';
 import { RING, PLACES } from './valleyMap.js';
 import { barn } from './buildings/barn.js';
+import { GLASS, lanternGlows } from './buildings/lamp.js';
 
 export const SPACING = 1.32;
 export const PLOT = 1.16;
@@ -144,8 +145,11 @@ function flower(batch, x, z, color) {
   batch.add(PETAL, '#ffe066', [x, 0.175, z], 0.022);
 }
 
-/** A black street lamp at p (a world point): its post goes into `batch` and the lantern's glass into `glow`. */
-export function streetLamp(batch, glow, p) {
+/**
+ * A black street lamp at p (a world point): its post goes into `batch`, the lantern's glass into `glow` and, given
+ * `glows` (lanternGlows in buildings/lamp.js), a glow over it.
+ */
+export function streetLamp(batch, glow, p, glows) {
   const dark = '#3d4148';
   batch.push(p.x, p.y, p.z, Math.PI / 4);
   batch.add(POST, dark, [0, 0.04, 0], [0.06, 0.08, 0.06], null, true);
@@ -155,7 +159,8 @@ export function streetLamp(batch, glow, p) {
   batch.add(CAP, dark, [0, 1.0, 0], [0.11, 0.09, 0.11], [0, Math.PI / 4, 0], true);
   batch.pop();
   glow.push(p.x, p.y, p.z, Math.PI / 4);
-  glow.add(BOX, '#fff1b8', [0, 0.88, 0], [0.1, 0.11, 0.1]);
+  glow.add(BOX, GLASS, [0, 0.88, 0], [0.1, 0.11, 0.1]);
+  glows?.add(new THREE.Vector3(0, 0.88, 0).applyMatrix4(glow.origin), 0.8);
   glow.pop();
 }
 
@@ -244,6 +249,7 @@ export function buildFarm(theme) {
   // Flowers, grass and other low plants, which cast no shadow.
   const flowers = new Batch();
   const glow = new Batch();
+  const glows = lanternGlows();
   // Grass, stones and flowers are strewn the same on every farm.
   const rand = seeded(7);
   const GRASS = ['PLANT_01_GrassShort', 'PLANT_02_GrassMedium', 'PLANT_04_GrassSparse'];
@@ -256,8 +262,8 @@ export function buildFarm(theme) {
       if (rand() < 0.4) tuft(p.x + (rand() - 0.5) * 0.25, p.z + (rand() - 0.5) * 0.25);
     }
     const along = to.clone().sub(from).normalize();
-    streetLamp(deco, glow, from.clone().addScaledVector(along, -0.14));
-    streetLamp(deco, glow, to.clone().addScaledVector(along, 0.14));
+    streetLamp(deco, glow, from.clone().addScaledVector(along, -0.14), glows);
+    streetLamp(deco, glow, to.clone().addScaledVector(along, 0.14), glows);
   }
 
   // Flower beds in two rows along the inside of the fence, in patches of one colour, with a leafy plant now and then.
@@ -316,7 +322,7 @@ export function buildFarm(theme) {
     addNature(deco, name, [x, 0, z], s, turn);
     tuft(x + 0.16, z + 0.08, 0.25);
   }
-  group.add(deco.build(), flowers.build({ castShadow: false }), buildGlow(glow));
+  group.add(deco.build(), flowers.build({ castShadow: false }), buildGlow(glow), glows.group);
 
-  return { group, plots, clickables };
+  return { group, plots, clickables, update: glows.update };
 }
