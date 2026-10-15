@@ -198,6 +198,21 @@ export const netTexture = () =>
     }
   });
 
+// Silverberry skin: red, covered in tiny silver scales.
+export const speckleTexture = () =>
+  canvasTex('speckle', 128, 64, (g, w, h) => {
+    g.fillStyle = '#e8321a';
+    g.fillRect(0, 0, w, h);
+    let seed = 7;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    g.fillStyle = '#ffe6cf';
+    for (let i = 0; i < 60; i++) {
+      g.beginPath();
+      g.arc(rnd() * w, rnd() * h, 1.6 + rnd() * 1.4, 0, Math.PI * 2);
+      g.fill();
+    }
+  });
+
 export const kernelTexture = () =>
   canvasTex('corn', 64, 128, (g, w, h) => {
     g.fillStyle = '#e8a800';

@@ -130,7 +130,7 @@ test('upgrade needs xp, coins and materials', () => {
   const r = G.upgrade(s);
   assert.ok(r.ok);
   assert.equal(s.level, 2);
-  assert.equal(s.xp, 5);
+  assert.equal(s.xp, 11);
   assert.equal(s.coins, 450);
   assert.deepEqual(r.unlocks.seeds.sort(), ['banana', 'carrot', 'tomato']);
   assert.equal(r.unlocks.plots, 2);

@@ -25,7 +25,7 @@ Everything is in Vietnamese by default; English can be picked in Settings.
    Each level grows plants faster, raises prices and opens more plots and seeds.
 6. **Mutations**: when a plant ripens it may turn into a rare look (golden, ruby, frost,
    pearl, shadow, rainbow…). The rarest ones wear a crown or a halo and shine with a beam.
-7. **Collection** (*Bách khoa*): 50 fruits and vegetables with 207 looks to discover.
+7. **Collection** (*Bách khoa*): 58 fruits and vegetables with 249 looks to discover.
    A full set or a milestone gives a gift.
 8. **Nutrition** (*Dinh dưỡng*): the shop, the barn and the new-plant card show what is
    good inside each crop (vitamin A, C, K, iron, fibre…). Tap a badge to hear what it does.
@@ -117,6 +117,6 @@ candy crops become fruits of the same tier (see `RENAMED_CROPS`).
 | `src/ui/` | HUD, bottom bars and the menus (shop, barn, collection, quests, chests…) |
 | `src/i18n.js` | Vietnamese and English text |
 | `public/` | App manifest and icons; `vite.config.js` writes the offline service worker |
-| `dev/gallery.html` | Shows every crop model (`?mode=thumbs` lists all 207 looks) |
+| `dev/gallery.html` | Shows every crop model (`?mode=thumbs` lists all 249 looks) |
 | `dev/icons.cjs` | Redraws the app icons from `dev/icon-svg.cjs` |
 | `docs/game-notes.md` | Notes taken from screenshots of the original game |
