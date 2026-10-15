@@ -378,6 +378,15 @@ export const FLOWERS = [
   ['daisy', 3.25, -11.0, 0.6, 6], ['daisy', 3.93, -9.88, 0.35, 7],
   ['bed', -2.51, -13.52, 0.35, 9, { path: [[-0.25, 0], [0.25, 0]], inWoods: true }],
   ['bed', 5.98, -12.55, 0.45, 10, { path: [[-0.3, 0], [0.3, 0]], inWoods: true }],
+  // On the right: a long bed in front of the windmill, curving with its road, as far from it as the reference draws it
+  // from its own; on the grass between the windmill's road and the riverside road down to the small fall, purple
+  // pansies, the one by the rocks at the bank's edge among them, a little mixed clump, a yellow one and an orange one
+  // by the calf (the reference's riverside road and river stand two units further left, so these are placed by the
+  // painting's bank); and across the small bridge, two mixed beds above the road along the far bank.
+  ['bed', 6.91, 3.2, 0.35, 11, { path: [[-1.0, 0.45], [0, 0], [1.0, -0.4]] }],
+  ['purple', 9.53, 1.43, 0.35, 2], ['purple', 9.62, 0.15, 0.35, 1], ['bed', 9.2, -0.15, 0.3, 12, { path: [[-0.18, 0], [0.18, 0]] }],
+  ['yellow', 8.2, -0.94, 0.5, 14], ['orange', 5.9, -2.67, 0.4, 10],
+  ['bed', 12.65, 10.62, 0.35, 13, { path: [[-0.35, 0], [0.35, 0]] }], ['bed', 13.75, 10.05, 0.3, 14, { path: [[-0.55, 0], [0.55, 0]] }],
 ];
 
 /**

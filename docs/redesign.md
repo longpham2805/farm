@@ -619,6 +619,13 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   spike behind it (the reference's is a pink-red torch), daisies and a small white clump, and two clumps deep in the
   woods beyond (`inWoods`); the woods lose 5 trees. The reference's lily pads on the river there are left for the
   cattails.
+  Then the right: a long bed in front of the windmill curving with its road (placed from the windmill as the reference
+  draws it from its own), and on the grass between the windmill's road and the riverside road down to the small fall,
+  purple pansies (one by the bank's edge, where the reference has it by a rock), a little mixed clump, a yellow and an
+  orange one; the reference's riverside road and river stand two units further left there, so these follow the
+  painting's bank, and a pink clump by the ring road's fence, which fell on the painted road, was left out. Across
+  the small bridge, two mixed beds above the far bank's road. The reference also draws a bench, a fence along the
+  road, a table and a lamp on that grass, which no list has yet.
 
 ### Loose ends
 
@@ -646,7 +653,7 @@ In this order:
    tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
    row of pinks along the ring road, the yellow clumps, the purple ones, the orange and purple spikes by the well,
    the mixed beds, the rocks by the river and the cattails. Placed, swaying: the trees round the farm, the woods and
-   the sunflowers round the fields and the tomatoes by the pig and the flowers along the front bank, round the well, on the left edge and across the river. Next: the rest of the flowers, crops and props, then the rocks and the cattails.
+   the sunflowers round the fields and the tomatoes by the pig and the flowers along the front bank, round the well, on the left edge, across the river and on the right. Next: the rest of the flowers, crops and props, then the rocks and the cattails.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
