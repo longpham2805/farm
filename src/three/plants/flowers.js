@@ -6,7 +6,8 @@
 // petals, pink, magenta, purple or white flushed pink; and the yellow clumps along the roads, round heads of many short
 // petals round a dark brown heart, like black-eyed susans, a few golden orange or dark red among them; and the low
 // purple clumps by the river, like pansies, five broad flat petals, dark at the middle and pale at the edges, round a
-// yellow eye.
+// yellow eye; and spikes of small flowers rising from a lower mound, orange like gladioli on the well's left, purple
+// like lupins by the bench beyond it.
 import * as THREE from 'three';
 import { seeded } from '../../util.js';
 import { TAU, SOFT_MATERIAL, mesher, palette, tube, glowing } from './parts.js';
@@ -57,6 +58,18 @@ export const FLOWERS = {
       ['#a4aaf2', '#3a2a90', '#ffc61e', '#ffe066'],
     ],
     petals: 5, petalWide: 1.1, cup: 0.15, eye: 0.14, heads: [7, 9], head: 0.17, glow: 0.3,
+  },
+  // Spikes like gladioli, orange and yellow, the florets big and turned to the camera, on the well's left.
+  orange: {
+    colors: { petal: '#ffb020', petalFoot: '#e85a0a', heart: '#c83a06', heartTop: '#f08a10', shade: '#18440f', dark: '#28621a', mid: '#468e28', light: '#80bc44' },
+    mix: [['#ffb020', '#e85a0a', '#c83a06'], ['#ffd040', '#f08a10', '#c85a08'], ['#ff8a20', '#d8400a', '#a02a06']],
+    petals: 6, petalWide: 0.75, cup: 0.6, spikes: [1, 2], florets: 7, floret: 0.09, spike: 0.55, side: true, mound: 0.6, glow: 0.3,
+  },
+  // Spikes like lupins, purple and now and then pink, dense with small florets all round, by the bench beyond the well.
+  lupin: {
+    colors: { petal: '#b48af0', petalFoot: '#5a2ab0', heart: '#3a1680', heartTop: '#5a2ab0', shade: '#18440f', dark: '#28621a', mid: '#468e28', light: '#80bc44' },
+    mix: [['#9a86f0', '#3e2aa0', '#2a1a70'], ['#9a86f0', '#3e2aa0', '#2a1a70'], ['#b48af0', '#5a2ab0', '#3a1680'], ['#e6a0e0', '#a03aa0', '#701a70']],
+    petals: 4, petalWide: 1.1, cup: 1.3, spikes: [3, 5], florets: 14, floret: 0.055, spike: 0.5, mound: 0.6, glow: 0.3,
   },
 };
 
@@ -161,6 +174,47 @@ function build(m, hm, scale, glow) {
 }
 
 /**
+ * A kind's spikes, rising from the middle of its mound (in units of the clump's height): stalks, the middle ones
+ * tallest, each a little out and leaning its own way, in one of the kind's colours (`mix`); up the top `spike` of each,
+ * `florets` small heads (`floret` their radius at the foot of the spike), smaller and smaller towards its tip, the top
+ * quarter of them buds; turned out round the stalk in a spiral, or, for a kind that turns them to one `side`, to either
+ * side of the camera in turn; and a leaf or two low on the stalk.
+ */
+function spikes(m, hm, rand, k, c) {
+  const tone = toner(c);
+  const n = k.spikes[0] + Math.floor(rand() * (k.spikes[1] - k.spikes[0] + 1));
+  const spin = rand() * TAU;
+  const camera = Math.atan2(FACING.z, FACING.x);
+  for (let j = 0; j < n; j++) {
+    const a = spin + j * GOLDEN;
+    const out = 0.2 * Math.sqrt((j + 0.5) / n);
+    const top = 1 - 0.3 * (out / 0.2) ** 2 - rand() * 0.08;
+    const foot = new THREE.Vector3(Math.cos(a) * 0.03, 0, Math.sin(a) * 0.03);
+    const tip = new THREE.Vector3(Math.cos(a) * out + (rand() - 0.5) * 0.06, top, Math.sin(a) * out + (rand() - 0.5) * 0.06);
+    const along = (t) => foot.clone().lerp(tip, t * t).setY(top * t);
+    const path = [0, 0.4, 0.75, 1].map(along);
+    tube(m, path, path.map((_, i) => FORM.stem * (1.3 - 0.5 * (i / 3))), { dark: c.dark, light: c.mid }, { sides: 4 });
+    for (const t of [0.2, 0.32]) {
+      const b = rand() * TAU;
+      const dir = new THREE.Vector3(Math.cos(b), 0.6, Math.sin(b)).normalize();
+      const face = new THREE.Vector3(0, 1, 0).addScaledVector(dir, -dir.y).normalize();
+      leaf(m, along(t), dir, face, FORM.leaf * (0.5 + rand() * 0.2), tone(0.45 + 0.4 * face.y), FORM.wide * 0.7);
+    }
+    const cc = mixed(c, k.mix[Math.floor(rand() * k.mix.length)]);
+    const turn = rand() * TAU;
+    for (let i = 0; i < k.florets; i++) {
+      const t = i / (k.florets - 1);
+      const p = along(1 - k.spike * (1 - t));
+      const R = k.floret * (1 - 0.55 * t) * (0.9 + rand() * 0.2);
+      const b = k.side ? camera + (i % 2 ? 0.75 : -0.75) + (rand() - 0.5) * 0.3 : turn + i * 2.4;
+      const F = new THREE.Vector3(Math.cos(b), 0.5 + t, Math.sin(b)).normalize();
+      const C = p.clone().add(new THREE.Vector3(Math.cos(b), 0, Math.sin(b)).multiplyScalar(R * 0.4));
+      head(hm, rand, C, F, R, t > 0.75 ? BUD : k, cc);
+    }
+  }
+}
+
+/**
  * A clump of flowers of a kind (a name in FLOWERS), `height` tall to the top of its heads (world units), laid out by
  * `seed`. Returns a group standing on the ground at the origin: the leaves and stems, and the heads.
  */
@@ -174,8 +228,10 @@ export function flowers(seed = 1, height = 0.6, kind = 'daisy') {
   const hm = mesher();
   const turn = rand() * TAU;
   // A dark core, so the gaps between the leaves show deep green rather than the grass.
-  const core = new THREE.Vector3(0, 0.18, 0);
-  clump(m, rand, core, 0.26, seed * 31, { shade: c.shade, dark: c.shade, mid: c.dark, light: c.dark }, { mid: core, bottom: 0, top: 0.5, soft: 0.3 });
+  // A kind of spikes has a lower mound (`mound`, of the usual).
+  const mound = k.mound ?? 1;
+  const core = new THREE.Vector3(0, 0.18 * mound, 0);
+  clump(m, rand, core, 0.26 * mound, seed * 31, { shade: c.shade, dark: c.shade, mid: c.dark, light: c.dark }, { mid: core, bottom: 0, top: 0.5, soft: 0.3 });
   // The leaves, a mound of them every way round: the inner ones from higher up and more upright, the outer ones low
   // and spreading; their faces turned up, coloured by how they face the sky and how far in they are.
   const n = FORM.leaves[0] + Math.floor(rand() * (FORM.leaves[1] - FORM.leaves[0] + 1));
@@ -186,8 +242,14 @@ export function flowers(seed = 1, height = 0.6, kind = 'daisy') {
     const along = new THREE.Vector3(Math.cos(a) * Math.cos(e), Math.sin(e), Math.sin(a) * Math.cos(e));
     const face = new THREE.Vector3(0, 1, 0).addScaledVector(along, -along.y).normalize().applyAxisAngle(along, (rand() - 0.5) * 0.8);
     const rb = 0.05 + 0.22 * v;
-    const base = new THREE.Vector3(Math.cos(a) * rb, 0.4 - 0.32 * v, Math.sin(a) * rb);
-    leaf(m, base, along, face, FORM.leaf * (1 - 0.15 * v) * (0.8 + rand() * 0.35), tone(0.28 + 0.4 * face.y + 0.3 * (1 - v) + (rand() - 0.5) * 0.25), FORM.wide);
+    const base = new THREE.Vector3(Math.cos(a) * rb * mound, (0.4 - 0.32 * v) * mound, Math.sin(a) * rb * mound);
+    leaf(m, base, along, face, FORM.leaf * (1 - 0.15 * v) * (0.8 + rand() * 0.35) * mound, tone(0.28 + 0.4 * face.y + 0.3 * (1 - v) + (rand() - 0.5) * 0.25), FORM.wide);
+  }
+  if (k.spikes) {
+    spikes(m, hm, rand, k, c);
+    const group = build(m, hm, height, k.glow);
+    group.userData.height = height;
+    return group;
   }
   // The heads, spread over a low dome, the middle ones highest, each on its stem from the foot of the clump; turned up
   // and to the camera, and a little out the way they lie, each a little its own way.

@@ -417,9 +417,8 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     core (a `clump`) so the gaps show deep green; over it heads on slender stems from its foot, each stem with two
     leaves up it so the heads sit among leaves, spread over a low dome (the middle ones highest), turned up to the sky
     and a little to the camera. The heads are a mesh of their own that glows (in the warm sun the whites turned
-    cream); the leaves glow a little. Seen in the reference (not built yet): upright spikes of small flowers, orange
-    on the well's left and purple on its right, and mixed beds of small flowers in front of the well and along the
-    road by the farmhouse.
+    cream); the leaves glow a little. Seen in the reference (not built yet): mixed beds of small flowers in front of
+    the well and along the road by the farmhouse.
     - **Daisies** (`daisy`, `?set=daisies`), the white clump by the river at the front left: 0.7 tall and about 0.8
       across, eight to ten heads of six broad rounded petals, cupped up a little, round a domed orange heart; about
       2,000 triangles a clump. Tried first: a rosette of narrow leaves and long bare stems (daffodils); the heads
@@ -441,6 +440,16 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
       edges, round a small yellow eye (`eye` in the kind, the heart's width); each head pale violet, deep purple,
       white flushed violet or blue-violet (`mix`). About 1,750 triangles a clump. Tried first with the daisies' big
       heart (violets, not pansies). The white ones turn cream and pink in the warm sun.
+    - **Spikes** (a kind with `spikes`): the mound lower (`mound`, of the usual), and rising from it stalks, the middle
+      ones tallest, each leaning its own way, a leaf or two low on it and one of the kind's colours; up the top
+      `spike` of each, `florets` heads smaller and smaller towards the tip, the top quarter buds, turned out round
+      the stalk in a spiral or (`side`) to either side of the camera in turn.
+      - **Orange** (`orange`, `?set=orange`), on the well's left, like gladioli: 0.6 tall, one or two stalks of seven
+        big six-petalled florets turned to the camera, orange, golden or red-orange. About 2,200 triangles.
+      - **Lupins** (`lupin`, `?set=lupins`), by the bench beyond the well: 0.55 tall, three to five spikes of
+        fourteen small four-petalled florets cupped nearly shut, packed close round the stalk, blue-violet and now
+        and then pink. About 5,800 triangles, heavy for a clump: fewer florets, or none of their hearts, if need be.
+        Tried first with five open petals, further out (loose and spiky, not columns).
   - Pictures of low-poly leafy trees the user found, kept for later on the user's machine in `art/plants/found/` (not
     in git: stock previews): crowns of big separate leaves, pointed or rounded, laid over a few lobes like shingles,
     pale on top and deep under the crown, on twisted trunks forking into a few limbs that show under it; and one of
@@ -475,8 +484,8 @@ In this order:
    pine, the round tree, the fruit tree, the wood they all grow on, redone, and the pink blossom tree by the
    farmhouse, the birch, the slim upright trees by the river on the right, the bush, the sunflower, the
    tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
-   row of pinks along the ring road, the yellow clumps and the purple ones. Next: the other flowers on the same
-   model (the orange and purple spikes by the well, and the mixed beds), then rocks and reeds.
+   row of pinks along the ring road, the yellow clumps, the purple ones, and the orange and purple spikes by the
+   well. Next: the mixed beds of small flowers on the same model, then rocks and reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
