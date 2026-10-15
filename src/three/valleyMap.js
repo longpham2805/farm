@@ -313,9 +313,11 @@ export const TREES = [
 ];
 
 /**
- * The flowers and crops the reference design draws round the farm, each where it stands there (as TREES), moved to fit
- * the painting: [kind, u, b, height, seed, more] (kinds in plants/valley.js), `more` giving the way a row runs (`turn`,
- * its rotation.y in the world, as dev/plants.html turns it) and how long it is (`length`).
+ * The flowers and crops the reference design draws round the farm, and the small plants among them, each where it
+ * stands there (as TREES), moved to fit the painting: [kind, u, b, height, seed, more] (kinds in plants/valley.js),
+ * `more` giving the way a row runs (`turn`, its rotation.y in the world, as dev/plants.html turns it), how long it is
+ * (`length`) and a bed's `path` ([x, z] round its spot, world units). Unlike TREES, the woods leave them out after
+ * they are laid out, so adding one never moves the woods' other trees.
  */
 export const FLOWERS = [
   // Sunflowers round the fields over the big bridge, as far from the painting's fence as the reference draws them from
@@ -339,6 +341,21 @@ export const FLOWERS = [
   ['orange', -0.75, -5.8, 0.45, 2], ['yellow', -0.8, -6.3, 0.3, 6], ['orange', -0.35, -5.94, 0.35, 3],
   ['yellow', 0.35, -6.19, 0.3, 7], ['daisy', 0.89, -6.37, 0.5, 2], ['daisy', 2.04, -6.06, 0.45, 3],
   ['yellow', 2.71, -5.64, 0.55, 8],
+  // Round the well, as far from it as the reference draws them from its own (the painting's well stands 0.85 further
+  // back): the mixed bed curving round its front, orange spikes on its left beside a small pine with orange flowers at
+  // its foot, and a little yellow clump at its right side.
+  ['bed', -6.1, -4.47, 0.3, 1, { path: [[-0.71, -0.07], [-0.3, 0.02], [0, 0], [0.08, -0.59]] }],
+  ['orange', -7.43, -4.04, 0.6, 1], ['pine', -6.85, -3.98, 1.0, 2], ['orange', -6.95, -4.1, 0.4, 4],
+  ['yellow', -5.1, -3.75, 0.3, 9],
+  // Along the meadow road: a clump of pink and white flowers and one of orange ones in front of the meadow's right fence
+  // (placed by the game's fence, which stands further out than the reference's), either side of its gate; pink spikes
+  // beyond the road where it bends, and a yellow clump between the meadow's front fence and the road, below the trough.
+  ['bed', -8.75, -3.91, 0.4, 2, { path: [[-0.25, 0], [0.25, 0]] }], ['orange', -7.92, -2.84, 0.45, 5],
+  ['lupin', -8.39, -5.6, 0.6, 5], ['yellow', -11.45, -5.0, 0.45, 10],
+  // The river's bank left of the well, down to the birches past the meadow road: the big clump of daisies at its edge
+  // and smaller ones beside it, and yellow clumps among the trees.
+  ['daisy', -7.78, -7.97, 0.7, 1], ['daisy', -8.75, -7.97, 0.4, 4], ['yellow', -10.51, -8.64, 0.3, 11],
+  ['yellow', -12.47, -8.13, 0.6, 12],
 ];
 
 /**
