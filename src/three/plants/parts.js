@@ -76,10 +76,26 @@ const SUN = new THREE.Vector3(-0.414, 1.11, 0.91).normalize();
  * A tube along `path` (points) with `radii` at them, of `sides` flat sides, coloured between `dark` and `light` by how its
  * sides face the sun (from the upper left of the screen). Its rings are carried along the bends without turning, then turned `twist` (radians) more by its end, so
  * its edges wind round it as a twisted trunk's ridges do; `shape(i, t)` scales ring i's radius at angle t round it
- * (to flare roots out of it); its end is closed with a short point. `soft` (0 to 1) bends its light round its edges, so it looks round rather than flat-sided; `ridges`, how much
+ * (to flare roots out of it; i counts only the points given, not those `step` adds); its end is closed with a short
+ * point. `step`: no longer a side than that, its path cut shorter where need be, so `marks` can be short. `marks`:
+ * dark dashes across it, as on a birch's bark: { colour, chance (of a dash round each piece of it), run ([least,
+ * most] sides a dash goes round), low (below that height, three times the chance) }. `soft` (0 to 1) bends its light round its edges, so it looks round rather than flat-sided; `ridges`, how much
  * darker every other side is, so the ridges read.
  */
-export function tube(m, path, radii, { dark, light }, { sides = 6, twist = 0, shape = null, soft = 0, ridges = 0 } = {}) {
+export function tube(m, path, radii, { dark, light }, { sides = 6, twist = 0, shape = null, soft = 0, ridges = 0, step = 0, marks = null } = {}) {
+  let index = path.map((_, i) => i);
+  if (step) {
+    const [p, r, x] = [[path[0]], [radii[0]], [0]];
+    for (let i = 1; i < path.length; i++) {
+      const pieces = Math.max(1, Math.ceil(path[i].distanceTo(path[i - 1]) / step - 1e-6));
+      for (let j = 1; j <= pieces; j++) {
+        p.push(path[i - 1].clone().lerp(path[i], j / pieces));
+        r.push(THREE.MathUtils.lerp(radii[i - 1], radii[i], j / pieces));
+        x.push(j === pieces ? i : Infinity);
+      }
+    }
+    [path, radii, index] = [p, r, x];
+  }
   const n = path.length;
   const tangent = (i) => {
     const a = path[Math.max(0, i - 1)];
@@ -103,7 +119,7 @@ export function tube(m, path, radii, { dark, light }, { sides = 6, twist = 0, sh
     for (let k = 0; k < sides; k++) {
       const a = (k / sides) * TAU;
       const d = u.clone().multiplyScalar(Math.cos(a + spin)).addScaledVector(v, Math.sin(a + spin));
-      ring.push(path[i].clone().addScaledVector(d, radii[i] * (shape ? shape(i, a) : 1)));
+      ring.push(path[i].clone().addScaledVector(d, radii[i] * (shape ? shape(index[i], a) : 1)));
       out.push(d);
     }
     rings.push(ring);
@@ -113,6 +129,13 @@ export function tube(m, path, radii, { dark, light }, { sides = 6, twist = 0, sh
   for (let i = 0; i + 1 < n; i++) {
     const axis = new THREE.Vector3().subVectors(path[i + 1], path[i]).normalize();
     const mid = path[i].clone().add(path[i + 1]).multiplyScalar(0.5);
+    // A dash round this piece, or none: where it starts round it and how many sides it goes.
+    let dash = null;
+    if (marks && pointNoise(mid, 11) + 0.5 < marks.chance * (mid.y < (marks.low ?? 0) ? 3 : 1)) {
+      const [least, most] = marks.run;
+      dash = { from: Math.floor((pointNoise(mid, 12) + 0.5) * sides), run: least + Math.floor((pointNoise(mid, 13) + 0.5) * (most - least + 1)) };
+    }
+    const marked = (k, col) => (dash && (k - dash.from + sides) % sides < dash.run ? marks.colour.clone().lerp(col, 0.2) : col);
     const away = (p, q, r) => {
       const c = new THREE.Vector3().addVectors(p, q).add(r).divideScalar(3).sub(mid);
       return c.addScaledVector(axis, -c.dot(axis));
@@ -122,14 +145,14 @@ export function tube(m, path, radii, { dark, light }, { sides = 6, twist = 0, sh
       const [a, b, c, d] = [rings[i][k], rings[i][k1], rings[i + 1][k1], rings[i + 1][k]];
       const face = new THREE.Vector3().subVectors(c, a).cross(new THREE.Vector3().subVectors(b, d)).normalize();
       if (face.dot(away(a, b, c)) < 0) face.negate();
-      const col = tone(face, k);
+      const col = marked(k, tone(face, k));
       if (!soft) {
         m.tri(a, b, c, col, col, col, away);
         m.tri(a, c, d, col, col, col, away);
         continue;
       }
       const [na, nb, nc, nd] = [outs[i][k], outs[i][k1], outs[i + 1][k1], outs[i + 1][k]].map((o) => face.clone().lerp(o, soft).normalize());
-      const [ca, cb, cc, cd] = [na, nb, nc, nd].map((o) => tone(o, k));
+      const [ca, cb, cc, cd] = [na, nb, nc, nd].map((o) => marked(k, tone(o, k)));
       m.tri(a, b, c, ca, cb, cc, away, [na, nb, nc]);
       m.tri(a, c, d, ca, cc, cd, away, [na, nc, nd]);
     }
@@ -179,8 +202,9 @@ function split(points, from, axis, k) {
  * and at the fork (`trunk`), the radius its branches end at (`tip`), how many roots flare out of its foot and how far
  * (`roots`, `flare`: the roots reach out that many times the trunk's radius; the trunk has two sides to a root), how
  * kinked its boughs are (`kink`, of their length), how far its trunk twists (`twist`, in turns), how many sides its
- * thickest boughs have (`sides`, the thinner ones fewer), how far its light bends round its edges (`soft`) and how
- * much darker every other side is (`ridges`; see tube).
+ * thickest boughs have (`sides`, the thinner ones fewer), how far its light bends round its edges (`soft`), how
+ * much darker every other side is (`ridges`), and dashes across its bark (`marks`, cut in pieces `step` long; see
+ * tube; none if not given).
  */
 export const WOOD = { fork: 0.3, trunk: [0.05, 0.036], tip: 0.01, roots: 5, flare: 1.6, kink: 0.1, twist: 0.15, sides: 8, soft: 0.35, ridges: 0.1 };
 
@@ -225,7 +249,7 @@ export function wood(m, rand, tips, bark, form = WOOD) {
   const all = tips.length;
   const thick = (n) => Math.max(tip, neck * (n / all) ** 0.6);
   const fork = new THREE.Vector3((rand() - 0.5) * 0.06, f.fork, (rand() - 0.5) * 0.06);
-  const draw = (line) => tube(m, line.path, line.radii, bark, { sides: line.sides, twist: line.twist ?? 0, shape: line.shape, soft, ridges });
+  const draw = (line) => tube(m, line.path, line.radii, bark, { sides: line.sides, twist: line.twist ?? 0, shape: line.shape, soft, ridges, step: f.step, marks: f.marks });
   // A bough's line carried on from its end to `end`, narrowing to r1 on the way.
   const extend = (line, end, r1) => {
     const from = line.path[line.path.length - 1];

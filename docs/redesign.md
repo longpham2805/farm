@@ -344,6 +344,20 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     the grass under it. The pinks glow
     a little in their own colours (`glowing` in `parts.js`), or the warm sun turns them salmon and grey. A first try,
     a big core with small clumps stuck over it, looked like a blob with warts, on a plain post of a trunk.
+  - **Birch** (`plants/birch.js`, `?set=birch`), as the reference draws two together by the river at the front left
+    and one by the fields on the right, made as a low-poly tree the user found: 2.4 to 2.5 tall, a straight, slender
+    white trunk (grey-white in its shade, not grey) on short roots, its bark dashed across with thin black marks, more
+    of them at its foot (`marks` in `tube`, the tube cut in short pieces, `step`, so a mark is a dash and not a band;
+    thicker marks looked like a zebra's). It forks three tenths of the way up into limbs that fork again and again out
+    to thirty-odd twigs ending over the outer part of an egg-shaped crown, none underneath, so the boughs show all
+    through it. On each twig's end eight to eleven leaves, off the twig round its end and spread out about the way out
+    of the crown, their faces turned up to the light: each a pointed oval, widest below its middle, folded down its
+    middle and arched so its tip droops, so one half takes the light; both faces drawn. A fresh green, not yellow,
+    its shade soft (a little glow). About 8,700 triangles a tree. Tried first, and the user did not like them: a
+    crown of lobes (as the blossom tree's) of bare clumps in lime, too yellow and too contrasty; the clumps covered in
+    small leaves sticking out every way (a spiky bush), then in leaves lying down them as scales (too thick, and the
+    leaves' shape not pretty); twenty-odd twigs of six to nine leaves each from one point (a sapling, its leaves in
+    stars).
 - Shadows on the painting: the painting is unlit, so a plane just over it draws only the shadows of the 3D things
   (`shadowCatcher` in `backdrop.js`, also in `dev/buildings.html`, `SHADOW_GROUND` wide). Only things inside the
   sun's shadow box cast them (`SHADOW_BOX` in `countryside.js`): it was a square 10 units round the middle, which cut
@@ -371,8 +385,9 @@ In this order:
 2. **3D trees that sway** gently (wind in the vertex shader; `wind` in `buildings/fields.js` sways the wheat) in the
    olive areas and round the farm; bushes, flowers (the sunflowers along the fields' front right side among them),
    rocks and reeds. The trees are designed one kind at a time first (above), then placed all together. Done: the
-   pine, the round tree, the fruit tree, and the wood they all grow on, redone. The pink blossom tree by the
-   farmhouse is modelled, waiting on the user's review. Next: the birch.
+   pine, the round tree, the fruit tree, the wood they all grow on, redone, and the pink blossom tree by the
+   farmhouse, and the birch. Next: the slim upright trees by the river on the
+   right, if they are a kind of their own, then the bushes, flowers, rocks and reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
