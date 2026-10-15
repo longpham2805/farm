@@ -377,6 +377,15 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     its face out of the lobe and its tip down its slope, pale on top, a deep green further down. About 1,700
     triangles a bush. Tried first: the round tree's clumps piled up, and then more and smaller ones over a dome (a
     heap of green boulders); long narrow leaves hanging down it (a fern); one round dome (a helmet).
+  - **Sunflower** (`plants/sunflower.js`, `?set=sunflowers`), as the reference draws them along the front right of the
+    fields over the big bridge, round their front corner and by their back fence: 1.1 to 1.65 tall, a slender green
+    stem bending at the top into the back of a big head, half a unit across, turned to face the camera and tipped up a
+    little, each a little its own way; eight broad pointed leaves up the stem (the birch's leaf made wider), the
+    biggest at its foot, drooping. The head: a domed dark brown disc with a warmer brown rim, twelve to fourteen broad
+    golden petals with blunt points, a shorter, more orange layer showing between them, a green cup behind. It glows a
+    little in its own colours, so the yellow stays clear in the warm sun. About 450 triangles a flower. Tried first:
+    many narrow pointed petals (a saw blade, orange), a deep fold down each petal (two strips to a petal), pale
+    leaves (washed out).
   - Pictures of low-poly leafy trees the user found, kept for later on the user's machine in `art/plants/found/` (not
     in git: stock previews): crowns of big separate leaves, pointed or rounded, laid over a few lobes like shingles,
     pale on top and deep under the crown, on twisted trunks forking into a few limbs that show under it; and one of
@@ -409,8 +418,9 @@ In this order:
    olive areas and round the farm; bushes, flowers (the sunflowers along the fields' front right side among them),
    rocks and reeds. The trees are designed one kind at a time first (above), then placed all together. Done: the
    pine, the round tree, the fruit tree, the wood they all grow on, redone, and the pink blossom tree by the
-   farmhouse, the birch, the slim upright trees by the river on the right, and the bush. Next: the flowers, rocks
-   and reeds.
+   farmhouse, the birch, the slim upright trees by the river on the right, the bush and the sunflower. Next: the
+   other flowers (the tomato patch by the pig, the post with a bird by the fields' back fence, the flowers along the
+   roads and the river), rocks and reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
