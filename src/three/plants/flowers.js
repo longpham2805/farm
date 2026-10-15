@@ -3,7 +3,8 @@
 // One model for them all; the kinds (FLOWERS) differ in their heads and colours: the white daisies by the river at the
 // front left, big heads of six broad rounded petals, cupped up a little, round an orange heart; and the pinks along the
 // ring road, which stand alone in a row (flowerRow), each on its own tall stem, a round head of three rings of cupped
-// petals, pink, magenta, purple or white flushed pink.
+// petals, pink, magenta, purple or white flushed pink; and the yellow clumps along the roads, round heads of many short
+// petals round a dark brown heart, like black-eyed susans, a few golden orange or dark red among them.
 import * as THREE from 'three';
 import { seeded } from '../../util.js';
 import { TAU, SOFT_MATERIAL, mesher, palette, tube, glowing } from './parts.js';
@@ -20,8 +21,9 @@ const FACING = new THREE.Vector3(1, 2.2, 1).normalize();
  * `rings` more inside them, each [how many, how long of the outer ones, how far they cup up], deeper in colour; how
  * many heads ([least, most]) and how big (their radius, of the clump's height); how much it glows in its own colours,
  * so the white stays white in the warm sun (see glowing). A kind that stands in a row (flowerRow) gives its sizes in
- * world units: the heads' radius, the stems' radius, its leaves' length, how many plants to a unit of the row, and
- * `mix`, the petals' colours ([tip, foot, heart]) each plant takes one of.
+ * world units: the heads' radius, the stems' radius, its leaves' length, how many plants to a unit of the row.
+ * `mix`: the colours ([petals' tip, petals' foot, heart, heart's top, the foot's colour if not given]) each head takes
+ * one of, in place of those in `colors`.
  */
 export const FLOWERS = {
   daisy: {
@@ -33,7 +35,20 @@ export const FLOWERS = {
     mix: [['#ff8cc0', '#d42c78', '#8a1446'], ['#f05aa8', '#b0186a', '#6a0e3c'], ['#c46ae0', '#7e2aa8', '#4a1466'], ['#ffe8f2', '#f07aae', '#c43a78']],
     petals: 7, petalWide: 0.95, cup: 0.8, rings: [[6, 0.72, 1.1], [5, 0.48, 1.4]], head: 0.05, stem: 0.008, leaf: 0.09, perUnit: 5, glow: 0.3,
   },
+  yellow: {
+    colors: { petal: '#f6d000', petalFoot: '#f0b400', heart: '#3e220c', heartTop: '#6a4016', shade: '#1a4a10', dark: '#2a6618', mid: '#4a9228', light: '#86c246' },
+    mix: [
+      ...Array(4).fill(['#f6d000', '#f0b400', '#3e220c', '#6a4016']),
+      ['#fae020', '#f2c400', '#4a2a0e', '#7a4a1a'],
+      ['#f4a800', '#e07000', '#4a220a', '#7a3a12'],
+      ['#d2401a', '#801a0c', '#2e1408', '#5a2a10'],
+    ],
+    petals: 9, petalWide: 0.6, cup: 0.35, rings: [[8, 0.72, 0.6]], heads: [7, 9], head: 0.16, glow: 0.4,
+  },
 };
+
+/** `c` with the petals' and heart's colours from an entry of a kind's `mix`. */
+const mixed = (c, [tip, deep, heart, top]) => ({ ...c, petal: new THREE.Color(tip), petalFoot: new THREE.Color(deep), heart: new THREE.Color(heart), heartTop: new THREE.Color(top ?? deep) });
 
 // A bud: a head of five petals cupped up so far they close over it.
 const BUD = { petals: 5, petalWide: 1, cup: 2.4 };
@@ -184,7 +199,7 @@ export function flowers(seed = 1, height = 0.6, kind = 'daisy') {
       const at = foot.clone().lerp(end, t ** 1.6).setY(end.y * t ** 0.85);
       leaf(m, at, along, face, FORM.leaf * (0.6 + rand() * 0.25), tone(0.45 + 0.4 * face.y + (rand() - 0.5) * 0.2), FORM.wide);
     }
-    head(hm, rand, C, F, R, k, c);
+    head(hm, rand, C, F, R, k, k.mix ? mixed(c, k.mix[Math.floor(rand() * k.mix.length)]) : c);
   }
   const group = build(m, hm, height, k.glow);
   group.userData.height = height;
@@ -211,8 +226,7 @@ export function flowerRow(seed = 1, length = 2, height = 0.5, kind = 'pink') {
     const foot = new THREE.Vector3(x, 0, (rand() - 0.5) * 0.14);
     const h = height * (0.7 + rand() * 0.45);
     const R = k.head * (0.85 + rand() * 0.3);
-    const [tip, deep, heart] = k.mix[Math.floor(rand() * k.mix.length)];
-    const cc = { ...c, petal: new THREE.Color(tip), petalFoot: new THREE.Color(deep), heart: new THREE.Color(heart), heartTop: new THREE.Color(deep) };
+    const cc = mixed(c, k.mix[Math.floor(rand() * k.mix.length)]);
     const C = foot.clone().add(new THREE.Vector3((rand() - 0.5) * 0.12, 0, (rand() - 0.5) * 0.12)).setY(h - R * 0.4);
     const F = FACING.clone().add(new THREE.Vector3(rand() - 0.5, rand() - 0.5, rand() - 0.5).multiplyScalar(0.5)).normalize();
     const end = C.clone().addScaledVector(F, -R * 0.2);

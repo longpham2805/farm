@@ -417,9 +417,8 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     core (a `clump`) so the gaps show deep green; over it heads on slender stems from its foot, each stem with two
     leaves up it so the heads sit among leaves, spread over a low dome (the middle ones highest), turned up to the sky
     and a little to the camera. The heads are a mesh of their own that glows (in the warm sun the whites turned
-    cream); the leaves glow a little. Seen in the reference (not built yet): yellow five-petalled flowers on low
-    clumps, purple ones like pansies, an orange spike by the well, and mixed beds of small flowers in front of the
-    well and along the road by the farmhouse.
+    cream); the leaves glow a little. Seen in the reference (not built yet): purple flowers like pansies, an orange
+    spike by the well, and mixed beds of small flowers in front of the well and along the road by the farmhouse.
     - **Daisies** (`daisy`, `?set=daisies`), the white clump by the river at the front left: 0.7 tall and about 0.8
       across, eight to ten heads of six broad rounded petals, cupped up a little, round a domed orange heart; about
       2,000 triangles a clump. Tried first: a rosette of narrow leaves and long bare stems (daffodils); the heads
@@ -431,6 +430,11 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
       the inner ones shorter and deeper in colour, like a small rose or peony, each plant pink, magenta, purple or
       white flushed pink (`mix`). About 5,500 triangles a row three units long; turn it along the road when placing
       it. The reference's heads are rounder, like pompoms; these open more, like cups. Tried first at twice the size.
+    - **Yellow** (`yellow`, `?set=yellow`), the low clumps in front of the well on the left and at the left edge: 0.5
+      tall, seven to nine heads like black-eyed susans, nine broad petals and a ring of eight shorter ones inside
+      round a domed dark brown heart; each head takes its colours from the kind's `mix` (as the pinks do), mostly
+      lemon yellow, now and then golden orange or dark red. About 3,100 triangles a clump. Tried first: many small
+      heads of narrow petals (stars, peach in the warm sun); orange at the petals' foot (the heads read orange).
   - Pictures of low-poly leafy trees the user found, kept for later on the user's machine in `art/plants/found/` (not
     in git: stock previews): crowns of big separate leaves, pointed or rounded, laid over a few lobes like shingles,
     pale on top and deep under the crown, on twisted trunks forking into a few limbs that show under it; and one of
@@ -464,9 +468,9 @@ In this order:
    rocks and reeds. The trees are designed one kind at a time first (above), then placed all together. Done: the
    pine, the round tree, the fruit tree, the wood they all grow on, redone, and the pink blossom tree by the
    farmhouse, the birch, the slim upright trees by the river on the right, the bush, the sunflower, the
-   tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies and the
-   row of pinks along the ring road. Next: the other flowers along the roads and the river on the same model
-   (yellow, purple, orange, and the mixed beds), then rocks and reeds.
+   tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
+   row of pinks along the ring road and the yellow clumps. Next: the other flowers along the roads and the river on
+   the same model (purple, orange, and the mixed beds), then rocks and reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
