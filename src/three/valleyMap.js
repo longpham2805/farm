@@ -313,6 +313,22 @@ export const TREES = [
 ];
 
 /**
+ * The flowers and crops the reference design draws round the farm, each where it stands there (as TREES), moved to fit
+ * the painting: [kind, u, b, height, seed] (kinds in plants/valley.js).
+ */
+export const FLOWERS = [
+  // Sunflowers round the fields over the big bridge, as far from the painting's fence as the reference draws them from
+  // its own (the reference's fields lie a little off the painted pad): a cluster outside the front right side, round
+  // the front corner, two more along that side, two behind the back fence by the right corner and a small one behind
+  // it by the slim trees.
+  ['sunflower', 12.14, -10.83, 1.05, 3], ['sunflower', 12.73, -10.68, 1.4, 4], ['sunflower', 13.29, -10.77, 1.65, 1],
+  ['sunflower', 13.93, -10.0, 1.7, 5], ['sunflower', 13.75, -10.73, 1.45, 6], ['sunflower', 14.3, -10.45, 1.5, 7],
+  ['sunflower', 14.4, -8.82, 1.3, 8], ['sunflower', 15.1, -7.9, 1.2, 10],
+  ['sunflower', 14.63, -5.37, 1.1, 2], ['sunflower', 15.34, -6.07, 1.0, 9],
+  ['sunflower', 11.15, -3.78, 0.8, 11],
+];
+
+/**
  * The woods of 3D trees (plants/woods.js), where the painting left grass the reference fills with trees. Each is an
  * area, how far apart its trees stand, how often each kind grows there and the range of their heights. `water`: how
  * far from the river its tall trees begin; nearer, they stand lower, so the river and its banks still show over them.

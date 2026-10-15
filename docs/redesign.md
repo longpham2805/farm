@@ -572,6 +572,17 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   first outline left bare grass the user saw as a hole. Behind the farm the reference draws mostly pines with round
   trees among them; a first mix of pines and big lime round trees alone looked heavy and samey, so firs, slim trees and
   birches came in and the lime ones went down to a tenth. About 550,000 triangles in all.
+  Then the flowers, crops and props, one at a time (`FLOWERS` in `valleyMap.js`, the same `[kind, u, b, height,
+  seed]` as `TREES`, built by `placePlants` too). First the sunflowers round the fields over the big bridge, eleven,
+  0.8 to 1.7 tall: the reference's fields lie a little off the painted pad, so each stands as far from the fence as
+  the reference draws it from its own (fields' frame, not its pixel turned into the map): six in a cluster outside
+  the front right side round the front corner, two more along that side (where the reference is cut off), two
+  behind the back fence by the right corner and a small one behind it by the slim trees. The woods leave the flowers in view (`hidesFlower` in `woods.js`): a tree is left out where it stands within
+  0.7 of a flower, or in front of one, near enough across the screen for its crown and tall enough to reach over the
+  head's lower edge (two thirds of the flower's height; a world unit of height reaches √2 / 0.95 of b up the screen);
+  lower trees in front, which only hide the stems, stay, as in the reference. They are left out after the woods are
+  laid out, so every other tree stands where it did; two pines went. The reference draws bigger heads and fuller
+  leaves than the approved model; kept as it is.
 
 ### Loose ends
 
@@ -598,8 +609,8 @@ In this order:
    the sunflower, the
    tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
    row of pinks along the ring road, the yellow clumps, the purple ones, the orange and purple spikes by the well,
-   the mixed beds, the rocks by the river and the cattails. Placed, swaying: the trees round the farm and the woods.
-   Next: the flowers, crops and props, then the rocks and the cattails.
+   the mixed beds, the rocks by the river and the cattails. Placed, swaying: the trees round the farm, the woods and
+   the sunflowers round the fields. Next: the rest of the flowers, crops and props, then the rocks and the cattails.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's

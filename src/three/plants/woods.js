@@ -1,10 +1,10 @@
 // The woods of 3D trees on the painted valley (WOODS in valleyMap.js): trees scattered over each area no nearer each
 // other than its spacing, and bushes under them, clear of the roads, the river, the bridges, the buildings and their
-// yards, the fields, the meadow, the rocks still to be placed and the trees placed by hand. A few models of each kind,
-// drawn many times over (instanced), each tree turned (all but the birches and slim trees, whose leaves face the
-// camera), sized and a little lighter or darker than the next.
+// yards, the fields, the meadow, the rocks still to be placed and the trees placed by hand, and leaving the flowers in
+// view. A few models of each kind, drawn many times over (instanced), each tree turned (all but the birches and slim
+// trees, whose leaves face the camera), sized and a little lighter or darker than the next.
 import * as THREE from 'three';
-import { WOODS, TREES, RIVER, ROADS, BRIDGES, PLACES, MEADOW, ROCKS, LAND, WATERFALLS } from '../valleyMap.js';
+import { WOODS, TREES, FLOWERS, RIVER, ROADS, BRIDGES, PLACES, MEADOW, ROCKS, LAND, WATERFALLS } from '../valleyMap.js';
 import { ringDistance } from '../farm.js';
 import { seeded } from '../../util.js';
 import { pine } from './pine.js';
@@ -28,6 +28,9 @@ const MODELS = {
 };
 // How far from each building's spot the trees keep (the rest of PLACES: 0.7); `birds` fly over the hills.
 const KEEP = { farmhouse: 2.0, barn: 2.0, henYard: 1.7, silo: 1.0, windmill: 1.4, stoneShed: 1.0, cart: 0.9, haystack: 0.9, well: 1.0, birds: 0 };
+// How far up the map's b a world unit of height reaches on the screen, as the camera looks down ((1, 0.95, 1) in
+// FarmScene).
+const UP = Math.SQRT2 / 0.95;
 
 /** Whether (u, b) is inside the polygon. */
 function inPoly(poly, u, b) {
@@ -84,6 +87,15 @@ function clear(u, b, at, fields = 0.8) {
 }
 
 /**
+ * Whether a tree `height` tall at (u, b) would stand on one of the flowers (FLOWERS) or hide its head: in front of it
+ * (lower down the map), near enough across the screen for its crown to cover it, and tall enough to reach up over the
+ * head's lower edge, about two thirds of the flower's height.
+ */
+function hidesFlower(u, b, height) {
+  return FLOWERS.some(([, fu, fb, fh]) => Math.hypot(u - fu, b - fb) < 0.7 || (b < fb && Math.abs(u - fu) < 0.3 * height + 0.15 && b + UP * height > fb + UP * 0.65 * fh));
+}
+
+/**
  * Where the woods' trees stand: [{ kind, model, u, b, height, turn, shade }], the same every time. at(u, b) is the
  * world point.
  */
@@ -129,7 +141,8 @@ export function woodsSpots(at) {
     }
     spots.push(...shrubs);
   }
-  return spots;
+  // Left out only now, so the trees elsewhere stand where they did before the flowers came.
+  return spots.filter(({ u, b, height }) => !hidesFlower(u, b, height));
 }
 
 /** The woods' trees, each kind's models drawn once for all their trees. Returns a group. */
