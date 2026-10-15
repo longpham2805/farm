@@ -614,6 +614,11 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   among the trees (`inWoods`) only keeps them off its own spot, and the woods lose 7. The orange and red ones by the
   road's end, which the reference shows in the open, still clear the trees in front. The reference's orange clumps
   there are round like marigolds and its red ones like tulips; the game has neither kind, so they are orange spikes.
+  Then across the river at the front, where the reference draws few: a little mixed clump at the water's edge on the
+  left (out of the painted water onto the bank), on the open bank below the big bridge a mixed bed with a tall orange
+  spike behind it (the reference's is a pink-red torch), daisies and a small white clump, and two clumps deep in the
+  woods beyond (`inWoods`); the woods lose 5 trees. The reference's lily pads on the river there are left for the
+  cattails.
 
 ### Loose ends
 
@@ -641,7 +646,7 @@ In this order:
    tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
    row of pinks along the ring road, the yellow clumps, the purple ones, the orange and purple spikes by the well,
    the mixed beds, the rocks by the river and the cattails. Placed, swaying: the trees round the farm, the woods and
-   the sunflowers round the fields and the tomatoes by the pig and the flowers along the front bank, round the well and on the left edge. Next: the rest of the flowers, crops and props, then the rocks and the cattails.
+   the sunflowers round the fields and the tomatoes by the pig and the flowers along the front bank, round the well, on the left edge and across the river. Next: the rest of the flowers, crops and props, then the rocks and the cattails.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's

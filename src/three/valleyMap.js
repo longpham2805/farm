@@ -370,6 +370,14 @@ export const FLOWERS = [
   ['orange', -5.42, 9.7, 0.5, 8, { inWoods: true }], ['bed', -4.84, 7.82, 0.35, 6, { path: [[-0.22, 0], [0.22, 0]], inWoods: true }],
   ['bed', -7.05, 2.17, 0.3, 2, { path: [[-0.61, 0.29], [0.61, -0.29]] }],
   ['yellow', -14.11, -5.85, 0.5, 2],
+  // Across the river at the front: a little mixed clump at the water's edge on the left (moved up out of the painted
+  // water onto the bank), and on the open bank further right, below the big bridge, a mixed bed with a tall orange
+  // spike behind it, daisies and a small white clump; deep in the woods beyond, two clumps of pink and mixed flowers.
+  ['bed', -7.25, -10.95, 0.3, 7, { path: [[-0.15, 0], [0.15, 0]] }],
+  ['bed', 2.98, -10.0, 0.4, 8, { path: [[-0.35, 0], [0.35, 0]] }], ['orange', 2.98, -9.43, 0.85, 9],
+  ['daisy', 3.25, -11.0, 0.6, 6], ['daisy', 3.93, -9.88, 0.35, 7],
+  ['bed', -2.51, -13.52, 0.35, 9, { path: [[-0.25, 0], [0.25, 0]], inWoods: true }],
+  ['bed', 5.98, -12.55, 0.45, 10, { path: [[-0.3, 0], [0.3, 0]], inWoods: true }],
 ];
 
 /**
