@@ -386,6 +386,15 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     little in its own colours, so the yellow stays clear in the warm sun. About 450 triangles a flower. Tried first:
     many narrow pointed petals (a saw blade, orange), a deep fold down each petal (two strips to a petal), pale
     leaves (washed out).
+  - **Tomatoes** (`plants/tomato.js`, `?set=tomatoes`), the row the reference draws on the grass behind the plots,
+    beside the pig, along the ring road: about two units long, a low dense hedge of leaves with a few tomatoes
+    showing. One plant (`tomato`, 0.65 tall, about 1,300 triangles): a thin green stem, most tied to a wooden stake
+    that the leaves all but hide, eight to ten bunches of pointed leaves up it on short stalks, spread out and
+    drooping, a deep green; ones to threes of round tomatoes under a few bunches, towards their outer edge where they
+    show, most ripe red, some orange, a few green; a few small yellow flowers. `tomatoRow` sets eight of them close
+    along a line, a little out of line as planted by hand (about 11,400 triangles a row); placing them, turn the row
+    along the road. On `dev/plants.html` a place can make its own model (the row, here). Tried first: thin plants
+    with few leaves (all stakes), pale leaves, many tomatoes (the row all red).
   - Pictures of low-poly leafy trees the user found, kept for later on the user's machine in `art/plants/found/` (not
     in git: stock previews): crowns of big separate leaves, pointed or rounded, laid over a few lobes like shingles,
     pale on top and deep under the crown, on twisted trunks forking into a few limbs that show under it; and one of
@@ -418,9 +427,9 @@ In this order:
    olive areas and round the farm; bushes, flowers (the sunflowers along the fields' front right side among them),
    rocks and reeds. The trees are designed one kind at a time first (above), then placed all together. Done: the
    pine, the round tree, the fruit tree, the wood they all grow on, redone, and the pink blossom tree by the
-   farmhouse, the birch, the slim upright trees by the river on the right, the bush and the sunflower. Next: the
-   other flowers (the tomato patch by the pig, the post with a bird by the fields' back fence, the flowers along the
-   roads and the river), rocks and reeds.
+   farmhouse, the birch, the slim upright trees by the river on the right, the bush, the sunflower and the
+   tomatoes by the pig. Next: the post with a bird by the fields' back fence, the flowers along the roads and the
+   river, rocks and reeds.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's

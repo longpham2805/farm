@@ -17,7 +17,7 @@
 <!-- The plants of step 2 of the redesign, one kind at a time (?set=pines): for each place the reference design draws
      one, the reference cut round it beside the model at the same scale, in the game's light and from its camera (the
      slider lays the reference over the model); then a few of the model close up, from other seeds
-     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=bushes the bushes, ?set=sunflowers the sunflowers. -->
+     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants. -->
 <div id="refs"></div>
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <main id="seeds"></main>
@@ -33,6 +33,7 @@ import { birch } from '../src/three/plants/birch.js';
 import { slimTree } from '../src/three/plants/slimTree.js';
 import { bush } from '../src/three/plants/bush.js';
 import { sunflower } from '../src/three/plants/sunflower.js';
+import { tomato, tomatoRow } from '../src/three/plants/tomato.js';
 
 // The reference design (art/backdrop/2-style-reference.png) and how many of its pixels a world unit takes across the
 // screen and up it (REF in dev/buildings.html).
@@ -108,6 +109,27 @@ const SETS = {
       { name: 'Hướng dương cạnh hàng rào sau ruộng (gốc bị che)', box: [1588, 625, 1636, 700], foot: [1610, 694], height: 1.1, seed: 2 },
     ],
   },
+  tomatoes: {
+    make: (seed, h) => tomato(seed, h),
+    h: 0.65,
+    span: 1.6,
+    low: 0.3,
+    refs: [
+      {
+        name: 'Luống cà chua cạnh con heo, sau các ô đất',
+        box: [760, 300, 890, 390],
+        foot: [828, 366],
+        height: 0.65,
+        seed: 1,
+        // A row of them two units long, running along the ring road there.
+        make: (seed, h) => {
+          const row = tomatoRow(seed, 2, h);
+          row.rotation.y = Math.atan2(0.45, 0.89);
+          return row;
+        },
+      },
+    ],
+  },
 };
 const params = new URLSearchParams(location.search);
 const set = SETS[params.get('set') || 'pines'];
@@ -142,7 +164,8 @@ const drawRef = (canvas, [x0, y0, x1, y1], w, h) => {
 // Each comparison takes a row: the reference and the model side by side, half the page wide each, or as wide as fits
 // the window's height.
 const half = Math.floor((window.innerWidth - 24) / 2);
-for (const { name, box, foot, height, seed } of set.refs) {
+for (const place of set.refs) {
+  const { name, box, foot, height, seed } = place;
   const [x0, y0, x1, y1] = box;
   const zoom = Math.min(half / (x1 - x0), (window.innerHeight * 0.85) / (y1 - y0));
   const w = Math.round((x1 - x0) * zoom);
@@ -158,7 +181,7 @@ for (const { name, box, foot, height, seed } of set.refs) {
   over.className = 'over';
   drawRef(over, box, w, h);
   b.append(over);
-  views.push({ f: b, tree: set.make(seed, height), left: -(foot[0] - x0) / REF.scale, right: (x1 - foot[0]) / REF.scale, top: (foot[1] - y0) / REF.scaleY, bottom: -(y1 - foot[1]) / REF.scaleY });
+  views.push({ f: b, tree: (place.make ?? set.make)(seed, height), left: -(foot[0] - x0) / REF.scale, right: (x1 - foot[0]) / REF.scale, top: (foot[1] - y0) / REF.scaleY, bottom: -(y1 - foot[1]) / REF.scaleY });
 }
 document.getElementById('mix').addEventListener('input', (e) => document.querySelectorAll('.over').forEach((c) => (c.style.opacity = e.target.value)));
 for (const seed of seeds) {
