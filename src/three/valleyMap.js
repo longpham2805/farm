@@ -316,8 +316,9 @@ export const TREES = [
  * The flowers and crops the reference design draws round the farm, and the small plants among them, each where it
  * stands there (as TREES), moved to fit the painting: [kind, u, b, height, seed, more] (kinds in plants/valley.js),
  * `more` giving the way a row runs (`turn`, its rotation.y in the world, as dev/plants.html turns it), how long it is
- * (`length`) and a bed's `path` ([x, z] round its spot, world units). Unlike TREES, the woods leave them out after
- * they are laid out, so adding one never moves the woods' other trees.
+ * (`length`), a bed's `path` ([x, z] round its spot, world units) and whether it grows among the woods' trees
+ * (`inWoods`: they then stand close round it, even in front of it). Unlike TREES, the woods leave them out after they
+ * are laid out, so adding one never moves the woods' other trees.
  */
 export const FLOWERS = [
   // Sunflowers round the fields over the big bridge, as far from the painting's fence as the reference draws them from
@@ -356,6 +357,19 @@ export const FLOWERS = [
   // and smaller ones beside it, and yellow clumps among the trees.
   ['daisy', -7.78, -7.97, 0.7, 1], ['daisy', -8.75, -7.97, 0.4, 4], ['yellow', -10.51, -8.64, 0.3, 11],
   ['yellow', -12.47, -8.13, 0.6, 12],
+  // On the left: in the clearings of the woods left of the farmhouse and behind it, clumps of orange, red, white and
+  // pink flowers and small mixed beds, the trees round them left standing (`inWoods`), as in the reference, but for
+  // the orange and red ones at the edge of the woods by the road's end, which it shows in the open; the road's end by the farmhouse's gate has red ones beside it (moved off the
+  // painted road, which ends further up than the reference's). The bed along the fence below the farmhouse, moved back
+  // off the road onto the grass between it and the fence; and a yellow clump at the left edge, past the meadow.
+  ['bed', -12.93, 6.73, 0.45, 3, { path: [[-0.25, 0], [0.25, 0]], inWoods: true }],
+  ['daisy', -10.75, 5.58, 0.5, 5, { inWoods: true }], ['orange', -11.6, 4.79, 0.55, 6], ['orange', -10.6, 4.3, 0.5, 7],
+  ['yellow', -10.11, 7.79, 0.3, 13, { inWoods: true }],
+  ['bed', -9.2, 11.49, 0.35, 4, { path: [[-0.2, 0], [0.2, 0]], inWoods: true }],
+  ['bed', -9.53, 10.34, 0.3, 5, { path: [[-0.2, 0], [0.2, 0]], inWoods: true }],
+  ['orange', -5.42, 9.7, 0.5, 8, { inWoods: true }], ['bed', -4.84, 7.82, 0.35, 6, { path: [[-0.22, 0], [0.22, 0]], inWoods: true }],
+  ['bed', -7.05, 2.17, 0.3, 2, { path: [[-0.61, 0.29], [0.61, -0.29]] }],
+  ['yellow', -14.11, -5.85, 0.5, 2],
 ];
 
 /**

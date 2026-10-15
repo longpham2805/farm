@@ -89,10 +89,11 @@ function clear(u, b, at, fields = 0.8) {
 /**
  * Whether a tree `height` tall at (u, b) would stand on one of the flowers (FLOWERS) or hide its head: in front of it
  * (lower down the map), near enough across the screen for its crown to cover it, and tall enough to reach up over the
- * head's lower edge, about two thirds of the flower's height.
+ * head's lower edge, about two thirds of the flower's height. A flower growing among the trees (`inWoods`) only keeps
+ * them off its spot, so the woods stay thick round it.
  */
 function hidesFlower(u, b, height) {
-  return FLOWERS.some(([, fu, fb, fh]) => Math.hypot(u - fu, b - fb) < 0.7 || (b < fb && Math.abs(u - fu) < 0.3 * height + 0.15 && b + UP * height > fb + UP * 0.65 * fh));
+  return FLOWERS.some(([, fu, fb, fh, , more]) => Math.hypot(u - fu, b - fb) < 0.7 || (!more?.inWoods && b < fb && Math.abs(u - fu) < 0.3 * height + 0.15 && b + UP * height > fb + UP * 0.65 * fh));
 }
 
 /**
