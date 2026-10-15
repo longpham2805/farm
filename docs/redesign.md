@@ -283,8 +283,14 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   and tone, wide gaps between them, their rounded ends out past the legs, on a bearer at each end and four round legs
   splayed out a little, in light warm wood; the herd keeps clear of it (a notch in `PLACES.meadow.area`). Tried first:
   a back of two rails and arms (a park bench, the user said the reference's has no back), then planks broad and
-  close together, and planks rounded over along their whole length (skis). The reference's lamp in the meadow is not
-  built.
+  close together, and planks rounded over along their whole length (skis). Behind the bench, near the right fence, a
+  lamp post (`buildings/lamp.js`, `PLACES.meadowLamp`), as the reference draws it there and beside the well: a dark
+  iron post on a flared foot, a collar low down, a pointed finial, an arm across its top (across the screen) curving
+  down at each end, and from each end a round lantern of deep orange glass between four bars under a pointed cap,
+  hanging close to the post (the glass in the bridges' glow batch). Over each lantern a soft glow, two sprites added
+  to what is behind them (`glowTexture`): a wide orange halo and a small yellow core, set a little towards the camera
+  so the glass does not hide them. Tried first: the big bridge's lamp post (a T of an arm with small square lanterns,
+  pale glass), and a core near white (an electric bulb). The bridges' and the farm's lamps have no glow yet.
 - **The fields over the big bridge** (`buildings/fields.js`, in `placeBuildings`), on the painting's pad of dirt,
   which was measured again on the painting (`PLACES.fields`: its middle had been 0.8 units off), square to the plots:
   four raised beds of dark ridged soil, two by two, with paths of the pad between them, as the reference draws them:

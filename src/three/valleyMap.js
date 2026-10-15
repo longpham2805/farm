@@ -203,6 +203,8 @@ export const PLACES = {
   hayRack: { at: [-9.58, 1.03], turn: -0.48 },
   // A bench in its right corner, against the right fence, under the lamp, its back to the back right (buildings/bench.js).
   meadowBench: { at: [-8.09, -0.85], turn: -0.65 },
+  // A lamp post of two lanterns behind the bench, its arm across the screen (buildings/lamp.js).
+  meadowLamp: { at: [-8.04, -0.38] },
 };
 
 /** The meadow's fence, corner to corner, on the painted meadow's edge (it shows as a faint line). */

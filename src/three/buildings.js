@@ -18,6 +18,7 @@ import { henYard } from './buildings/coop.js';
 import { well } from './buildings/well.js';
 import { cart, hayBale, haystack, hayRack } from './buildings/hay.js';
 import { bridge as plankBridge } from './buildings/bridge.js';
+import { lamp } from './buildings/lamp.js';
 import { woodFence } from './buildings/fence.js';
 import { trough as waterTrough } from './buildings/trough.js';
 import { bench } from './buildings/bench.js';
@@ -475,6 +476,8 @@ export function placeBuildings({ at }) {
     plankBridge(batch, glow, { span: dir.length(), width, arch, lamp: name === 'main', lanterns: name === 'small' });
     batch.pop();
   }
+  // The meadow's lamp behind its bench, and the glows over its lanterns.
+  const lampGlows = place(PLACES.meadowLamp, () => lamp(batch, glow));
   // Spray off a line of the painting's pixels along a fall, heading `outward`: droplets, and a mist over them.
   const fallSpray = (pixels, outward, drops, mist) => {
     const line = pixels.map(([x, y]) => paintedPoint(x, y));
@@ -501,7 +504,7 @@ export function placeBuildings({ at }) {
       { count: 8, up: [0.1, 0.25], out: [0.03, 0.12], spread: 0.1, gravity: 0, life: [1.8, 2.8], size: [0.25, 0.55], strength: 0.08, seed: 17 }),
   ];
   const group = new THREE.Group();
-  group.add(...falls.map((f) => f.group), batch.build(), buildGlow(glow), smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, water, crops.group, jetty.group, buffaloes.group, meadow.group, pigs.group, lawnHens.group, ducks.group, birds.group);
+  group.add(...falls.map((f) => f.group), batch.build(), buildGlow(glow), lampGlows, smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, water, crops.group, jetty.group, buffaloes.group, meadow.group, pigs.group, lawnHens.group, ducks.group, birds.group);
   const update = (t, dt) => {
     smoke.update(t);
     sails.children[0].rotation.z = -t * 0.9;
