@@ -626,6 +626,14 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   painting's bank, and a pink clump by the ring road's fence, which fell on the painted road, was left out. Across
   the small bridge, two mixed beds above the far bank's road. The reference also draws a bench, a fence along the
   road, a table and a lamp on that grass, which no list has yet.
+  Last, behind the farm: yellow and purple clumps behind the cart and a mixed bed left of the barn at the woods' edge,
+  pink spikes at the barn's left, a little bed between the cart and the ring road, a tall orange spike on the grass
+  between the barn's and the silo's pads (the reference's is a tall dark-leaved plant), a little bed at the silo's
+  foot, a yellow clump in the woods behind the silo and an orange and a yellow one by the riverside road's top. The
+  reference's yellow at the bale's foot and orange at the silo's lie on the painted ring road, and its pink beds by
+  the fence on the right are inside the ring, the farm's own; they are left out. The woods lose 3 trees. A wooden box
+  with something orange in it behind the windmill (a planter or a fire) is not made. That is every flower outside the
+  ring road.
 
 ### Loose ends
 
@@ -653,7 +661,7 @@ In this order:
    tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
    row of pinks along the ring road, the yellow clumps, the purple ones, the orange and purple spikes by the well,
    the mixed beds, the rocks by the river and the cattails. Placed, swaying: the trees round the farm, the woods and
-   the sunflowers round the fields and the tomatoes by the pig and the flowers along the front bank, round the well, on the left edge, across the river and on the right. Next: the rest of the flowers, crops and props, then the rocks and the cattails.
+   the sunflowers round the fields and the tomatoes by the pig and the flowers along the front bank, round the well, on the left edge, across the river, on the right and behind the farm. Next: the rest of the flowers, crops and props, then the rocks and the cattails.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's

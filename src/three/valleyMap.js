@@ -387,6 +387,16 @@ export const FLOWERS = [
   ['purple', 9.53, 1.43, 0.35, 2], ['purple', 9.62, 0.15, 0.35, 1], ['bed', 9.2, -0.15, 0.3, 12, { path: [[-0.18, 0], [0.18, 0]] }],
   ['yellow', 8.2, -0.94, 0.5, 14], ['orange', 5.9, -2.67, 0.4, 10],
   ['bed', 12.65, 10.62, 0.35, 13, { path: [[-0.35, 0], [0.35, 0]] }], ['bed', 13.75, 10.05, 0.3, 14, { path: [[-0.55, 0], [0.55, 0]] }],
+  // Behind the farm: yellow and purple clumps behind the cart and a mixed bed left of the barn, at the woods' edge;
+  // pink spikes at the barn's left and a little bed between the cart and the ring road; a tall orange spike between
+  // the barn and the silo, on the grass between their pads, and a little bed at the silo's foot; a yellow clump in the
+  // woods behind the silo, and by the riverside road's top, an orange one and a yellow one among the trees. The
+  // reference's yellow at the bale's foot and orange at the silo's lie on the painted ring road, so they are left out.
+  ['yellow', -2.15, 7.8, 0.45, 15], ['purple', -1.78, 8.25, 0.3, 3], ['bed', -0.75, 7.97, 0.35, 15, { path: [[-0.25, 0], [0.25, 0]] }],
+  ['lupin', -0.8, 6.19, 0.5, 6], ['bed', -1.75, 6.12, 0.3, 16, { path: [[-0.2, 0], [0.2, 0]] }],
+  ['orange', 2.6, 7.3, 0.9, 11], ['bed', 3.75, 5.75, 0.3, 17, { path: [[-0.2, 0], [0.2, 0]] }],
+  ['yellow', 2.89, 10.07, 0.45, 16, { inWoods: true }], ['orange', 6.67, 10.95, 0.35, 12],
+  ['yellow', 6.44, 9.7, 0.4, 17, { inWoods: true }],
 ];
 
 /**
