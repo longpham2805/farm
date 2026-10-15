@@ -4,7 +4,7 @@
 // its edges notched as a leaf's, so one half takes the light, yellow-green, and the other is a deep green.
 import * as THREE from 'three';
 import { seeded } from '../../util.js';
-import { TAU, SOFT_MATERIAL, mesher, palette, trunk } from './parts.js';
+import { TAU, SOFT_MATERIAL, mesher, palette, trunk, OUT } from './parts.js';
 
 /** Leaves: in the shade, dark, mid, in the light; the bark. */
 export const SLIM = { shade: '#0f3306', dark: '#1f5c0c', mid: '#4a8c1a', light: '#9cc83a', bark: '#7a4c30', barkDark: '#36200e' };
@@ -44,19 +44,22 @@ function at(path, y) {
 /**
  * One lobe from `root`, reaching L out the way of angle a and drooping `drop` by its point: folded down its middle,
  * its edges notched, thick at its root and thinning to its point. `face(a, b, c, facing)` draws and colours a facet.
+ * `form` gives its width and fold, and optionally its own `edge` and how late it droops (`curl`, of 1.3).
  */
-function lobe(rand, root, a, L, drop, face) {
+function lobe(rand, root, a, L, drop, face, form = FORM) {
   const out = new THREE.Vector3(Math.cos(a), 0, Math.sin(a));
   const across = new THREE.Vector3(-Math.sin(a), 0, Math.cos(a));
-  const W = L * FORM.width * (0.85 + rand() * 0.3);
+  const W = L * form.width * (0.85 + rand() * 0.3);
   const thick = W * 0.45;
-  const middle = (s) => root.clone().addScaledVector(out, L * s).setY(root.y - drop * s ** 1.3);
+  const curl = form.curl ?? 1.3;
+  const edge = form.edge ?? EDGE;
+  const middle = (s) => root.clone().addScaledVector(out, L * s).setY(root.y - drop * s ** curl);
   for (const side of [1, -1]) {
-    const rim = EDGE.map(([s, w], i) => {
-      const last = i === EDGE.length - 1;
+    const rim = edge.map(([s, w], i) => {
+      const last = i === edge.length - 1;
       const ss = last ? s : s + (rand() - 0.5) * 0.03;
       const ww = last ? 0 : (w + (rand() - 0.5) * 0.08) * W;
-      return { s: ss, p: middle(ss).addScaledVector(across, side * ww).add(new THREE.Vector3(0, -ww * FORM.fold, 0)) };
+      return { s: ss, p: middle(ss).addScaledVector(across, side * ww).add(new THREE.Vector3(0, -ww * form.fold, 0)) };
     });
     const top = rim.map(({ s }) => middle(s).add(new THREE.Vector3(0, thick * (1 - s) ** 0.7, 0)));
     const under = rim.map(({ s }) => middle(s));
@@ -76,13 +79,22 @@ function lobe(rand, root, a, L, drop, face) {
 
 /** A slim upright tree `height` tall (world units), laid out by `seed`. Returns a mesh standing on its foot at the origin. */
 export function slimTree(seed = 1, height = 1.9, colors = SLIM) {
+  return tieredTree(seed, height, colors, FORM);
+}
+
+/**
+ * A tree of tiers of lobes round a trunk, grown from `form` (as FORM, the slim tree's). Optionally, a dark cone stands
+ * round the trunk inside the tiers so the gaps between lobes show deep green (`core`: its radius at its foot, of the
+ * lowest tier's reach).
+ */
+export function tieredTree(seed, height, colors, form) {
   const rand = seeded(seed);
   const c = palette(colors, (rand() - 0.5) * 0.03, 1 + (rand() - 0.5) * 0.1, ['bark', 'barkDark']);
   const m = mesher();
   const lean = new THREE.Vector3((rand() - 0.5) * 0.04, 0, (rand() - 0.5) * 0.04);
-  const line = trunk(m, rand, lean.clone().setY(FORM.tip[0] + 0.03), { dark: c.barkDark, light: c.bark }, FORM.wood);
+  const line = trunk(m, rand, lean.clone().setY(form.tip[0] + 0.03), { dark: c.barkDark, light: c.bark }, form.wood);
   // Each facet one colour, by how it faces the sky and the sun and how high it sits, give or take a little.
-  const bottom = FORM.tiers[0][0] - FORM.tiers[0][3];
+  const bottom = form.tiers[0][0] - form.tiers[0][3];
   const ramp = [c.shade, c.dark, c.mid, c.light];
   const n = new THREE.Vector3();
   const face = (p, q, r, facing) => {
@@ -96,20 +108,35 @@ export function slimTree(seed = 1, height = 1.9, colors = SLIM) {
     m.tri(p, q, r, col, col, col, () => facet);
   };
   // The tiers, each turned its own way, its lobes from the bark round the trunk.
-  const [first, last] = [FORM.tiers[0][0], FORM.tiers[FORM.tiers.length - 1][0]];
-  for (const [y0, count, reach, drop] of FORM.tiers) {
+  const [first, last] = [form.tiers[0][0], form.tiers[form.tiers.length - 1][0]];
+  for (const [y0, count, reach, drop] of form.tiers) {
     const turn = rand() * TAU;
     const low = 1 - (y0 - first) / (last - first);
     for (let i = 0; i < count; i++) {
-      if (rand() < FORM.gaps * low) continue;
+      if (rand() < form.gaps * low) continue;
       const a = turn + (i / count) * TAU + (rand() - 0.5) * 0.7;
       const y = y0 + (rand() - 0.5) * 0.03;
       const root = at(line, y).add(new THREE.Vector3(Math.cos(a), 0, Math.sin(a)).multiplyScalar(0.006));
-      lobe(rand, root, a, reach * (0.85 + rand() * 0.3), drop * (0.85 + rand() * 0.3), face);
+      lobe(rand, root, a, reach * (0.85 + rand() * 0.3), drop * (0.85 + rand() * 0.3), face, form);
+    }
+  }
+  if (form.core) {
+    // A dark cone of seven sides round the trunk, from under the lowest tier's roots to the top.
+    const foot = at(line, first - form.tiers[0][3] * 0.5);
+    const R = form.tiers[0][2] * form.core;
+    const apex = at(line, form.tip[0]);
+    const rim = Array.from({ length: 7 }, (_, i) => {
+      const a = (i / 7) * TAU + rand() * 0.4;
+      return foot.clone().add(new THREE.Vector3(Math.cos(a) * R, 0, Math.sin(a) * R));
+    });
+    for (let i = 0; i < 7; i++) {
+      const [p, q] = [rim[i], rim[(i + 1) % 7]];
+      m.tri(p, q, apex, c.shade, c.shade, c.dark, OUT);
+      m.tri(p, foot, q, c.shade, c.shade, c.shade, DOWN);
     }
   }
   // The pointed top: a narrow cone of five sides round the trunk's end.
-  const [from, to, r] = FORM.tip;
+  const [from, to, r] = form.tip;
   const foot = at(line, from);
   const apex = foot.clone().setY(to);
   const turn = rand() * TAU;

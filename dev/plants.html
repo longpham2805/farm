@@ -17,7 +17,7 @@
 <!-- The plants of step 2 of the redesign, one kind at a time (?set=pines): for each place the reference design draws
      one, the reference cut round it beside the model at the same scale, in the game's light and from its camera (the
      slider lays the reference over the model); then a few of the model close up, from other seeds
-     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence, ?set=daisies the white daisies (flowers.js), ?set=pinks the row of tall pink flowers along the ring road, ?set=yellow the yellow clumps, ?set=purple the purple ones, ?set=orange and ?set=lupins the spikes by the well, ?set=beds the mixed beds. -->
+     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=fir the full light green fir on the upper riverbank, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence, ?set=daisies the white daisies (flowers.js), ?set=pinks the row of tall pink flowers along the ring road, ?set=yellow the yellow clumps, ?set=purple the purple ones, ?set=orange and ?set=lupins the spikes by the well, ?set=beds the mixed beds. -->
 <div id="refs"></div>
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <main id="seeds"></main>
@@ -31,6 +31,7 @@ import { fruitTree, FRUIT_TREES } from '../src/three/plants/fruitTree.js';
 import { blossomTree } from '../src/three/plants/blossomTree.js';
 import { birch } from '../src/three/plants/birch.js';
 import { slimTree } from '../src/three/plants/slimTree.js';
+import { fir } from '../src/three/plants/fir.js';
 import { bush } from '../src/three/plants/bush.js';
 import { sunflower } from '../src/three/plants/sunflower.js';
 import { tomato, tomatoRow } from '../src/three/plants/tomato.js';
@@ -91,6 +92,11 @@ const SETS = {
       { name: 'Cây mảnh bên sông, cạnh hàng rào ruộng (cây trước, gốc bị che)', box: [1335, 525, 1410, 660], foot: [1371, 650], height: 2.3, seed: 1 },
       { name: 'Cây mảnh bên sông, cạnh hàng rào ruộng (cây sau)', box: [1360, 535, 1430, 650], foot: [1393, 640], height: 1.85, seed: 2 },
     ],
+  },
+  fir: {
+    make: (seed, h) => fir(seed, h),
+    h: 1.6,
+    refs: [{ name: 'Cây linh sam xanh nhạt bên sông, phía trên', box: [1325, 360, 1425, 470], foot: [1371, 455], height: 1.6, seed: 1 }],
   },
   bushes: {
     make: (seed, h) => bush(seed, h),

@@ -368,6 +368,16 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     colour, by how it faces the sky and the sun. About a thousand triangles a tree. Tried first: clumps as the round tree's
     stretched out along each lobe (lumpy, and the top a big egg); long lobes drooping steeply (a weeping tree); many
     lobes with deep notches (crumpled paper).
+  - **Fir** (`plants/fir.js`, `?set=fir`), the full light green tree the reference draws on the upper riverbank,
+    between the riverside road's fence and the water (foot about px (1371, 455)), a kind of its own as the user chose:
+    1.6 tall and about 0.95 across, a short brown trunk showing under six tiers of the slim tree's lobes, five or six
+    to a tier, broader (`width` 0.66), folded less and drooping late (`curl`), smaller up the tree to a pointed top,
+    over a dark cone round the trunk (`core`) so the gaps between lobes and under each tier show deep green. Bluer
+    greens than the slim tree's: in the warm sun yellower ones looked olive. About 1,600 triangles a tree. It grows as
+    the slim tree does (`tieredTree` in `slimTree.js`, whose `lobe` now takes the form's `width`, `fold`, `edge` and
+    `curl`; the slim trees are unchanged). Tried first: many small lobes with finely scalloped edges and shorter ones
+    between them (a smooth cone); lobes folded deeply (spiky, as a pine's skirt); fewer, broader lobes (stacked
+    skirts hiding the trunk).
   - **Bush** (`plants/bush.js`, `?set=bushes`): the reference draws only a few, small, round and deep green, about
     0.45 across (behind the hen yard at the foot of a tree, under the slim trees behind the fields' fence); the round
     green masses along the front, past the river, are round trees with their trunks hidden. A low dome sitting on the
@@ -488,7 +498,8 @@ In this order:
    olive areas and round the farm; bushes, flowers (the sunflowers along the fields' front right side among them),
    rocks and reeds. The trees are designed one kind at a time first (above), then placed all together. Done: the
    pine, the round tree, the fruit tree, the wood they all grow on, redone, and the pink blossom tree by the
-   farmhouse, the birch, the slim upright trees by the river on the right, the bush, the sunflower, the
+   farmhouse, the birch, the slim upright trees by the river on the right, the fir on the upper riverbank, the bush,
+   the sunflower, the
    tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
    row of pinks along the ring road, the yellow clumps, the purple ones, the orange and purple spikes by the well,
    and the mixed beds. Next: rocks by the roads and the river, then reeds.
