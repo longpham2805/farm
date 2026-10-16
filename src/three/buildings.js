@@ -427,6 +427,8 @@ export function placeBuildings({ at }) {
   const water = place(PLACES.trough, () => waterTrough(batch, seeded(29)));
   hay.push(place(PLACES.hayRack, () => hayRack(batch)));
   const paper = place(PLACES.meadowBench, () => bench(batch, seeded(73), { paper: true }));
+  // A bench by the ring road in front of the farm.
+  place(PLACES.frontBench, () => bench(batch, seeded(79)));
   // The fields over the big bridge on their painted pad, square to the plots.
   const fieldsAt = at(...PLACES.fields.at);
   batch.push(fieldsAt.x, 0, fieldsAt.z);
@@ -482,8 +484,9 @@ export function placeBuildings({ at }) {
     plankBridge(batch, glow, { span: dir.length(), width, arch, lamp: name === 'main', lanterns: name === 'small', glows });
     batch.pop();
   }
-  // The meadow's lamp behind its bench.
+  // The meadow's lamp behind its bench, and a bigger one behind the bench by the ring road in front of the farm.
   place(PLACES.meadowLamp, () => lamp(batch, glow, glows));
+  place(PLACES.frontLamp, () => lamp(batch, glow, glows, PLACES.frontLamp.size));
   // Spray off a line of the painting's pixels along a fall, heading `outward`: droplets, and a mist over them.
   const fallSpray = (pixels, outward, drops, mist) => {
     const line = pixels.map(([x, y]) => paintedPoint(x, y));

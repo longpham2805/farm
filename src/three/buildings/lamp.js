@@ -62,8 +62,11 @@ export function lanternGlows() {
   return { group, add, update };
 }
 
-/** A lantern hanging from the origin, L times the size it is drawn at: a hook, a cap, the glass between four bars, and a little cup under it. */
-function lantern(batch, glow, glows) {
+/**
+ * A lantern hanging from the origin, L times the size it is drawn at: a hook, a cap, the glass between four bars, and a
+ * little cup under it. `size`: how much bigger than the meadow lamp's it is, for its glow.
+ */
+function lantern(batch, glow, glows, size = 1) {
   batch.push(0, 0, 0, 0, L);
   batch.add(cyl(1, 1, 6), IRON, [0, -0.015, 0], [0.006, 0.03, 0.006]);
   batch.add(new THREE.ConeGeometry(1, 1, 8), IRON, [0, -0.05, 0], [0.062, 0.045, 0.062], null, true);
@@ -77,12 +80,16 @@ function lantern(batch, glow, glows) {
   glow.stack.push(batch.origin.clone());
   glow.add(BULB, GLASS, [0, -0.14, 0]);
   glow.pop();
-  glows.add(new THREE.Vector3(0, -0.14, 0).applyMatrix4(batch.origin));
+  glows.add(new THREE.Vector3(0, -0.14, 0).applyMatrix4(batch.origin), size);
   batch.pop();
 }
 
-/** The lamp post standing at the origin, its arm along x; the lanterns' glass goes into `glow`, their glows into `glows`. */
-export function lamp(batch, glow, glows) {
+/**
+ * The lamp post standing at the origin, its arm along x, `size` times as big as the meadow's; the lanterns' glass goes
+ * into `glow`, their glows into `glows`.
+ */
+export function lamp(batch, glow, glows, size = 1) {
+  batch.push(0, 0, 0, 0, size);
   batch.add(cyl(1, 1.5, 8), IRON, [0, 0.04, 0], [0.045, 0.08, 0.045], null, true);
   batch.add(cyl(1, 1.12, 8), IRON, [0, (0.08 + TOP) / 2, 0], [0.024, TOP - 0.08, 0.024]);
   batch.add(cyl(1, 1, 8), IRON, [0, 0.3, 0], [0.034, 0.03, 0.034], null, true);
@@ -91,7 +98,8 @@ export function lamp(batch, glow, glows) {
   batch.add(new THREE.ConeGeometry(1, 1, 8), IRON, [0, TOP + 0.085, 0], [0.018, 0.07, 0.018], null, true);
   for (const s of [-1, 1]) {
     batch.push(s * SPREAD, TOP - 0.06, 0);
-    lantern(batch, glow, glows);
+    lantern(batch, glow, glows, size);
     batch.pop();
   }
+  batch.pop();
 }

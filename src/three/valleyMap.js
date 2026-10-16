@@ -154,6 +154,13 @@ export const PLACES = {
   stoneShed: { at: [5.0, 4.4], turn: -0.2 },
   // On its pad by the ring road's front left side, turned 54° so its left gable and its mouth show.
   well: { at: [-5.9, -3.65], turn: 0.94 },
+  // Further right, on the grass between the ring road and the river's bank, past where the reference draws its two
+  // fruit trees: a bench with its back against the road's front edge, turned a little more than the road so its left
+  // end shows (buildings/bench.js), and behind that end a lamp post 1.4 times as big as the meadow's
+  // (buildings/lamp.js), as the reference draws them. The painting's road runs up to 0.7 further forward than the
+  // reference's here, so both stand as far in front of its edge as the reference draws them from its own.
+  frontBench: { at: [-1.45, -5.84], turn: -0.5 },
+  frontLamp: { at: [-2.12, -5.38], size: 1.4 },
   // The buffalo grazing on the grass at the top of the river's rocky bank, facing left and a little towards the
   // camera, and her calf behind her by the road (animals/buffalo.js). They wander about `area`, the grass between
   // the road to the big bridge and the river, up into the meadow below the small fall.

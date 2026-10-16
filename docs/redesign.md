@@ -644,6 +644,16 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   fence, left of the scarecrow, as far along the fence from it (1.24) and behind it as the reference draws it from its
   own; its robin looks about (`userData.update`). The reference's scarecrow is bigger than the game's, so the
   birdhouse stands a little higher above its head.
+  The bench and the lamp post the reference draws in front of the farm (`PLACES.frontBench`, `PLACES.frontLamp`, in
+  `placeBuildings`), on the grass between the ring road and the river's bank, right of where it draws its two fruit
+  trees (read at first as "beside the well", which stands 4.5 to their left): the meadow's bench without its
+  newspaper, its back against the road's front edge, turned a little more than the painted road (-0.5) so its left end
+  shows as the reference's does, the front bank's lupins in front of it and the red spikes at its right end; and
+  behind its left end the meadow's lamp post 1.4 times as big, its glows too (`lamp(…, size)`), as it stands beside
+  the reference's in `dev/buildings.html` (measured on the reference alone, 77 px tall against the meadow's 49). The
+  painting's road runs up to 0.7 further forward than the reference's there, so both stand as far in front of its edge
+  as the reference draws them from its own. Tried first: the bench turned as the painted road runs (-0.3), which
+  showed it nearly side on. The rail fence the reference draws along the road behind them is not there.
 
 ### Loose ends
 
@@ -672,7 +682,7 @@ In this order:
    row of pinks along the ring road, the yellow clumps, the purple ones, the orange and purple spikes by the well,
    the mixed beds, the rocks by the river and the cattails. Placed, swaying: the trees round the farm, the woods, the
    sunflowers round the fields, the tomatoes by the pig and the flowers outside the ring road; and the post with its
-   robin by the fields. Next: the bench and the lamp beside the well, then the rocks and the cattails.
+   robin by the fields, and the bench and the lamp in front of the farm. Next: the rocks and the cattails.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
