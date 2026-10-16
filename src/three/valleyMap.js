@@ -420,6 +420,13 @@ export const FLOWERS = [
   ['rock', 1.22, -7.09, 0.32, 36], ['reeds', 1.58, -6.83, 1.27, 1, { stalks: 3, leaves: 4 }], ['rock', 2.25, -6.9, 0.23, 16],
   ['rock', 2.89, -6.27, 0.41, 23], ['rock', 3.04, -6.75, 0.32, 5, { plants: 0 }], ['rock', 3.25, -5.95, 0.2, 31],
   ['rock', 3.55, -6.05, 0.35, 11], ['rock', 3.6, -6.45, 0.24, 27, { plants: 0 }],
+  // Across the river at the front: boulders at the water's edge on its near bank (the painted river's near edge stands
+  // up to 0.7 further back than the reference's, and 0.5 further forward on the left), some behind the front trees as
+  // the reference draws them, a big clump of six cattails on the grass in front of them, and a big boulder among the
+  // trees at the front, half hidden by them.
+  ['rock', -8.56, -11.54, 0.32, 12, { inWoods: true }], ['rock', -3.24, -8.83, 0.35, 26], ['reeds', -1.53, -10.28, 1.75, 2, { stalks: 6, leaves: 9 }],
+  ['rock', 0.8, -9.39, 0.26, 35, { inWoods: true }], ['rock', 1.25, -9.29, 0.17, 38, { plants: 0, inWoods: true }],
+  ['rock', 4.0, -12.3, 1.1, 64, { inWoods: true }],
 ];
 
 /**
