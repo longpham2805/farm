@@ -654,6 +654,18 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   painting's road runs up to 0.7 further forward than the reference's there, so both stand as far in front of its edge
   as the reference draws them from its own. Tried first: the bench turned as the painted road runs (-0.3), which
   showed it nearly side on. The rail fence the reference draws along the road behind them is not there.
+  Then the boulders and the cattails, area by area, in `FLOWERS` as kinds of their own (`rock`, turned as
+  `dev/plants.html` shows them, and `reeds` in `placePlants`), not in `ROCKS`: the woods keep clear of `ROCKS` while
+  they are laid out, so changing it would move every later tree, while the woods leave `FLOWERS` out afterwards. (They
+  sway with the plants, which moves a boulder's top less than a hundredth.) First the river's bank in front of the
+  farm, from below the well to the big bridge's foot: sixteen boulders and the three cattails below the frog's pond.
+  The water's top edge, its foam included, was measured at each in the reference and the painting, and each stands as
+  far from the painted edge as the reference draws it from its own (the painting's edge stands up to 0.3 further back
+  on the left and 0.3 further forward on the right); those it draws in the water stand half as far out, at the foam,
+  with no plants. Each seed was picked so its stone is as wide for its height on screen as the reference's, its height
+  from the reference's on screen, scaled so the flat boulder on the left comes to 0.45, as `dev/plants.html` sized it
+  (0.2 to 0.52). Still to come: across the river at the front, with the big clump of cattails; the left, past the
+  meadow road; and the right, from the big bridge up past the small fall, with the two cattails above the fir.
 
 ### Loose ends
 
@@ -682,7 +694,8 @@ In this order:
    row of pinks along the ring road, the yellow clumps, the purple ones, the orange and purple spikes by the well,
    the mixed beds, the rocks by the river and the cattails. Placed, swaying: the trees round the farm, the woods, the
    sunflowers round the fields, the tomatoes by the pig and the flowers outside the ring road; and the post with its
-   robin by the fields, and the bench and the lamp in front of the farm. Next: the rocks and the cattails.
+   robin by the fields, the bench and the lamp in front of the farm, and the boulders and cattails along the river's
+   bank in front of the farm. Next: the rest of the rocks and the cattails, area by area.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's

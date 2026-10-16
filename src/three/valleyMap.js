@@ -276,7 +276,10 @@ export const LAND = {
   front: { kind: 'ramp', along: 'b', from: -9.5, to: -14, h0: 0, h1: 0.5, within: [-24, 24] },
 };
 
-/** Boulders in clusters: [u, b, spread, how many]. The banks also get a scatter along the water's edge. */
+/**
+ * Where the old layout had boulders, in clusters: [u, b, spread, how many]. The woods keep clear of all but the first
+ * four; the boulders themselves stand one by one in FLOWERS, where the reference draws them.
+ */
 export const ROCKS = [
   // Outcrops along the edge of the painted forest at the back, and in the woods on the left.
   [-6.3, 11.1, 0.9, 4], [-11.6, 9.2, 1.2, 5], [-9.5, 9.9, 0.6, 3], [1.6, 11.1, 0.9, 4], [-13.1, -6.6, 0.7, 4],
@@ -320,11 +323,13 @@ export const TREES = [
 ];
 
 /**
- * The flowers and crops the reference design draws round the farm, and the small plants among them, each where it
- * stands there (as TREES), moved to fit the painting: [kind, u, b, height, seed, more] (kinds in plants/valley.js),
- * `more` giving the way a row runs (`turn`, its rotation.y in the world, as dev/plants.html turns it), how long it is
- * (`length`), a bed's `path` ([x, z] round its spot, world units) and whether it grows among the woods' trees
- * (`inWoods`: they then stand close round it, even in front of it). Unlike TREES, the woods leave them out after they
+ * The flowers and crops the reference design draws round the farm, the small plants among them, and the boulders and
+ * cattails along the river's banks, each where it stands there (as TREES), moved to fit the painting: [kind, u, b,
+ * height, seed, more] (kinds in plants/valley.js), `more` giving the way a row runs (`turn`, its rotation.y in the
+ * world, as dev/plants.html turns it), how long it is (`length`), a bed's `path` ([x, z] round its spot, world units),
+ * how many `plants` grow on a boulder and `stalks` and `leaves` a clump of cattails has (the seed picks them
+ * otherwise), and whether it grows among the woods' trees (`inWoods`: they then stand close round it, even in front of
+ * it). Unlike TREES, the woods leave them out after they
  * are laid out, so adding one never moves the woods' other trees.
  */
 export const FLOWERS = [
@@ -404,6 +409,17 @@ export const FLOWERS = [
   ['gladiolus', 2.6, 7.3, 0.9, 11], ['bed', 3.75, 5.75, 0.3, 17, { path: [[-0.2, 0], [0.2, 0]] }],
   ['yellow', 2.89, 10.07, 0.45, 16, { inWoods: true }], ['gladiolus', 6.67, 10.95, 0.35, 12],
   ['yellow', 6.44, 9.7, 0.4, 17, { inWoods: true }],
+  // Boulders along the river's bank in front of the farm, from below the well to the big bridge's foot, each as far
+  // from the painted water's edge as the reference draws it from its own (the painting's edge stands up to 0.3 further
+  // back on the left and 0.3 further forward on the right), each seed picked so its stone is as wide for its height as
+  // the reference's; those it draws in the water stand at the painted edge's foam, half as far out, and grow no plants.
+  // Three cattails on the bank below the frog's pond, behind a boulder, as the reference draws them.
+  ['rock', -7.09, -8.0, 0.3, 3, { plants: 0 }], ['rock', -6.65, -7.32, 0.45, 1], ['rock', -5.71, -7.5, 0.31, 10],
+  ['rock', -5.15, -7.63, 0.27, 6, { plants: 0 }], ['rock', -3.24, -7.0, 0.52, 9], ['rock', -2.65, -6.97, 0.3, 13],
+  ['rock', -0.11, -7.18, 0.35, 40], ['rock', 0.24, -7.27, 0.3, 19], ['rock', 0.56, -7.45, 0.29, 32, { plants: 0 }],
+  ['rock', 1.22, -7.09, 0.32, 36], ['reeds', 1.58, -6.83, 1.27, 1, { stalks: 3, leaves: 4 }], ['rock', 2.25, -6.9, 0.23, 16],
+  ['rock', 2.89, -6.27, 0.41, 23], ['rock', 3.04, -6.75, 0.32, 5, { plants: 0 }], ['rock', 3.25, -5.95, 0.2, 31],
+  ['rock', 3.55, -6.05, 0.35, 11], ['rock', 3.6, -6.45, 0.24, 27, { plants: 0 }],
 ];
 
 /**
