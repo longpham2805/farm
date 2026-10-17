@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 import { ConvexHull } from 'three/examples/jsm/math/ConvexHull.js';
 import { seeded } from '../../util.js';
-import { TAU, MATERIAL, SOFT_MATERIAL, glowing, mesher, palette, pointNoise } from './parts.js';
+import { TAU, MATERIAL, SOFT_MATERIAL, MATERIAL_MAKERS, glowing, twoSided, mesher, palette, pointNoise } from './parts.js';
 import { leaf } from './birch.js';
 
 /**
@@ -53,6 +53,7 @@ function stone(glow, moss, mossDark) {
   const key = `${glow} ${moss.getHexString()} ${mossDark.getHexString()}`;
   if (MATERIALS.has(key)) return MATERIALS.get(key);
   const m = MATERIAL.clone();
+  m.name = `stone ${key}`;
   const rgb = (c) => `vec3(${c.r.toFixed(4)}, ${c.g.toFixed(4)}, ${c.b.toFixed(4)})`;
   m.onBeforeCompile = (shader) => {
     shader.vertexShader = shader.vertexShader
@@ -105,15 +106,18 @@ float stoneNoise(vec3 p) {
   return m;
 }
 
+MATERIAL_MAKERS.stone = (glow, moss, mossDark) => stone(parseFloat(glow), new THREE.Color(`#${moss}`), new THREE.Color(`#${mossDark}`));
+
 /** The small plants' leaves: soft, either face showing, glowing a little as the flowers' leaves do. */
-const PLANTS = Object.assign(glowing(SOFT_MATERIAL, 0.12), { side: THREE.DoubleSide });
+const PLANTS = twoSided(glowing(SOFT_MATERIAL, 0.12));
 
 /**
  * The shadow round its foot, darkening whatever ground it sits on (fading out by the alpha at its corners). The sun's
  * shadow alone leaves a thin lit line along the foot where the sun grazes a side, as it is cast a little off the
  * ground (normalBias in scene.js), and the stone looked set on the ground rather than in it.
  */
-const SHADOW = new THREE.MeshBasicMaterial({ color: '#1a2410', vertexColors: true, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+const SHADOW = new THREE.MeshBasicMaterial({ name: 'rockShadow', color: '#1a2410', vertexColors: true, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+MATERIAL_MAKERS.rockShadow = () => SHADOW;
 
 // The way the game's camera looks from, level (CAM_DIR in scene.js), so the plants grow on the side it sees.
 const CAMERA = new THREE.Vector3(1, 0, 1).normalize();

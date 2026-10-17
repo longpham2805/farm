@@ -7,3 +7,6 @@ dist-single/
 
 # Pictures of trees the user found, kept for reference (stock previews, not ours to publish)
 art/plants/found/
+
+# Every plant model written out for Blender by dev/export-models.mjs (regenerable; the edited ones live in art/models/edited/)
+art/models/export/

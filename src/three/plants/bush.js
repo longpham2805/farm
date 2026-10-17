@@ -4,7 +4,7 @@
 // light falls on top, a deep green further down, over a dark core that fills the gaps between them.
 import * as THREE from 'three';
 import { seeded } from '../../util.js';
-import { TAU, SOFT_MATERIAL, mesher, palette } from './parts.js';
+import { TAU, SOFT_MATERIAL, twoSided, mesher, palette } from './parts.js';
 import { clump } from './roundTree.js';
 import { leaf } from './birch.js';
 
@@ -78,9 +78,8 @@ export function bush(seed = 1, height = 0.4, colors = BUSH) {
   }
   const g = m.geometry();
   g.scale(height, height, height);
-  const material = SOFT_MATERIAL.clone();
   // Thin leaves show either face.
-  material.side = THREE.DoubleSide;
+  const material = twoSided(SOFT_MATERIAL.clone());
   const mesh = new THREE.Mesh(g, material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;

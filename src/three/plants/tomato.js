@@ -4,7 +4,7 @@
 // flowers.
 import * as THREE from 'three';
 import { seeded } from '../../util.js';
-import { TAU, SOFT_MATERIAL, mesher, palette, tube } from './parts.js';
+import { TAU, SOFT_MATERIAL, twoSided, mesher, palette, tube } from './parts.js';
 import { leaf } from './birch.js';
 
 /** Leaves (shade, dark, mid, light), the stake (sun, shade), the tomatoes (ripe, turning, unripe), the flowers. */
@@ -105,9 +105,8 @@ export function tomato(seed = 1, height = 0.65, colors = TOMATO) {
   }
   const g = m.geometry();
   g.scale(height, height, height);
-  const material = SOFT_MATERIAL.clone();
   // Thin leaves show either face.
-  material.side = THREE.DoubleSide;
+  const material = twoSided(SOFT_MATERIAL.clone());
   const mesh = new THREE.Mesh(g, material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;

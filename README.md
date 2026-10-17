@@ -120,6 +120,8 @@ candy crops become fruits of the same tier (see `RENAMED_CROPS`).
 | `src/three/batch.js` | Merges many small still parts into one mesh, so the valley draws in a few calls |
 | `src/three/trees.js` | Trees built in code: tiered pines, round trees with puffy crowns, birches and bushes, painted light on top and dark underneath |
 | `src/three/nature.js`, `src/three/natureModels.js` | Grass, flowers, stones, boulders, stumps, logs, fences, the bench and signs from Cenji's LowPoly Nature pack, in the game's colours; `dev/nature-models.cjs` makes `natureModels.js` from the pack's `.glb` files |
+| `src/three/plants/` | The painted valley's plants, built in code from a seed, one kind a file (pines, round and fruit trees, the blossom tree, birches, slim trees, firs, bushes, sunflowers, tomatoes, flowers, rocks, cattails); `valley.js` places them, `woods.js` scatters the woods, `edited.js` swaps in any model edited by hand in Blender |
+| `dev/export-models.mjs`, `dev/edited-models.mjs` | Write every placed plant model out as a `.glb` for Blender (`art/models/export/`), and bake the ones edited by hand (`art/models/edited/`) into `src/three/plants/editedModels.js`; how in `art/models/README.md` |
 | `src/ui/` | HUD, bottom bars and the menus (shop, barn, collection, quests, chests…) |
 | `src/i18n.js` | Vietnamese and English text |
 | `public/` | App manifest and icons; `vite.config.js` writes the offline service worker |

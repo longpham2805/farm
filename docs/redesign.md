@@ -694,6 +694,21 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   stands further from the water in the game, so it no longer hides their foot). The old clusters on the near bank
   (`ROCKS` at 11.7, 6.4 and 12.6, 3.2) have no boulders in the reference and get none. That ends the rocks and
   cattails; the lily pads are still to come.
+- **Editing a model by hand** (`dev/export-models.mjs`, `dev/edited-models.mjs`, `plants/edited.js`; how to in
+  `art/models/README.md`). The plants stay code built from seeds, but any one placed model can go to Blender and
+  back: the export writes each `TREES` and `FLOWERS` entry's model as `art/models/export/<kind>-<seed>.glb` (`-2`,
+  `-3`… where a kind and seed come again; `placedModels()` in `valley.js` gives the keys) and each of the woods'
+  models as `woods-<kind>-<n>.glb`, every mesh a node with its corners' positions, normals and colours, the rock's
+  moss as `_MOSS`, and the material's name, shadow flags and the model's height in the node's custom properties. One
+  saved from Blender to `art/models/edited/<key>.glb` is baked into `plants/editedModels.js` (generated, in git,
+  like `natureModels.js`) and built in the generator's place, scaled to the entry's height, with the generator's own
+  material by name: every plant material now has one (`flat`, `soft`, `fruit`, `rockShadow`, `stone <glow> <moss>
+  <mossDark>`, with ` glow <g>` and ` double` as `glowing()` and `twoSided()` add them; `materialNamed()` in
+  `parts.js` gives it back). Not for the animals, which are built and moved by code. Nothing is edited yet; the
+  fingerprints of the approved plants are unchanged, and `tests/models.test.js` holds the round trip (a rock, a
+  flower row and a birch come back within a millimetre and a colour step at any height). Blender itself was not
+  run (not installed); three's `GLTFLoader` reads the files, and a `.glb` three's `GLTFExporter` writes (nodes with
+  their own transforms) reads the same as ours.
 
 ### Loose ends
 
@@ -744,3 +759,5 @@ becomes NaN in `FarmScene.resize` → `setZoom`, and the valley stays blank unti
 - `src/three/countryside.js`: builds the valley from the map; `STAGE` says which parts are on.
 - `src/three/farm.js`: the ring road's shape and the farm inside it.
 - `art/backdrop/README.md`: coordinates, and how to make, fit and animate a new painting.
+- `art/models/README.md`: taking one plant model to Blender and back (`node dev/export-models.mjs`, edit, save to
+  `art/models/edited/`, `node dev/edited-models.mjs`).

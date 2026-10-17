@@ -18,9 +18,10 @@ import { rock } from './rock.js';
 import { reeds } from './reeds.js';
 import { woods } from './woods.js';
 import { sway } from './sway.js';
+import { edited } from './edited.js';
 
 /** Each kind in TREES and FLOWERS: builds one from its seed, height and the rest of its entry (`more`). */
-const KINDS = {
+export const KINDS = {
   pine: (seed, height) => pine(seed, height),
   round: (seed, height) => roundTree(seed, height, ROUND_TREES.lime),
   roundGreen: (seed, height) => roundTree(seed, height, ROUND_TREES.green),
@@ -48,11 +49,25 @@ const KINDS = {
   reeds: (seed, height, { stalks, leaves }) => reeds(seed, height, { stalks, leaves }),
 };
 
+/**
+ * Each TREES and FLOWERS entry with its model's key: `kind-seed`, and `-2`, `-3`… where the same kind and seed come
+ * again. dev/export-models.mjs writes each model out by it, and editedModels.js holds it by it once edited by hand.
+ */
+export function placedModels() {
+  const seen = {};
+  return [...TREES, ...FLOWERS].map(([kind, u, b, height, seed, more = {}]) => {
+    const k = `${kind}-${seed}`;
+    const n = (seen[k] = (seen[k] ?? 0) + 1);
+    return { key: n > 1 ? `${k}-${n}` : k, kind, u, b, height, seed, more };
+  });
+}
+
 /** Puts the plants on the valley; at(u, b) is the map's point in the world. Returns the group and update(t). */
 export function placePlants({ at }) {
   const group = new THREE.Group();
-  for (const [kind, u, b, height, seed, more = {}] of [...TREES, ...FLOWERS]) {
-    const plant = KINDS[kind](seed, height, more);
+  for (const { key, kind, u, b, height, seed, more } of placedModels()) {
+    // As edited by hand, if it was; else built from its seed.
+    const plant = edited(key, height) ?? KINDS[kind](seed, height, more);
     plant.position.copy(at(u, b));
     if (more.turn) plant.rotation.y = more.turn;
     group.add(plant);

@@ -4,10 +4,12 @@ import * as THREE from 'three';
 
 export const TAU = Math.PI * 2;
 
+// Every material a plant uses has a name, so a model edited by hand in Blender (edited.js) gets its materials back
+// by name: the maker's word (MATERIAL_MAKERS) and its words, then what glowing() and twoSided() add.
 /** One material for the plants: the colours are in the mesh, each facet lit flat. */
-export const MATERIAL = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.92 });
+export const MATERIAL = new THREE.MeshStandardMaterial({ name: 'flat', vertexColors: true, flatShading: true, roughness: 0.92 });
 /** For plants whose edges are softened: lit by the normals in the mesh, which bend smoothly round its corners. */
-export const SOFT_MATERIAL = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92 });
+export const SOFT_MATERIAL = new THREE.MeshStandardMaterial({ name: 'soft', vertexColors: true, roughness: 0.92 });
 
 /**
  * A copy of `material` that also glows a little in its own colours (`glow` of them), so a bright colour the game's
@@ -15,11 +17,41 @@ export const SOFT_MATERIAL = new THREE.MeshStandardMaterial({ vertexColors: true
  */
 export function glowing(material, glow) {
   const m = material.clone();
+  m.name = `${material.name} glow ${glow}`;
   m.onBeforeCompile = (shader) => {
     shader.fragmentShader = shader.fragmentShader.replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
   totalEmissiveRadiance += vColor.rgb * ${glow.toFixed(3)};`);
   };
   m.customProgramCacheKey = () => `glow ${glow}`;
+  return m;
+}
+
+/** `material` (a plant's own copy) showing either face of its thin leaves. */
+export function twoSided(material) {
+  material.side = THREE.DoubleSide;
+  material.name += ' double';
+  return material;
+}
+
+/**
+ * The materials by the first word of their names, each made from the rest of its words (none for these two; the
+ * rock's stone adds its colours). The other plant files add theirs.
+ */
+export const MATERIAL_MAKERS = { flat: () => MATERIAL, soft: () => SOFT_MATERIAL };
+const named = new Map();
+
+/** The material called `name`, as the plant it was exported from had it; the same one each time it is asked for. */
+export function materialNamed(name) {
+  if (named.has(name)) return named.get(name);
+  const words = name.split(' ');
+  const glow = words.indexOf('glow');
+  const double = words.at(-1) === 'double';
+  const make = MATERIAL_MAKERS[words[0]];
+  if (!make) throw new Error(`no plant material is called "${name}"`);
+  let m = make(...words.slice(1, glow >= 0 ? glow : double ? -1 : undefined));
+  if (glow >= 0) m = glowing(m, parseFloat(words[glow + 1]));
+  if (double) m = twoSided(glow >= 0 ? m : m.clone());
+  named.set(name, m);
   return m;
 }
 

@@ -4,7 +4,7 @@
 // head like a sausage with a short spike above it; and round their foot long strap leaves rising and arching over.
 import * as THREE from 'three';
 import { seeded } from '../../util.js';
-import { TAU, SOFT_MATERIAL, glowing, mesher, palette, tube } from './parts.js';
+import { TAU, SOFT_MATERIAL, glowing, twoSided, mesher, palette, tube } from './parts.js';
 
 /** Colours: the heads, dark to light, and their spikes; the stalks, dark to light; the leaves, deep to light. */
 export const REEDS = {
@@ -32,7 +32,7 @@ const ACROSS = new THREE.Vector3(1, 0, -1).normalize();
 const FACE = new THREE.Vector3(1, 0.95, 1).normalize().lerp(new THREE.Vector3(0, 1, 0), 0.3).normalize();
 
 /** One material for it all, soft, either face showing, glowing a little as the flowers' leaves do. */
-const MATERIAL = Object.assign(glowing(SOFT_MATERIAL, 0.12), { side: THREE.DoubleSide });
+const MATERIAL = twoSided(glowing(SOFT_MATERIAL, 0.12));
 
 /**
  * A long strap of a leaf from `foot`, rising the way `out` (level) and arching over: setting off `rise` (radians)

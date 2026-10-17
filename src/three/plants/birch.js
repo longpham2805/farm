@@ -5,7 +5,7 @@
 // a fresh green with soft shade, not yellow.
 import * as THREE from 'three';
 import { seeded } from '../../util.js';
-import { TAU, SOFT_MATERIAL, mesher, palette, glowing, wood } from './parts.js';
+import { TAU, SOFT_MATERIAL, mesher, palette, glowing, twoSided, wood } from './parts.js';
 
 /** Leaves: in the shade, dark, mid, in the light; the bark, in the sun and shade. */
 export const BIRCH = { shade: '#3e7a2a', dark: '#529436', mid: '#6eb244', light: '#a2d45e', bark: '#f4f1ea', barkDark: '#c2beb4' };
@@ -106,9 +106,8 @@ export function birch(seed = 1, height = 2.4, colors = BIRCH) {
   }
   const g = m.geometry();
   g.scale(height, height, height);
-  const material = glowing(SOFT_MATERIAL, FORM.glow);
   // Thin leaves show either face.
-  material.side = THREE.DoubleSide;
+  const material = twoSided(glowing(SOFT_MATERIAL, FORM.glow));
   const mesh = new THREE.Mesh(g, material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;

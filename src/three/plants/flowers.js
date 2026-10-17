@@ -11,7 +11,7 @@
 // along the fence by the farmhouse.
 import * as THREE from 'three';
 import { seeded } from '../../util.js';
-import { TAU, SOFT_MATERIAL, mesher, palette, tube, glowing } from './parts.js';
+import { TAU, SOFT_MATERIAL, mesher, palette, tube, glowing, twoSided } from './parts.js';
 import { leaf } from './birch.js';
 import { clump } from './roundTree.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -178,9 +178,8 @@ function build(m, hm, scale, glow) {
   for (const [mm, g0] of [[m, 0.12], [hm, glow]]) {
     const g = mm.geometry();
     g.scale(scale, scale, scale);
-    const material = glowing(SOFT_MATERIAL, g0);
     // Thin petals and leaves show either face.
-    material.side = THREE.DoubleSide;
+    const material = twoSided(glowing(SOFT_MATERIAL, g0));
     const mesh = new THREE.Mesh(g, material);
     mesh.castShadow = true;
     mesh.receiveShadow = true;

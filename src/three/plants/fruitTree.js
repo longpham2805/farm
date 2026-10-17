@@ -2,6 +2,7 @@
 // short stout trunk, its crown a deep, rich green dome of rounder clumps, hung all round with big glossy fruit, red
 // and orange.
 import * as THREE from 'three';
+import { MATERIAL_MAKERS } from './parts.js';
 import { leafyTree } from './roundTree.js';
 
 /** The kinds: their leaves (as ROUND_TREES) and the colours their fruit comes in, as often as each is listed. */
@@ -20,7 +21,8 @@ export const FRUIT_TREES = {
 // forking a little lower, its edges rounded over a little (as ROUND_FORM).
 const FORM = { crown: 0.36, clumps: [26, 32], size: [0.28, 0.36], core: 0.7, fork: 0.22, trunk: [0.06, 0.045], tip: 0.014, soft: 0.4 };
 
-const FRUIT = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.35 });
+const FRUIT = new THREE.MeshStandardMaterial({ name: 'fruit', vertexColors: true, roughness: 0.35 });
+MATERIAL_MAKERS.fruit = () => FRUIT;
 const BERRY = new THREE.IcosahedronGeometry(1, 2);
 
 /**

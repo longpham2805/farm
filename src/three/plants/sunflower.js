@@ -4,7 +4,7 @@
 // ringed by two layers of pointed yellow petals, the back layer deeper and more orange, a green cup behind it.
 import * as THREE from 'three';
 import { seeded } from '../../util.js';
-import { TAU, SOFT_MATERIAL, mesher, palette, tube, glowing } from './parts.js';
+import { TAU, SOFT_MATERIAL, mesher, palette, tube, glowing, twoSided } from './parts.js';
 import { leaf } from './birch.js';
 
 /** The petals (light, deep), the disc (its heart, rim), the leaves and stem (shade, dark, mid, light). */
@@ -100,9 +100,8 @@ export function sunflower(seed = 1, height = 1.4, colors = SUNFLOWER) {
   }
   const g = m.geometry();
   g.scale(height, height, height);
-  const material = glowing(SOFT_MATERIAL, FORM.glow);
   // Thin petals and leaves show either face.
-  material.side = THREE.DoubleSide;
+  const material = twoSided(glowing(SOFT_MATERIAL, FORM.glow));
   const mesh = new THREE.Mesh(g, material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;

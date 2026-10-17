@@ -13,11 +13,12 @@ import { birch } from './birch.js';
 import { slimTree } from './slimTree.js';
 import { fir } from './fir.js';
 import { bush } from './bush.js';
+import { edited } from './edited.js';
 
 const TAU = Math.PI * 2;
 // The models of each kind: how many, the height they are built at, whether a tree of it may be turned, and how tall
 // it grows against the wood's heights (the round trees' broad crowns smaller than the pines, the firs shorter still).
-const MODELS = {
+export const MODELS = {
   pine: { make: (seed, h) => pine(seed, h), seeds: 6, height: 2.6, turn: true, size: 1 },
   round: { make: (seed, h) => roundTree(seed, h, ROUND_TREES.lime), seeds: 4, height: 2.4, turn: true, size: 0.8 },
   roundGreen: { make: (seed, h) => roundTree(seed, h, ROUND_TREES.green), seeds: 4, height: 2.6, turn: true, size: 0.85 },
@@ -158,7 +159,8 @@ export function woods(at) {
     for (let k = 0; k < seeds; k++) {
       const list = spots.filter((s) => s.kind === kind && s.model === k);
       if (!list.length) continue;
-      make(k + 1, height).traverse((part) => {
+      // As edited by hand (dev/export-models.mjs writes it out as `woods-<kind>-<n>`), if it was.
+      (edited(`woods-${kind}-${k + 1}`, height) ?? make(k + 1, height)).traverse((part) => {
         if (!part.isMesh) return;
         const mesh = new THREE.InstancedMesh(part.geometry, part.material, list.length);
         list.forEach((s, i) => {
