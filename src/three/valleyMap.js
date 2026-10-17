@@ -441,6 +441,17 @@ export const FLOWERS = [
   ['rock', 10.04, -0.92, 0.54, 111], ['rock', 9.56, -1.35, 0.58, 66], ['rock', 8.8, -2.25, 0.44, 44],
   ['rock', 8.31, -2.49, 0.45, 43], ['rock', 7.65, -3.21, 0.35, 99], ['rock', 11.16, -3.17, 0.42, 53],
   ['reeds', 11.93, -2.87, 1.15, 4, { stalks: 3, leaves: 5 }],
+  // Above the small fall, up to the small bridge, where the painted river runs three or four units further right and
+  // longer than the reference's: each as far down the stretch from the bridge to the fall, and as far from its bank's
+  // edge, as the reference draws it. On the far bank, a boulder by the main fall's pool above the bridge's end, slim
+  // cattails below its end (on the bank's lip, the painted road standing where the reference has them), boulders along
+  // the water below them and cattails behind them, and further down three boulders where the painting left room among
+  // its rocky bank; on the near bank, two clumps of slim cattails at the water's edge.
+  ['rock', 12.45, 11.43, 0.44, 62], ['reeds', 11.75, 10.25, 0.75, 5, { stalks: 2, leaves: 3 }],
+  ['rock', 12.44, 9.32, 0.28, 100], ['rock', 12.69, 8.95, 0.21, 94], ['rock', 12.95, 8.42, 0.35, 110],
+  ['rock', 13.72, 7.55, 0.56, 22], ['rock', 14.03, 7.18, 0.26, 90], ['reeds', 14.6, 7.14, 0.88, 6, { stalks: 2, leaves: 3 }],
+  ['rock', 15.43, 4.52, 0.34, 83], ['rock', 15.25, 3.51, 0.37, 25], ['rock', 15.58, 2.86, 0.42, 103],
+  ['reeds', 12.57, 5.39, 0.7, 7, { stalks: 2, leaves: 3 }], ['reeds', 13.01, 3.58, 0.8, 3, { stalks: 2, leaves: 3 }],
 ];
 
 /**

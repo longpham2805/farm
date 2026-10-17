@@ -683,8 +683,17 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   the fall: five big boulders (0.35 to 0.58) along the near bank from the landing down to the buffalo's grass, at the
   painted water's edge as the reference draws them at its own (the three it draws further up, where the painted road
   runs down to the landing, are left out), one on the far bank by the slim trees, and three cattails (1.15) on the far
-  bank below the fall's pool, which the reference has there too. Still to come: above the small fall, up to the small
-  bridge, with the two cattails above the fir.
+  bank below the fall's pool, which the reference has there too. Above the fall, up to the small bridge, the painted
+  river runs three or four units further right than the reference's, its bridge two right and 2.4 further back, so
+  each thing keeps how far down the stretch from the bridge to the fall it stands (by b) and how far from its bank's
+  edge along its row: on the far bank, a boulder by the main fall's pool above the bridge's end, slim cattails below
+  its end (moved down onto the bank's lip, where the painted road stands where the reference has them), five boulders
+  along the water below them and slim cattails behind them, and further down three boulders on the painted rocky
+  bank, where the painting left room (one round tree of the woods within 0.7 of them is left out); on the near bank,
+  two clumps of slim cattails at the water's edge, one of them the two the reference draws above the fir (the fir
+  stands further from the water in the game, so it no longer hides their foot). The old clusters on the near bank
+  (`ROCKS` at 11.7, 6.4 and 12.6, 3.2) have no boulders in the reference and get none. That ends the rocks and
+  cattails; the lily pads are still to come.
 
 ### Loose ends
 
@@ -714,8 +723,8 @@ In this order:
    the mixed beds, the rocks by the river and the cattails. Placed, swaying: the trees round the farm, the woods, the
    sunflowers round the fields, the tomatoes by the pig and the flowers outside the ring road; and the post with its
    robin by the fields, the bench and the lamp in front of the farm, and the boulders and cattails along the river's
-   bank in front of the farm, across the river at the front, on the left and below the small fall. Next: the rest of the rocks and the cattails, area by
-   area.
+   bank in front of the farm, across the river at the front, on the left and on the right. Next: the lily pads with
+   pink flowers the reference draws on the river, which have no model yet (left for later, the user's choice).
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
