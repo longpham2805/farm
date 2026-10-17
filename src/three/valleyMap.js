@@ -434,6 +434,13 @@ export const FLOWERS = [
   ['rock', -14.0, -8.0, 1.0, 81], ['rock', -12.24, -9.9, 0.52, 60], ['rock', -11.2, -10.3, 0.65, 2],
   ['rock', -10.16, -9.6, 0.36, 29], ['rock', -11.87, -11.05, 0.42, 50], ['rock', -11.47, -10.85, 0.29, 59, { plants: 0 }],
   ['rock', -12.93, 2.62, 0.4, 98, { inWoods: true }],
+  // On the right, below the small fall: big boulders along the river's near bank from the landing down to the
+  // buffalo's grass, at the painted water's edge as the reference draws them at its own (the three it draws further
+  // up, where the painted road runs down to the landing, are left out), one on the far bank by the slim trees, and
+  // three cattails on the far bank below the fall's pool.
+  ['rock', 10.04, -0.92, 0.54, 111], ['rock', 9.56, -1.35, 0.58, 66], ['rock', 8.8, -2.25, 0.44, 44],
+  ['rock', 8.31, -2.49, 0.45, 43], ['rock', 7.65, -3.21, 0.35, 99], ['rock', 11.16, -3.17, 0.42, 53],
+  ['reeds', 11.93, -2.87, 1.15, 4, { stalks: 3, leaves: 5 }],
 ];
 
 /**
