@@ -14,6 +14,7 @@ import { slimTree } from './slimTree.js';
 import { fir } from './fir.js';
 import { bush } from './bush.js';
 import { edited } from './edited.js';
+import { PROXIED, SHADOW_ONLY, shadowProxy } from './shadowProxy.js';
 
 const TAU = Math.PI * 2;
 // The models of each kind: how many, the height they are built at, whether a tree of it may be turned, and how tall
@@ -160,20 +161,34 @@ export function woods(at) {
       const list = spots.filter((s) => s.kind === kind && s.model === k);
       if (!list.length) continue;
       // As edited by hand (dev/export-models.mjs writes it out as `woods-<kind>-<n>`), if it was.
-      (edited(`woods-${kind}-${k + 1}`, height) ?? make(k + 1, height)).traverse((part) => {
-        if (!part.isMesh) return;
-        const mesh = new THREE.InstancedMesh(part.geometry, part.material, list.length);
+      const parts = [];
+      (edited(`woods-${kind}-${k + 1}`, height) ?? make(k + 1, height)).traverse((part) => part.isMesh && parts.push(part));
+      // The trees' shadows are cast by a stand-in of a few hundred triangles (shadowProxy.js), instanced the same.
+      const big = PROXIED[kind] ? parts.reduce((a, p) => (p.geometry.attributes.position.count > a.geometry.attributes.position.count ? p : a)) : null;
+      const proxy = big ? shadowProxy(big.geometry, PROXIED[kind]) : null;
+      const place = (mesh, shaded) => {
         list.forEach((s, i) => {
           const scale = s.height / height;
           m.compose(at(s.u, s.b), q.setFromAxisAngle(up, turn ? s.turn : 0), new THREE.Vector3(scale, scale, scale));
           mesh.setMatrixAt(i, m);
-          mesh.setColorAt(i, tint.setScalar(s.shade));
+          if (shaded) mesh.setColorAt(i, tint.setScalar(s.shade));
         });
-        mesh.castShadow = part.castShadow;
-        mesh.receiveShadow = part.receiveShadow;
         mesh.computeBoundingSphere();
         group.add(mesh);
-      });
+      };
+      for (const part of parts) {
+        const mesh = new THREE.InstancedMesh(part.geometry, part.material, list.length);
+        mesh.castShadow = proxy ? false : part.castShadow;
+        mesh.receiveShadow = part.receiveShadow;
+        place(mesh, true);
+      }
+      if (proxy) {
+        const mesh = new THREE.InstancedMesh(proxy, SHADOW_ONLY, list.length);
+        mesh.userData.proxy = true;
+        mesh.castShadow = true;
+        mesh.receiveShadow = false;
+        place(mesh, false);
+      }
     }
   }
   return group;

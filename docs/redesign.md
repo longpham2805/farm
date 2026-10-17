@@ -728,6 +728,23 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   untouched. `?stats` in the address shows calls, triangles, ms and fps over the last 60 frames in the corner
   (`frameStats` in `stats.js`, `renderer.info` with `autoReset` off so the shadow pass counts; `window.farmStats`
   for scripts), the way to measure on a phone. The plant generators were not touched (fingerprints unchanged).
+- **Cheaper shadows for the plants** (`plants/shadowProxy.js`, `woods.js`, `setQuality` in `scene.js`). Every
+  plant cast its shadow with all its triangles, so the shadow pass drew 782K of the frame's 2.24M (the woods 489K
+  of them). Two cuts. "Nhanh" now turns the painted valley's plants' shadows off altogether (`userData.casts`
+  remembers what casts on "Đẹp"): 358 calls, 1.53M triangles. On "Đẹp", each of the woods' 24 models casts a
+  stand-in instead of itself: the convex hull of its crown and the hull of its trunk (parted at 35% of its height;
+  one hull for the pines, firs and bushes), 50–300 triangles, instanced with the same matrices; the shadow map
+  (~115 texels a unit) cannot tell the hull from the lumpy crown on the ground. The stand-ins must be drawn with the
+  scene, since the shadow pass only takes what the camera sees (layers are tested against the camera's, not the
+  shadow camera's, in `WebGLShadowMap`), so their material writes neither colour nor depth: 22 draw calls of
+  51K triangles that put no pixel on the screen. Measured 2026-10-17, default view, 1024×768, "Đẹp": 401 calls and
+  2.24M triangles before, 450 and 1.97M after (the plants' shadows 782K → 419K); the woods-only shots differ from
+  the ones before by the hens and one corner of a pine. The trees round the farm were tried the same way and put
+  back: a hull lights the whole crown inside it (the shadow pass draws the hull's far side), so a tree lost the
+  shadow it casts on itself and its crown went flat and bright, plain in the close-up of the apple tree, faint at
+  game size; near the camera that is not worth 76K triangles. If the 22 extra calls matter on a phone, the next
+  step is to draw the shadow map by hand each frame (`renderer.shadowMap.render` with the stand-ins visible, then
+  hide them for the camera).
 
 ### Loose ends
 

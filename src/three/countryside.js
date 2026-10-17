@@ -1197,5 +1197,5 @@ export function buildCountryside() {
   };
   // The painting's tiles load for the sharp or the fast setting.
   const setDetail = (high) => backdrop?.setDetail(high);
-  return { group, update, plants: cover.plants, setDetail };
+  return { group, update, plants: cover.plants, valleyPlants: plants?.group, setDetail };
 }

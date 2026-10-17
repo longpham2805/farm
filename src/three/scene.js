@@ -168,6 +168,13 @@ export class FarmScene {
     // The valley's grass and flowers are tens of thousands of small triangles; the fast setting goes without them.
     this.countryside.plants.visible = high;
     this.countryside.setDetail(high);
+    // The painted valley's plants cast shadows only on "Đẹp": a third of the frame's triangles went into them.
+    // (The trees' shadow stand-ins, plants/shadowProxy.js, draw nothing, so they go altogether.)
+    this.countryside.valleyPlants?.traverse((o) => {
+      if (!o.isMesh) return;
+      o.castShadow = high && o.userData.casts;
+      if (o.userData.proxy) o.visible = high;
+    });
     // Smooth edges with MSAA: 4 samples, or 2 where pixels are already small (Retina), which keeps memory near
     // what the old antialiased canvas used.
     const gl = this.renderer.getContext();

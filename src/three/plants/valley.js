@@ -82,8 +82,11 @@ export function placePlants({ at }) {
     plant.position.copy(at(u, b));
     if (more.turn) plant.rotation.y = more.turn;
     plant.updateMatrixWorld(true);
-    plant.traverse((m) => {
-      if (!m.isMesh) return;
+    // These trees, near the camera, cast their own shadows, on themselves too: a stand-in (shadowProxy.js, as the
+    // woods use) lights the whole crown, which looked flat.
+    const meshes = [];
+    plant.traverse((m) => m.isMesh && meshes.push(m));
+    for (const m of meshes) {
       let g = m.geometry.clone().applyMatrix4(m.matrixWorld);
       if (g.index) g = g.toNonIndexed();
       const foot = new Float32Array(g.attributes.position.count * 3);
@@ -94,7 +97,7 @@ export function placePlants({ at }) {
       const batch = `${Math.floor(u / CELL)},${Math.floor(b / CELL)}|${m.material.name}|${m.castShadow}|${m.receiveShadow}|${Object.keys(g.attributes).sort().join()}|${g.attributes.color?.itemSize ?? 0}`;
       if (!batches.has(batch)) batches.set(batch, { material: materialNamed(m.material.name), castShadow: m.castShadow, receiveShadow: m.receiveShadow, geometries: [] });
       batches.get(batch).geometries.push(g);
-    });
+    }
   }
   for (const { material, castShadow, receiveShadow, geometries } of batches.values()) {
     const mesh = new THREE.Mesh(mergeGeometries(geometries, false), material);
@@ -103,5 +106,9 @@ export function placePlants({ at }) {
     group.add(mesh);
   }
   group.add(woods(at));
+  // What casts a shadow on "Đẹp"; "Nhanh" turns the plants' shadows off (setQuality in scene.js).
+  group.traverse((m) => {
+    if (m.isMesh) m.userData.casts = m.castShadow;
+  });
   return { group, update: sway(group) };
 }
