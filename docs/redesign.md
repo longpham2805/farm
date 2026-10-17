@@ -706,9 +706,28 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   <mossDark>`, with ` glow <g>` and ` double` as `glowing()` and `twoSided()` add them; `materialNamed()` in
   `parts.js` gives it back). Not for the animals, which are built and moved by code. Nothing is edited yet; the
   fingerprints of the approved plants are unchanged, and `tests/models.test.js` holds the round trip (a rock, a
-  flower row and a birch come back within a millimetre and a colour step at any height). Blender itself was not
-  run (not installed); three's `GLTFLoader` reads the files, and a `.glb` three's `GLTFExporter` writes (nodes with
-  their own transforms) reads the same as ours.
+  flower row and a birch come back within a millimetre and a colour step at any height). Tried with Blender 5.2
+  (headless): `rock-3` imported with its `_MOSS`, colours and custom properties, its stone scaled 1.6× taller and
+  exported with Custom Properties and Attributes on, baked and shown in the game taller, mossed and shadowed as
+  before (the test file was not kept). Blender writes the colours back as RGBA, which the bake keeps; three's
+  `GLTFLoader` reads our files too.
+- **Fewer draw calls** (`placePlants` in `plants/valley.js`, `sway.js`, `stats.js`). The plants round the farm
+  were one mesh each, so each cost a draw call and another for its shadow: 343 of the frame's 637 calls at the
+  default view. Now each plant is built as before, its position and turn baked into its corners, and all the
+  plants of one material (and shadow flags) in one cell of the map, `CELL` = 8 units square, are merged into one
+  mesh; each corner carries its plant's `foot`, from which the wind shader takes the gust's phase and how high the
+  corner stands, so the sway is the same to the pixel (the headless shots at `t=11.5` before and after differ only
+  where the hens and ducks had wandered and the water had moved; the close-up of the apple tree differs in 3
+  pixels of 285,600). The cost of merging is culling: a merged mesh is drawn whole when any of it is on the
+  screen, so the triangles sent go up; the cell is the trade. Measured 2026-10-17 at the default view, 1024×768,
+  "Đẹp", plants only, calls and triangles over the whole frame (`?stats`): one mesh each 343 calls, 1.40M
+  triangles; cells of 8: 149 calls (87 meshes), 1.48M; cells of 12: 122 calls (57 meshes), 1.54M; one mesh per
+  material (12 meshes): 70 calls, 1.66M. Cells of 8 it is: 57% fewer calls for 5% more triangles, and zoomed in
+  the cells off the screen still drop out. The whole frame went from 637 calls and 2.20M triangles to 430 and
+  2.27M; the woods' 24 instanced models (45 calls, 0.95M) and the rest of the valley (281 calls, 0.79M) are
+  untouched. `?stats` in the address shows calls, triangles, ms and fps over the last 60 frames in the corner
+  (`frameStats` in `stats.js`, `renderer.info` with `autoReset` off so the shadow pass counts; `window.farmStats`
+  for scripts), the way to measure on a phone. The plant generators were not touched (fingerprints unchanged).
 
 ### Loose ends
 
@@ -759,5 +778,6 @@ becomes NaN in `FarmScene.resize` → `setZoom`, and the valley stays blank unti
 - `src/three/countryside.js`: builds the valley from the map; `STAGE` says which parts are on.
 - `src/three/farm.js`: the ring road's shape and the farm inside it.
 - `art/backdrop/README.md`: coordinates, and how to make, fit and animate a new painting.
+- `?stats` on the game's address: draw calls, triangles, ms and fps in the corner, for measuring on a phone.
 - `art/models/README.md`: taking one plant model to Blender and back (`node dev/export-models.mjs`, edit, save to
   `art/models/edited/`, `node dev/edited-models.mjs`).

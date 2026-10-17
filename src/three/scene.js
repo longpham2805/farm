@@ -8,6 +8,7 @@ import { buildFarm, plotCenter, SOIL_TOP, PLANT_SCALE, butterfly } from './farm.
 import { buildCountryside, VIEW_BOUNDS, SUN_DIR, fitShadow, at } from './countryside.js';
 import { buildPlant } from './models.js';
 import { updateRainbow } from './materials.js';
+import { frameStats } from './stats.js';
 import { glowTexture, starTexture, skyTexture, ringTexture, sunRaysTexture, sunFaceTexture } from './textures.js';
 import { STYLES } from '../data/styles.js';
 import { CROP_BY_ID } from '../data/crops.js';
@@ -61,6 +62,8 @@ export class FarmScene {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer = renderer;
+    // `?stats` in the address shows what each frame costs (stats.js).
+    if (new URLSearchParams(location.search).has('stats')) this.stats = frameStats(renderer);
 
     const scene = new THREE.Scene();
     scene.background = skyTexture('#86cbff', '#fff3bf', '#ffcf5c');
@@ -596,6 +599,7 @@ export class FarmScene {
   // ── Frame loop ──────────────────────────────────────────────
 
   frame() {
+    this.stats?.begin();
     // iOS reports the old size in the resize event after a rotation, so check every frame.
     const c = this.canvas;
     if (c.clientWidth && c.clientHeight && (c.clientWidth !== this.width || c.clientHeight !== this.height)) this.resize();
@@ -688,6 +692,7 @@ export class FarmScene {
     for (const fn of this.frameHooks) fn(t);
 
     this.composer.render(dt);
+    this.stats?.end();
   }
 }
 

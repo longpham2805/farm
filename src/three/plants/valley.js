@@ -2,7 +2,9 @@
 // flowers, crops, boulders and cattails, where FLOWERS does, each standing as it was modelled to be seen from the
 // camera, and the woods (woods.js), all swaying gently in the wind.
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { TREES, FLOWERS } from '../valleyMap.js';
+import { materialNamed } from './parts.js';
 import { pine } from './pine.js';
 import { roundTree, ROUND_TREES } from './roundTree.js';
 import { fruitTree, FRUIT_TREES } from './fruitTree.js';
@@ -62,15 +64,43 @@ export function placedModels() {
   });
 }
 
-/** Puts the plants on the valley; at(u, b) is the map's point in the world. Returns the group and update(t). */
+/**
+ * Puts the plants on the valley; at(u, b) is the map's point in the world. Returns the group and update(t).
+ * Each plant is built where it stands, then all the plants of one material (and the same shadow flags) are merged
+ * into one mesh, so the hundred and fifty of them draw in a score of calls rather than one each, and as many again
+ * for their shadows; each corner carries its plant's `foot` for the wind (sway.js). The woods are instanced instead.
+ */
 export function placePlants({ at }) {
   const group = new THREE.Group();
+  // How wide a cell of merged plants is, in map units: smaller cells make more draw calls but leave more off the
+  // screen out of the frame (measured 2026-10-17 at the default view, docs/redesign.md: "Fewer draw calls").
+  const CELL = 8;
+  const batches = new Map();
   for (const { key, kind, u, b, height, seed, more } of placedModels()) {
     // As edited by hand, if it was; else built from its seed.
     const plant = edited(key, height) ?? KINDS[kind](seed, height, more);
     plant.position.copy(at(u, b));
     if (more.turn) plant.rotation.y = more.turn;
-    group.add(plant);
+    plant.updateMatrixWorld(true);
+    plant.traverse((m) => {
+      if (!m.isMesh) return;
+      let g = m.geometry.clone().applyMatrix4(m.matrixWorld);
+      if (g.index) g = g.toNonIndexed();
+      const foot = new Float32Array(g.attributes.position.count * 3);
+      for (let i = 0; i < foot.length; i += 3) plant.position.toArray(foot, i);
+      g.setAttribute('foot', new THREE.BufferAttribute(foot, 3));
+      // Only geometries with the same attributes merge, and only within one cell of the map (CELL units square), so
+      // the renderer still leaves out the cells off the screen, as it did each plant.
+      const batch = `${Math.floor(u / CELL)},${Math.floor(b / CELL)}|${m.material.name}|${m.castShadow}|${m.receiveShadow}|${Object.keys(g.attributes).sort().join()}|${g.attributes.color?.itemSize ?? 0}`;
+      if (!batches.has(batch)) batches.set(batch, { material: materialNamed(m.material.name), castShadow: m.castShadow, receiveShadow: m.receiveShadow, geometries: [] });
+      batches.get(batch).geometries.push(g);
+    });
+  }
+  for (const { material, castShadow, receiveShadow, geometries } of batches.values()) {
+    const mesh = new THREE.Mesh(mergeGeometries(geometries, false), material);
+    mesh.castShadow = castShadow;
+    mesh.receiveShadow = receiveShadow;
+    group.add(mesh);
   }
   group.add(woods(at));
   return { group, update: sway(group) };
