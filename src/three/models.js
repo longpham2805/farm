@@ -6,7 +6,8 @@ import * as THREE from 'three';
 import { plantMat } from './materials.js';
 import { lookOf } from '../data/styles.js';
 import { CROP_BY_ID } from '../data/crops.js';
-import { stripeTexture, pineappleTexture, kernelTexture } from './textures.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { stripeTexture, pineappleTexture, kernelTexture, netTexture, speckleTexture } from './textures.js';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const FRONT = V(1, 0.7, 1).normalize(); // toward the camera
@@ -472,17 +473,18 @@ B.pineapple = (g, P, crop, look) => {
   return 0.82;
 };
 
+const PEAR_PTS = [[0, 0], [0.08, 0.02], [0.11, 0.08], [0.1, 0.14], [0.06, 0.19], [0.045, 0.25], [0.03, 0.29], [0, 0.3]];
+
 B.pear = (g, P, crop) => {
   g.add(mesh(CYL(0.7), P('#8a5a3a', 'stem'), [0, 0.22, 0], [0.045, 0.44, 0.045]));
   const canopy = P(crop.leaf, 'leaf', { roughness: 0.8 });
   for (const [x, y, z, s] of [[0, 0.6, 0, 0.24], [-0.16, 0.52, 0.04, 0.17], [0.12, 0.54, -0.14, 0.18], [0.04, 0.72, -0.06, 0.15]]) {
     g.add(mesh(SPHERE_LO(), canopy, [x, y, z], s));
   }
-  const pts = [[0, 0], [0.08, 0.02], [0.11, 0.08], [0.1, 0.14], [0.06, 0.19], [0.045, 0.25], [0.03, 0.29], [0, 0.3]];
   const fruit = P(crop.color, 'produce', { roughness: 0.35 });
   for (const [x, z, s] of [[0.16, 0.18, 1], [-0.12, 0.22, 0.85]]) {
     const pr = group(g, [x, 0.12, z], s, [0, 0, 0.15]);
-    pr.add(mesh(LATHE('pear', pts), fruit, [0, 0, 0], 1));
+    pr.add(mesh(LATHE('pear', PEAR_PTS), fruit, [0, 0, 0], 1));
     pr.add(mesh(CYL(), P('#6b4a2a', 'accent'), [0, 0.33, 0], [0.012, 0.07, 0.012]));
     leaf(pr, P(crop.leaf, 'leaf'), { p: [0, 0.32, 0], len: 0.08, w: 0.04, tilt: 0.4, yaw: 1 });
   }
@@ -506,8 +508,8 @@ function rand(seed) {
 const CANOPY = [[0, 0.62, 0, 0.27], [-0.17, 0.54, 0.05, 0.19], [0.14, 0.55, -0.15, 0.2], [0.05, 0.77, -0.05, 0.17]];
 
 /** A small round fruit tree. fruit(group, position, outward, index) adds one fruit. */
-function fruitTree(g, P, crop, { canopy = CANOPY, trunk = 0.42, fruits = 7, hang = false, fruit }) {
-  g.add(mesh(CYL(0.65), P('#9a6236', 'stem'), [0, trunk / 2, 0], [0.05, trunk, 0.05]));
+function fruitTree(g, P, crop, { canopy = CANOPY, trunk = 0.42, girth = 0.05, fruits = 7, hang = false, fruit }) {
+  g.add(mesh(CYL(0.65), P('#9a6236', 'stem'), [0, trunk / 2, 0], [girth, trunk, girth]));
   const leafM = P(crop.leaf, 'leaf', { roughness: 0.7 });
   let top = 0;
   for (const [x, y, z, r] of canopy) {
@@ -773,6 +775,501 @@ B.durian = (g, P, crop) => {
   fruitAt(V(-0.02, 0.24, -0.02), 0.2, 0.23, 48);
   fruitAt(V(0.24, 0.11, 0.16), 0.1, 0.11, 26);
   return 0.56;
+};
+
+// ── Fruits of levels 31–40 ────────────────────────────────────
+
+/** Half a fruit lying cut side up, tipped toward the camera. Parts added to it sit on the cut face (y ≈ 0). */
+function cutHalf(g, P, { at, r, skin, flesh, depth = 0.8 }) {
+  const h = group(g, [at[0], r * depth * 0.8, at[1]]);
+  h.quaternion.setFromUnitVectors(UPV, V(0.35, 1, 0.35).normalize());
+  h.add(mesh(HEMI(), skin, [0, 0, 0], [r, r * depth, r], [Math.PI, 0, 0]));
+  h.add(mesh(CYL(), skin, [0, -0.003, 0], [r, 0.006, r]));
+  h.add(mesh(CYL(), flesh, [0, 0, 0], [r * 0.88, 0.008, r * 0.88]));
+  return h;
+}
+
+/** Small dots scattered over the cut face of a half (seeds, pips). */
+function pips(h, mat, { n, r, s, seed, ring = false }) {
+  const rnd = rand(seed);
+  for (let i = 0; i < n; i++) {
+    const a = ring ? (i / n) * TAU : rnd() * TAU;
+    const d = ring ? r : Math.sqrt(rnd()) * r;
+    h.add(mesh(SPHERE_LO(), mat, [Math.cos(a) * d, 0.006, Math.sin(a) * d], [s, s * 0.6, s * 1.4], [0, -a, 0]));
+  }
+}
+
+B.chili = (g, P, crop) => {
+  g.add(mesh(CYL(0.6), P('#4f9a3a', 'stem'), [0, 0.2, 0], [0.025, 0.4, 0.025]));
+  const leafM = P(crop.leaf, 'leaf');
+  for (let i = 0; i < 10; i++) leaf(g, leafM, { p: [0, 0.08 + i * 0.04, 0], len: 0.2, w: 0.07, tilt: 0.25 + (i % 3) * 0.2, yaw: i * 2.4 });
+  const pod = P(crop.color, 'produce', { roughness: 0.2 });
+  const green = P('#4fae2a', 'accent', { roughness: 0.25 });
+  const cap = P('#3f8a2e', 'accent');
+  // Bird's-eye chillies grow pointing at the sky ("ớt chỉ thiên").
+  for (let k = 0; k < 8; k++) {
+    const a = k * (TAU / 8) + 0.2;
+    const r = 0.11 + (k % 2) * 0.07;
+    const c = group(g, [Math.sin(a) * r, 0.3 + ((k * 3) % 4) * 0.05, Math.cos(a) * r], 1 - (k % 3) * 0.1, [Math.cos(a) * 0.5, 0, -Math.sin(a) * 0.5]);
+    c.add(mesh(CYL(), cap, [0, -0.02, 0], [0.007, 0.04, 0.007]));
+    c.add(mesh(SPHERE_LO(), cap, [0, 0.005, 0], [0.024, 0.014, 0.024]));
+    const m = k % 4 === 3 ? green : pod;
+    c.add(mesh(CAPS(0.021, 0.08), m, [0, 0.062, 0], 1));
+    c.add(mesh(CONE(), m, [0, 0.13, 0], [0.02, 0.05, 0.02]));
+  }
+  return 0.62;
+};
+
+B.lime = (g, P, crop) => {
+  const skin = P(crop.color, 'produce', { roughness: 0.2 });
+  // A low, bushy tree.
+  const top = fruitTree(g, P, crop, {
+    canopy: [[0, 0.44, 0, 0.25], [-0.2, 0.34, 0.06, 0.18], [0.16, 0.35, -0.16, 0.18], [0.14, 0.32, 0.15, 0.16], [0.02, 0.62, -0.03, 0.16]],
+    trunk: 0.22,
+    fruits: 9,
+    fruit: (t, p, d) => {
+      const l = group(t, p.toArray());
+      l.quaternion.copy(quatTo(d));
+      l.add(mesh(SPHERE(), skin, [0, 0, 0], [0.05, 0.05, 0.058]));
+      l.add(mesh(SPHERE_LO(), skin, [0, 0, 0.056], 0.012));
+    },
+  });
+  // A half shows the wheel of juicy segments.
+  const h = cutHalf(g, P, { at: [0.24, 0.24], r: 0.075, skin, flesh: P('#d4f07a', 'accent', { roughness: 0.3 }) });
+  const pith = P('#f6fbe0', 'accent');
+  for (let i = 0; i < 4; i++) h.add(mesh(BOX(), pith, [0, 0.005, 0], [0.005, 0.004, 0.13], [0, (i * Math.PI) / 4, 0]));
+  h.add(mesh(CYL(), pith, [0, 0.006, 0], [0.012, 0.004, 0.012]));
+  return top;
+};
+
+B.tangerine = (g, P, crop) => {
+  const top = fruitTree(g, P, crop, {
+    canopy: [[0, 0.58, 0, 0.29], [-0.2, 0.5, 0.06, 0.2], [0.16, 0.5, -0.17, 0.2], [0.15, 0.48, 0.15, 0.18], [0.03, 0.77, -0.03, 0.18]],
+    fruits: 12,
+    fruit: (t, p, d, k) => {
+      const q = group(t, p.toArray(), 1, [0, k, 0]);
+      q.add(mesh(SPHERE(), P(crop.color, 'produce', { roughness: 0.45 }), [0, 0, 0], [0.056, 0.044, 0.056]));
+      q.add(mesh(SPHERE_LO(), P('#3f8a2e', 'accent'), [0, 0.043, 0], [0.012, 0.006, 0.012]));
+      if (k % 3 === 0) leaf(q, P(crop.leaf, 'leaf'), { p: [0, 0.044, 0], len: 0.07, w: 0.032, tilt: 0.3, yaw: 0.7 });
+    },
+  });
+  // A red Tết envelope hangs from the tree, as on the tangerine trees sold for the new year.
+  const env = group(g, FRONT_FLAT.clone().multiplyScalar(0.3).add(V(0, 0.3, 0)).toArray(), 1, [0, FY, 0.08]);
+  env.add(mesh(CYL(), P('#c9a24a', 'deco'), [0, 0.06, 0], [0.003, 0.06, 0.003]));
+  env.add(mesh(BOX(), P('#e8202a', 'deco', { roughness: 0.4 }), [0, 0, 0], [0.055, 0.075, 0.008]));
+  env.add(mesh(SPHERE_LO(), P('#ffd23f', 'deco', { metalness: 0.6, roughness: 0.3 }), [0, 0.006, 0.005], [0.015, 0.015, 0.004]));
+  return top;
+};
+
+const GUAVA_PTS = [[0, 0], [0.04, 0.004], [0.064, 0.03], [0.07, 0.065], [0.058, 0.1], [0.034, 0.124], [0, 0.13]];
+
+B.guava = (g, P, crop) => {
+  const skin = P(crop.color, 'produce', { roughness: 0.5 });
+  const top = fruitTree(g, P, crop, {
+    canopy: [[0, 0.64, 0, 0.28], [-0.19, 0.55, 0.06, 0.19], [0.15, 0.56, -0.16, 0.2], [0.05, 0.8, -0.05, 0.16]],
+    fruits: 6,
+    hang: true,
+    fruit: (t, p, d, k) => {
+      const f = group(t, p.toArray(), 1, [0, k, 0.12]);
+      f.add(mesh(CYL(), P('#5a7a2a', 'stem'), [0, 0.01, 0], [0.006, 0.04, 0.006]));
+      f.add(mesh(LATHE('guava', GUAVA_PTS), skin, [0, -0.13, 0], 1));
+      f.add(mesh(SPHERE_LO(), P('#6b5a2a', 'accent'), [0, -0.128, 0], [0.016, 0.006, 0.016]));
+    },
+  });
+  // A half shows the pink flesh and the ring of seeds.
+  const h = cutHalf(g, P, { at: [0.24, 0.24], r: 0.085, skin, flesh: P('#ff9aa8', 'accent', { roughness: 0.45 }) });
+  h.add(mesh(CYL(), P('#ff6f86', 'accent', { roughness: 0.45 }), [0, 0.003, 0], [0.045, 0.008, 0.045]));
+  pips(h, P('#fbe7b8', 'accent'), { n: 9, r: 0.03, s: 0.007, seed: 'guava', ring: true });
+  return top;
+};
+
+B.greenPear = (g, P, crop) => fruitTree(g, P, crop, {
+  canopy: [[0, 0.66, 0, 0.27], [-0.18, 0.57, 0.05, 0.19], [0.15, 0.58, -0.15, 0.2], [0.05, 0.82, -0.05, 0.16]],
+  fruits: 6,
+  hang: true,
+  fruit: (t, p, d, k) => {
+    const f = group(t, p.toArray(), 1, [0, k, 0.1]);
+    f.add(mesh(CYL(), P('#6b4a2a', 'accent'), [0, 0.01, 0], [0.007, 0.05, 0.007]));
+    f.add(mesh(LATHE('pear', PEAR_PTS), P(crop.color, 'produce', { roughness: 0.35 }), [0, -0.205, 0], 0.68));
+    if (k % 2) leaf(f, P(crop.leaf, 'leaf'), { p: [0, 0.01, 0], len: 0.07, w: 0.035, tilt: 0.2, yaw: 1 });
+  },
+});
+
+/** Five ribs round the y axis: a whole starfruit, or a slice of one when it is thin. */
+function starRibs(parent, mat, { r = 0.02, len = 0.075, rib = 0.042, w = 0.02 } = {}) {
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * TAU;
+    parent.add(mesh(SPHERE(), mat, [Math.cos(a) * r, 0, Math.sin(a) * r], [w, len, rib], [0, Math.PI / 2 - a, 0]));
+  }
+}
+
+B.starfruit = (g, P, crop) => {
+  const skin = P(crop.color, 'produce', { roughness: 0.25 });
+  const top = fruitTree(g, P, crop, {
+    canopy: [[0, 0.62, 0, 0.27], [-0.2, 0.55, 0.05, 0.2], [0.16, 0.56, -0.15, 0.2], [0.04, 0.78, -0.04, 0.17]],
+    fruits: 6,
+    hang: true,
+    fruit: (t, p, d, k) => {
+      const f = group(t, p.toArray(), 1, [0.15, k * 1.2, 0.3]);
+      f.add(mesh(CYL(), P('#5a7a2a', 'stem'), [0, 0, 0], [0.005, 0.04, 0.005]));
+      starRibs(group(f, [0, -0.085, 0]), skin);
+    },
+  });
+  // Cut across, a starfruit is a star.
+  const slice = group(g, FRONT_FLAT.clone().multiplyScalar(0.3).add(V(0, 0.02, 0)).toArray());
+  slice.quaternion.setFromUnitVectors(UPV, V(0.35, 1, 0.35).normalize());
+  starRibs(slice, skin, { r: 0.034, len: 0.014, rib: 0.05, w: 0.032 });
+  slice.add(mesh(CYL(), P('#fff3b0', 'accent'), [0, 0.008, 0], [0.026, 0.012, 0.026]));
+  return top;
+};
+
+B.passionFruit = (g, P, crop) => {
+  // The vine winds up a bamboo stake.
+  g.add(mesh(CYL(0.8), P('#d2b86e', 'stem', { roughness: 0.6 }), [0, 0.42, 0], [0.022, 0.84, 0.022]));
+  const leafM = P(crop.leaf, 'leaf');
+  const vine = P('#6aa83a', 'stem');
+  const at = (t) => {
+    const a = t * TAU * 1.75 + 0.6;
+    return V(Math.sin(a) * 0.07, 0.08 + t * 0.74, Math.cos(a) * 0.07);
+  };
+  let prev = at(0);
+  for (let i = 1; i <= 16; i++) {
+    const p = at(i / 16);
+    const seg = mesh(CYL(), vine, prev.clone().add(p).multiplyScalar(0.5).toArray(), [0.008, p.distanceTo(prev), 0.008]);
+    seg.quaternion.setFromUnitVectors(UPV, p.clone().sub(prev).normalize());
+    g.add(seg);
+    leaf(g, leafM, { p: p.toArray(), len: 0.15, w: 0.1, tilt: 0.2, yaw: Math.atan2(p.x, p.z) + (i % 2 ? 0.5 : -0.5) });
+    prev = p;
+  }
+  tuft(g, leafM, { n: 4, len: 0.14, w: 0.09, tilt: 0.7, y: 0.84 });
+  const skin = P(crop.color, 'produce', { roughness: 0.4 });
+  for (const t of [0.3, 0.5, 0.7, 0.88]) {
+    const p = at(t);
+    const f = group(g, p.clone().addScaledVector(V(p.x, 0, p.z).normalize(), 0.06).toArray());
+    f.add(mesh(CYL(), vine, [0, -0.02, 0], [0.005, 0.05, 0.005]));
+    f.add(mesh(SPHERE(), skin, [0, -0.09, 0], [0.055, 0.06, 0.055]));
+  }
+  const bloom = group(g, at(0.4).addScaledVector(FRONT_FLAT, 0.07).toArray());
+  flowerHead(bloom, P, '#ffffff', '#7a3cc8', { petals: 10, r: 0.05, len: 0.055, w: 0.022 });
+  // A half shows the golden juice full of black seeds.
+  const h = cutHalf(g, P, { at: [0.24, 0.24], r: 0.075, skin, flesh: P('#ffc21f', 'accent', { roughness: 0.2 }) });
+  pips(h, P('#2a1b10', 'accent', { roughness: 0.3 }), { n: 12, r: 0.05, s: 0.008, seed: 'passion' });
+  return 0.9;
+};
+
+// Hundreds of red seeds in an open pomegranate, merged into one shape.
+const ARILS = () =>
+  geo('arils', () => {
+    const rnd = rand('arils');
+    const parts = [];
+    for (let i = 0; i < 34; i++) {
+      const a = rnd() * TAU;
+      const d = Math.sqrt(rnd()) * 0.78;
+      const s = new THREE.SphereGeometry(0.15, 7, 5);
+      s.scale(1, 0.8, 1);
+      s.translate(Math.cos(a) * d, 0.06 + rnd() * 0.06, Math.sin(a) * d);
+      parts.push(s);
+    }
+    return mergeGeometries(parts);
+  });
+
+B.pomegranate = (g, P, crop) => {
+  const skin = P(crop.color, 'produce', { roughness: 0.3 });
+  const fruit = (parent, r) => {
+    parent.add(mesh(SPHERE(), skin, [0, 0, 0], [r, r * 0.92, r]));
+    parent.add(mesh(CYL(0.9), skin, [0, r * 0.95, 0], [r * 0.26, r * 0.25, r * 0.26]));
+    // The little crown on top.
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * TAU;
+      parent.add(mesh(CONE(), skin, [Math.cos(a) * r * 0.22, r * 1.12, Math.sin(a) * r * 0.22], [r * 0.1, r * 0.3, r * 0.1], [Math.sin(a) * 0.5, 0, -Math.cos(a) * 0.5]));
+    }
+  };
+  const top = fruitTree(g, P, crop, {
+    canopy: [[0, 0.62, 0, 0.27], [-0.18, 0.54, 0.05, 0.19], [0.15, 0.55, -0.15, 0.2], [0.04, 0.78, -0.05, 0.16]],
+    fruits: 6,
+    fruit: (t, p, d, k) => fruit(group(t, p.toArray(), 1, [0.2, k, -0.15]), 0.068),
+  });
+  // An open one shows its jewels.
+  const h = cutHalf(g, P, { at: [0.24, 0.24], r: 0.1, skin, flesh: P('#ffe6cf', 'accent', { roughness: 0.6 }) });
+  h.add(mesh(ARILS(), P('#ff1f4f', 'accent', { roughness: 0.12 }), [0, 0, 0], 0.1));
+  return top;
+};
+
+/** A unit ball with n parts spread evenly over it, merged into one shape. part(i) makes one standing on top of the ball. */
+const studded = (key, n, part, [ws, hs] = [16, 12]) =>
+  geo(key, () => {
+    const parts = [new THREE.SphereGeometry(1, ws, hs)];
+    for (let i = 0; i < n; i++) {
+      const y = 1 - ((i + 0.5) / n) * 2;
+      const r = Math.sqrt(1 - y * y);
+      const a = i * 2.39996;
+      const p = part(i);
+      p.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(UPV, V(Math.cos(a) * r, y, Math.sin(a) * r)));
+      parts.push(p);
+    }
+    return mergeGeometries(parts);
+  });
+
+// A rambutan: a ball covered in soft hairs.
+const RAMBUTAN = () => studded('rambutan', 40, () => new THREE.ConeGeometry(0.1, 0.55, 4).translate(0, 1.2, 0), [14, 10]);
+
+B.rambutan = (g, P, crop) => {
+  const skin = P(crop.color, 'produce', { roughness: 0.55 });
+  return fruitTree(g, P, crop, {
+    canopy: [[0, 0.64, 0, 0.29], [-0.19, 0.56, 0.06, 0.2], [0.16, 0.57, -0.16, 0.2], [0.05, 0.8, -0.04, 0.17]],
+    fruits: 5,
+    hang: true,
+    fruit: (t, p, d, k) => {
+      const c = group(t, p.toArray(), 1, [0, k * 1.7, 0]);
+      c.add(mesh(CYL(), P('#6a7a3a', 'stem'), [0, -0.01, 0], [0.005, 0.05, 0.005]));
+      for (const [x, y, z] of [[0, -0.05, 0], [0.05, -0.08, 0.02], [-0.045, -0.085, 0.03], [0.01, -0.12, 0.05]]) {
+        c.add(mesh(RAMBUTAN(), skin, [x * 1.15, y * 1.15, z * 1.15], 0.037));
+      }
+    },
+  });
+};
+
+const CASHEW_PTS = [[0, 0], [0.03, 0.006], [0.042, 0.03], [0.05, 0.07], [0.054, 0.105], [0.045, 0.13], [0.02, 0.142], [0, 0.145]];
+
+B.cashew = (g, P, crop) => fruitTree(g, P, crop, {
+  canopy: [[0, 0.64, 0, 0.29], [-0.2, 0.55, 0.05, 0.2], [0.16, 0.56, -0.16, 0.2], [0.05, 0.8, -0.05, 0.16]],
+  fruits: 5,
+  hang: true,
+  fruit: (t, p, d, k) => {
+    const f = group(t, p.toArray(), 1.25, [0, FY, 0.1 * (k % 2 ? 1 : -1)]);
+    f.add(mesh(CYL(), P('#5a7a2a', 'stem'), [0, 0.01, 0], [0.006, 0.04, 0.006]));
+    // Cashew apples are red or yellow.
+    f.add(mesh(LATHE('cashew', CASHEW_PTS), P(k % 2 ? '#ffc21a' : crop.color, 'produce', { roughness: 0.25 }), [0, -0.145, 0], 1));
+    // The nut hangs outside, under the fruit.
+    f.add(mesh(TORUS(0.024, 0.015, Math.PI), P('#9aa46a', 'accent', { roughness: 0.6 }), [0, -0.184, 0], 1));
+  },
+});
+
+B.cherry = (g, P, crop) => {
+  const skin = P(crop.color, 'produce', { roughness: 0.15 });
+  const stalk = P('#6a8a2a', 'stem');
+  return fruitTree(g, P, crop, {
+    canopy: [[0, 0.64, 0, 0.28], [-0.19, 0.56, 0.05, 0.2], [0.15, 0.57, -0.16, 0.2], [0.04, 0.8, -0.05, 0.17]],
+    fruits: 6,
+    hang: true,
+    fruit: (t, p, d, k) => {
+      // Cherries hang in pairs from one stalk.
+      const c = group(t, p.toArray(), 1, [0, FY + ((k % 3) - 1) * 0.5, 0]);
+      for (const s of [-1, 1]) {
+        c.add(mesh(CYL(), stalk, [s * 0.022, -0.05, 0], [0.004, 0.11, 0.004], [0, 0, s * 0.42]));
+        c.add(mesh(SPHERE(), skin, [s * 0.045, -0.125, 0], [0.04, 0.037, 0.04]));
+      }
+      if (k % 2 === 0) leaf(c, P(crop.leaf, 'leaf'), { p: [0, 0, 0], len: 0.08, w: 0.035, tilt: 0.3, yaw: Math.PI / 2 });
+    },
+  });
+};
+
+B.melon = (g, P, crop) => {
+  const leafM = P(crop.leaf, 'leaf');
+  for (let i = 0; i < 5; i++) leaf(g, leafM, { p: [0, 0.02, 0], len: 0.32, w: 0.2, tilt: 0.12, yaw: i * 1.25 + 2.2 });
+  const skin = P('#ffffff', 'produce', { map: netTexture(), roughness: 0.6 });
+  g.add(mesh(SPHERE(), skin, [-0.04, 0.22, -0.04], [0.23, 0.22, 0.23]));
+  // The T-shaped stalk a good melon is sold with.
+  const stalk = P('#7a8a3a', 'stem');
+  g.add(mesh(CYL(0.8), stalk, [-0.04, 0.47, -0.04], [0.016, 0.07, 0.016]));
+  g.add(mesh(CYL(), stalk, [-0.04, 0.5, -0.04], [0.012, 0.12, 0.012], [0, FY, Math.PI / 2]));
+  g.add(mesh(TORUS(0.05, 0.008, Math.PI * 1.6), stalk, [-0.3, 0.06, 0.1], 1, [0.3, 0.5, 0]));
+  // A half shows the orange flesh and the seeds in the middle.
+  const h = cutHalf(g, P, { at: [0.25, 0.25], r: 0.11, skin, flesh: P('#ff9a3a', 'accent', { roughness: 0.4 }) });
+  h.add(mesh(CYL(), P('#f6d58a', 'accent'), [0, 0.003, 0], [0.045, 0.008, 0.045]));
+  pips(h, P('#fff1cf', 'accent'), { n: 10, r: 0.03, s: 0.007, seed: 'melon' });
+  return 0.56;
+};
+
+// ── Fruits of levels 41–45 ────────────────────────────────────
+
+B.kiwi = (g, P, crop) => {
+  // Kiwi vines are trained over a T-shaped trellis and the fruit hangs underneath.
+  const wood = P('#a8804e', 'stem', { roughness: 0.8 });
+  g.add(mesh(CYL(), wood, [0, 0.3, 0], [0.02, 0.6, 0.02]));
+  g.add(mesh(BOX(), wood, [0, 0.6, 0], [0.56, 0.024, 0.024], [0, FY, 0]));
+  g.add(mesh(CYL(0.7), P('#7a5a3a', 'stem'), FRONT_FLAT.clone().multiplyScalar(0.025).setY(0.3).toArray(), [0.012, 0.6, 0.012]));
+  const leafM = P(crop.leaf, 'leaf', { roughness: 0.7 });
+  for (const s of [-0.18, 0, 0.18]) g.add(mesh(SPHERE_LO(), leafM, RIGHT.clone().multiplyScalar(s).setY(0.67).toArray(), [0.17, 0.08, 0.17]));
+  const rnd = rand('kiwi');
+  for (let i = 0; i < 12; i++) {
+    const p = RIGHT.clone().multiplyScalar((i / 11 - 0.5) * 0.62).addScaledVector(FRONT_FLAT, rnd() * 0.16 - 0.08).setY(0.68 + rnd() * 0.04);
+    leaf(g, leafM, { p: p.toArray(), len: 0.15, w: 0.12, tilt: -0.25 + rnd() * 0.5, yaw: rnd() * TAU });
+  }
+  const skin = P(crop.color, 'produce', { roughness: 0.95 });
+  const stalk = P('#6b4a2a', 'stem');
+  for (let k = 0; k < 7; k++) {
+    const at = RIGHT.clone().multiplyScalar((k / 6 - 0.5) * 0.48).addScaledVector(FRONT_FLAT, k % 2 ? 0.08 : -0.02).setY(0.6);
+    const f = group(g, at.toArray(), 1 - (k % 3) * 0.08, [0, k, 0.1]);
+    f.add(mesh(CYL(), stalk, [0, -0.02, 0], [0.004, 0.04, 0.004]));
+    f.add(mesh(SPHERE(), skin, [0, -0.08, 0], [0.034, 0.046, 0.034]));
+  }
+  // A half shows the green flesh, the pale heart and the ring of tiny black seeds.
+  const h = cutHalf(g, P, { at: [0.24, 0.24], r: 0.06, skin, flesh: P('#7fc832', 'accent', { roughness: 0.3 }) });
+  h.add(mesh(CYL(), P('#eef2c0', 'accent'), [0, 0.003, 0], [0.018, 0.008, 0.018]));
+  pips(h, P('#1a1410', 'accent'), { n: 16, r: 0.027, s: 0.004, seed: 'kiwi', ring: true });
+  return 0.76;
+};
+
+B.silverberry = (g, P, crop) => {
+  const skin = P('#ffffff', 'produce', { map: speckleTexture(), roughness: 0.4 });
+  const stalk = P('#9a8a5a', 'stem');
+  return fruitTree(g, P, crop, {
+    canopy: [[0, 0.6, 0, 0.27], [-0.19, 0.52, 0.05, 0.19], [0.15, 0.53, -0.15, 0.19], [0.04, 0.76, -0.04, 0.16]],
+    trunk: 0.38,
+    fruits: 9,
+    hang: true,
+    fruit: (t, p, d, k) => {
+      // Long, oval berries dangle in twos on thin stalks.
+      const c = group(t, p.toArray(), 1.3, [0, k * 1.9, 0]);
+      for (const [x, z, l] of [[-0.014, 0, 0.05], [0.016, 0.012, 0.075]]) {
+        c.add(mesh(CYL(), stalk, [x, -l / 2, z], [0.003, l, 0.003]));
+        c.add(mesh(SPHERE(), skin, [x, -l - 0.034, z], [0.022, 0.038, 0.022]));
+      }
+    },
+  });
+};
+
+B.fig = (g, P, crop) => {
+  const top = fruitTree(g, P, crop, {
+    canopy: [[0, 0.7, 0, 0.28], [-0.2, 0.62, 0.06, 0.2], [0.16, 0.63, -0.16, 0.2], [0.05, 0.86, -0.05, 0.16]],
+    trunk: 0.56,
+    girth: 0.06,
+    fruits: 0,
+  });
+  const ripe = P(crop.color, 'produce', { roughness: 0.4 });
+  const mats = [ripe, P('#f0902a', 'produce', { roughness: 0.4 }), ripe, P('#a8c43a', 'produce', { roughness: 0.4 })];
+  // Cluster figs grow in bunches straight out of the trunk.
+  const bunch = [[0, 0, 1], [1, 0.4, 0.5], [-1, 0.5, 0.5], [0.6, -0.9, 0.6], [-0.6, -0.8, 0.6], [0.1, 1, 0.3]];
+  [[0.14, -0.5], [0.27, 0.35], [0.4, -0.15], [0.5, 0.6]].forEach(([y, a], j) => {
+    const out = FRONT_FLAT.clone().applyAxisAngle(UPV, a);
+    const side = V(-out.z, 0, out.x);
+    const c = out.clone().multiplyScalar(0.06).setY(y);
+    bunch.forEach(([s, u, o], i) => {
+      const p = c.clone().addScaledVector(side, s * 0.03).addScaledVector(UPV, u * 0.03).addScaledVector(out, o * 0.03);
+      g.add(mesh(SPHERE(), mats[(i + j) % mats.length], p.toArray(), [0.027, 0.025, 0.027]));
+    });
+  });
+  // A half shows the pink inside full of tiny seeds.
+  const h = cutHalf(g, P, { at: [0.25, 0.22], r: 0.045, skin: ripe, flesh: P('#f6dcb4', 'accent') });
+  h.add(mesh(CYL(), P('#e8607a', 'accent', { roughness: 0.5 }), [0, 0.003, 0], [0.03, 0.008, 0.03]));
+  pips(h, P('#fff2c0', 'accent'), { n: 14, r: 0.026, s: 0.004, seed: 'fig' });
+  return top;
+};
+
+// A sugar apple: a ball of rounded knobs.
+const SUGAR_APPLE = () => studded('sugarApple', 48, () => new THREE.SphereGeometry(0.3, 8, 6).scale(1, 0.5, 1).translate(0, 0.9, 0));
+
+B.sugarApple = (g, P, crop) => {
+  const skin = P(crop.color, 'produce', { roughness: 0.6 });
+  const top = fruitTree(g, P, crop, {
+    canopy: [[0, 0.62, 0, 0.27], [-0.19, 0.54, 0.05, 0.19], [0.15, 0.55, -0.15, 0.2], [0.04, 0.77, -0.05, 0.16]],
+    fruits: 5,
+    hang: true,
+    fruit: (t, p, d, k) => {
+      const f = group(t, p.toArray(), 1, [0, k * 1.3, 0.1]);
+      f.add(mesh(CYL(), P('#6b5a2a', 'stem'), [0, -0.005, 0], [0.005, 0.04, 0.005]));
+      f.add(mesh(SUGAR_APPLE(), skin, [0, -0.075, 0], [0.05, 0.056, 0.05]));
+    },
+  });
+  // An open one shows the sweet white flesh and the black seeds.
+  const h = cutHalf(g, P, { at: [0.24, 0.24], r: 0.075, skin, flesh: P('#fbf5e6', 'accent', { roughness: 0.6 }) });
+  pips(h, P('#1a1410', 'accent', { roughness: 0.15 }), { n: 9, r: 0.05, s: 0.009, seed: 'sugarApple' });
+  return top;
+};
+
+B.sapodilla = (g, P, crop) => {
+  const skin = P(crop.color, 'produce', { roughness: 0.9 });
+  const top = fruitTree(g, P, crop, {
+    canopy: [[0, 0.64, 0, 0.29], [-0.2, 0.56, 0.06, 0.2], [0.16, 0.57, -0.16, 0.2], [0.05, 0.8, -0.05, 0.17]],
+    fruits: 7,
+    hang: true,
+    fruit: (t, p, d, k) => {
+      const f = group(t, p.toArray(), 1, [0.1, k * 1.5, 0.15]);
+      f.add(mesh(CYL(), P('#6b5a3a', 'stem'), [0, -0.005, 0], [0.005, 0.04, 0.005]));
+      f.add(mesh(SPHERE(), skin, [0, -0.07, 0], [0.046, 0.054, 0.046]));
+      f.add(mesh(CONE(), P('#5a3a20', 'accent'), [0, -0.127, 0], [0.006, 0.012, 0.006], [Math.PI, 0, 0]));
+    },
+  });
+  // A half shows the honey-brown flesh and the shiny black seeds.
+  const h = cutHalf(g, P, { at: [0.24, 0.24], r: 0.065, skin, flesh: P('#d98a48', 'accent', { roughness: 0.5 }) });
+  pips(h, P('#1f140c', 'accent', { roughness: 0.15 }), { n: 5, r: 0.022, s: 0.009, seed: 'sapodilla', ring: true });
+  return top;
+};
+
+// A soursop: a ball of soft, bent spines.
+const SOURSOP = () => studded('soursop', 70, () => new THREE.ConeGeometry(0.06, 0.24, 4).translate(0, 0.12, 0).rotateX(0.5).translate(0, 0.96, 0));
+
+B.soursop = (g, P, crop) => {
+  const skin = P(crop.color, 'produce', { roughness: 0.5 });
+  const stalk = P('#5a6a2a', 'stem');
+  const top = fruitTree(g, P, crop, {
+    canopy: [[0, 0.66, 0, 0.28], [-0.2, 0.58, 0.06, 0.2], [0.16, 0.59, -0.16, 0.2], [0.05, 0.82, -0.05, 0.17]],
+    trunk: 0.46,
+    fruits: 4,
+    hang: true,
+    fruit: (t, p, d, k) => {
+      const f = group(t, p.toArray(), 1, [0.1, k * 1.4, 0.2]);
+      f.add(mesh(CYL(), stalk, [0, -0.005, 0], [0.006, 0.04, 0.006]));
+      f.add(mesh(SOURSOP(), skin, [0, -0.095, 0], [0.055, 0.078, 0.055]));
+    },
+  });
+  // A big ripe one picked and laid on the grass.
+  const lying = group(g, FRONT_FLAT.clone().multiplyScalar(0.33).add(V(0, 0.06, 0)).toArray(), 1, [0, FY, 1.35]);
+  lying.add(mesh(SOURSOP(), skin, [0, 0, 0], [0.062, 0.088, 0.062]));
+  lying.add(mesh(CYL(), stalk, [0, 0.1, 0], [0.008, 0.03, 0.008]));
+  return top;
+};
+
+const POMELO_PTS = [[0, 0], [0.05, 0.004], [0.085, 0.03], [0.098, 0.07], [0.094, 0.11], [0.074, 0.145], [0.048, 0.168], [0.028, 0.182], [0, 0.186]];
+
+B.pomelo = (g, P, crop) => {
+  const skin = P(crop.color, 'produce', { roughness: 0.45 });
+  const top = fruitTree(g, P, crop, {
+    canopy: [[0, 0.68, 0, 0.29], [-0.2, 0.6, 0.06, 0.2], [0.16, 0.61, -0.16, 0.21], [0.05, 0.85, -0.05, 0.17]],
+    trunk: 0.46,
+    fruits: 4,
+    hang: true,
+    fruit: (t, p, d, k) => {
+      const f = group(t, p.toArray(), 0.9 + (k % 2) * 0.1, [0, k * 1.6, 0.08]);
+      f.add(mesh(CYL(), P('#5a6a2a', 'stem'), [0, -0.005, 0], [0.007, 0.04, 0.007]));
+      f.add(mesh(LATHE('pomelo', POMELO_PTS), skin, [0, -0.2, 0], 1));
+      if (k % 2 === 0) leaf(f, P(crop.leaf, 'leaf'), { p: [0, -0.01, 0], len: 0.08, w: 0.04, tilt: 0.2, yaw: 1 });
+    },
+  });
+  // A half shows the thick white pith round the pink segments.
+  const pith = P('#fbf3da', 'accent', { roughness: 0.6 });
+  const h = cutHalf(g, P, { at: [0.25, 0.25], r: 0.1, skin, flesh: pith });
+  h.add(mesh(CYL(), P('#ff8a92', 'accent', { roughness: 0.35 }), [0, 0.003, 0], [0.066, 0.006, 0.066]));
+  for (let i = 0; i < 6; i++) h.add(mesh(BOX(), pith, [0, 0.006, 0], [0.005, 0.004, 0.13], [0, (i * Math.PI) / 6, 0]));
+  h.add(mesh(CYL(), pith, [0, 0.007, 0], [0.012, 0.004, 0.012]));
+  return top;
+};
+
+// A jackfruit: a long ball covered in small blunt studs.
+const JACKFRUIT = () => studded('jackfruit', 150, () => new THREE.ConeGeometry(0.14, 0.12, 6).translate(0, 0.99, 0), [20, 14]);
+
+B.jackfruit = (g, P, crop) => {
+  const top = fruitTree(g, P, crop, {
+    canopy: [[0, 0.7, 0, 0.29], [-0.21, 0.62, 0.06, 0.2], [0.17, 0.63, -0.17, 0.21], [0.05, 0.86, -0.05, 0.17]],
+    trunk: 0.56,
+    girth: 0.065,
+    fruits: 0,
+  });
+  const skin = P(crop.color, 'produce', { roughness: 0.7 });
+  const stalk = P('#7a6a3a', 'stem');
+  // Jackfruit grows straight out of the trunk, hugging it.
+  for (const [y, a, s] of [[0.3, -0.4, 1], [0.5, 0.55, 0.8]]) {
+    const out = FRONT_FLAT.clone().applyAxisAngle(UPV, a);
+    const f = group(g, out.clone().multiplyScalar(0.05).setY(y).toArray(), s);
+    f.add(mesh(CYL(), stalk, out.clone().multiplyScalar(0.012).setY(-0.005).toArray(), [0.01, 0.04, 0.01]));
+    f.add(mesh(JACKFRUIT(), skin, out.clone().multiplyScalar(0.075).setY(-0.125).toArray(), [0.082, 0.125, 0.082]));
+  }
+  // An open one shows the golden bulbs round the pale core.
+  const h = cutHalf(g, P, { at: [0.26, 0.24], r: 0.09, skin, flesh: P('#efe2a0', 'accent', { roughness: 0.6 }) });
+  h.add(mesh(CYL(), P('#f8f2d6', 'accent'), [0, 0.004, 0], [0.022, 0.008, 0.022]));
+  pips(h, P('#ffbf1a', 'accent', { roughness: 0.3 }), { n: 9, r: 0.055, s: 0.015, seed: 'jackfruit', ring: true });
+  return top;
 };
 
 // ── Growth stages ─────────────────────────────────────────────

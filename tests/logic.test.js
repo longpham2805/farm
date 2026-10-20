@@ -35,7 +35,12 @@ test('data tables are consistent', () => {
     assert.ok(info && info.fact.vi && info.fact.en, `no nutrition for ${c.id}`);
     for (const n of info.n) assert.ok(NUTRIENTS[n], `${c.id}: unknown nutrient ${n}`);
   }
-  for (const [mat] of Object.entries(LEVEL_MATERIALS).map(([, m]) => [m.crop])) assert.ok(G.CROP_BY_ID[mat], mat);
+  for (const [level, m] of Object.entries(LEVEL_MATERIALS)) {
+    assert.ok(G.CROP_BY_ID[m.crop], m.crop);
+    assert.ok(G.CROP_BY_ID[m.crop].unlock < Number(level), `level ${level} needs ${m.crop} before it can be grown`);
+  }
+  for (const c of CROPS) assert.ok(c.unlock <= MAX_LEVEL, `${c.id} opens above the top level`);
+  for (let level = 31; level <= MAX_LEVEL; level++) assert.ok(G.unlocksAt(level).seeds.length > 0, `level ${level} opens nothing`);
 });
 
 test('old saves keep their crops after the seed list changed', () => {
@@ -68,15 +73,15 @@ test('plant, water, ripen, harvest', () => {
   assert.deepEqual(G.plant(s, 5, 'rice', T0), { ok: false, err: 'occupied' });
 
   const plot = s.plots[5];
-  assert.equal(plot.growMs, 20000);
+  assert.equal(plot.growMs, 12000);
   assert.equal(G.plotInfo(plot, T0).stage, 0);
   assert.equal(G.water(s, 5, T0).ok, false); // not thirsty yet
-  assert.equal(G.plotInfo(plot, T0 + 9000).thirsty, true);
-  assert.ok(G.water(s, 5, T0 + 9000).ok);
-  assert.equal(G.plotInfo(plot, T0 + 9000).thirsty, false);
+  assert.equal(G.plotInfo(plot, T0 + 6000).thirsty, true);
+  assert.ok(G.water(s, 5, T0 + 6000).ok);
+  assert.equal(G.plotInfo(plot, T0 + 6000).thirsty, false);
 
-  assert.equal(G.harvest(s, 5, T0 + 10000).ok, false);
-  const r = G.harvest(s, 5, T0 + 20000);
+  assert.equal(G.harvest(s, 5, T0 + 8000).ok, false);
+  const r = G.harvest(s, 5, T0 + 12000);
   assert.ok(r.ok);
   assert.equal(r.count, 4); // 3 + 1 watering
   assert.equal(s.plots[5], null);
@@ -125,7 +130,7 @@ test('upgrade needs xp, coins and materials', () => {
   const r = G.upgrade(s);
   assert.ok(r.ok);
   assert.equal(s.level, 2);
-  assert.equal(s.xp, 5);
+  assert.equal(s.xp, 11);
   assert.equal(s.coins, 450);
   assert.deepEqual(r.unlocks.seeds.sort(), ['banana', 'carrot', 'tomato']);
   assert.equal(r.unlocks.plots, 2);

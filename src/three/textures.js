@@ -157,6 +157,62 @@ export const pineappleTexture = () =>
     }
   });
 
+// Melon skin: a cream net over green-gold. It wraps round a sphere, so the left and right edges meet.
+export const netTexture = () =>
+  canvasTex('net', 256, 128, (g, w, h) => {
+    g.fillStyle = '#a3b552';
+    g.fillRect(0, 0, w, h);
+    const cols = 12;
+    const rows = 6;
+    let seed = 11;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const pts = [];
+    for (let j = 0; j <= rows; j++) {
+      pts.push([]);
+      for (let i = 0; i < cols; i++) {
+        const jy = j === 0 || j === rows ? 0 : rnd() - 0.5;
+        pts[j].push([((i + 0.5 + (rnd() - 0.5) * 0.6) * w) / cols, ((j + jy * 0.6) * h) / rows]);
+      }
+    }
+    g.strokeStyle = '#f2ecd0';
+    g.lineWidth = 3.2;
+    g.lineCap = 'round';
+    // Each strand is a slightly bent line; the last one in a row is drawn twice so it crosses the seam.
+    const line = (a, b, copies) => {
+      const cx = (a[0] + b[0]) / 2 + (rnd() - 0.5) * 6;
+      const cy = (a[1] + b[1]) / 2 + (rnd() - 0.5) * 6;
+      for (const dx of copies) {
+        g.beginPath();
+        g.moveTo(a[0] + dx, a[1]);
+        g.quadraticCurveTo(cx + dx, cy, b[0] + dx, b[1]);
+        g.stroke();
+      }
+    };
+    for (let j = 0; j <= rows; j++) {
+      for (let i = 0; i < cols; i++) {
+        const p = pts[j][i];
+        if (i < cols - 1) line(p, pts[j][i + 1], [0]);
+        else line(p, [pts[j][0][0] + w, pts[j][0][1]], [0, -w]);
+        if (j < rows) line(p, pts[j + 1][i], [0]);
+      }
+    }
+  });
+
+// Silverberry skin: red, covered in tiny silver scales.
+export const speckleTexture = () =>
+  canvasTex('speckle', 128, 64, (g, w, h) => {
+    g.fillStyle = '#e8321a';
+    g.fillRect(0, 0, w, h);
+    let seed = 7;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    g.fillStyle = '#ffe6cf';
+    for (let i = 0; i < 60; i++) {
+      g.beginPath();
+      g.arc(rnd() * w, rnd() * h, 1.6 + rnd() * 1.4, 0, Math.PI * 2);
+      g.fill();
+    }
+  });
+
 export const kernelTexture = () =>
   canvasTex('corn', 64, 128, (g, w, h) => {
     g.fillStyle = '#e8a800';

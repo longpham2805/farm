@@ -4,6 +4,7 @@
 // `go` tells the UI which screen helps with the task.
 
 import { CROPS, TOTAL_VARIETIES } from './crops.js';
+import { MAX_LEVEL } from '../config.js';
 
 export const CHAPTERS = [
   {
@@ -66,11 +67,21 @@ export const CHAPTERS = [
     ],
   },
   {
+    // Added with the fruits of levels 31–40, so its ids come after the last chapter's.
+    title: { vi: 'Vườn cây trái sum suê', en: 'Bountiful Orchard' },
+    tasks: [
+      { id: 'c8a', kind: 'level', n: 32, go: 'upgrade', reward: { seeds: { pack4: 3 } } },
+      { id: 'c8b', kind: 'tier4', n: 200, go: 'shop', reward: { coins: 100000 } },
+      { id: 'c8c', kind: 'discovered', n: 160, go: 'book', reward: { seeds: { pack4: 5 } } },
+      { id: 'c8d', kind: 'level', n: 36, go: 'upgrade', reward: { coins: 300000 } },
+    ],
+  },
+  {
     title: { vi: 'Vua nông trại', en: 'Farm Royalty' },
     tasks: [
       { id: 'c7a', kind: 'discovered', n: TOTAL_VARIETIES, go: 'book', reward: { coins: 300000 } },
       { id: 'c7b', kind: 'sets', n: CROPS.length, go: 'book', reward: { seeds: { pack4: 10 } } },
-      { id: 'c7c', kind: 'level', n: 30, go: 'upgrade', reward: { coins: 500000 } },
+      { id: 'c7c', kind: 'level', n: MAX_LEVEL, go: 'upgrade', reward: { coins: 1000000 } },
     ],
   },
 ];
