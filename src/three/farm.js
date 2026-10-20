@@ -6,7 +6,8 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { worldMat } from './materials.js';
 import { Batch } from './batch.js';
-import { addNature, railFence, steppingStones } from './nature.js';
+import { addNature, steppingStones } from './nature.js';
+import { woodFence } from './buildings/fence.js';
 import { seeded } from '../util.js';
 import { RING, PLACES } from './valleyMap.js';
 import { barn } from './buildings/barn.js';
@@ -257,8 +258,13 @@ export function buildFarm(theme) {
 
   // The fence just inside the ring road: a straight run along each side, open at the corners, with a lamp either
   // side of each opening and grass at some of the posts.
+  const fenceRand = seeded(11);
   for (const [from, to] of ringSides(FENCE, GATE)) {
-    for (const p of railFence(deco, from, to, theme.fence, { height: 0.42 })) {
+    woodFence(deco, [[from.x, from.z], [to.x, to.z]], fenceRand, { height: 0.42, wood: theme.fence });
+    // The grass along it, every 1.1 or so, as it grew at the old fence's posts.
+    const n = Math.max(1, Math.round(from.distanceTo(to) / 1.1));
+    for (let i = 0; i <= n; i++) {
+      const p = from.clone().lerp(to, i / n);
       if (rand() < 0.4) tuft(p.x + (rand() - 0.5) * 0.25, p.z + (rand() - 0.5) * 0.25);
     }
     const along = to.clone().sub(from).normalize();

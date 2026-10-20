@@ -161,6 +161,10 @@ export const PLACES = {
   // reference's here, so both stand as far in front of its edge as the reference draws them from its own.
   frontBench: { at: [-1.45, -5.84], turn: -0.5 },
   frontLamp: { at: [-2.12, -5.38], size: 1.4 },
+  // And behind them a short rail fence along the road's front edge, as the reference draws it, from a little left of
+  // the lamp to past the bench's right end: behind the lamp, as there, though nearer it (the painted road stands
+  // further forward), and running as the painted edge does.
+  frontFence: { ends: [[-2.44, -5.05], [-0.07, -5.78]] },
   // The buffalo grazing on the grass at the top of the river's rocky bank, facing left and a little towards the
   // camera, and her calf behind her by the road (animals/buffalo.js). They wander about `area`, the grass between
   // the road to the big bridge and the river, up into the meadow below the small fall.

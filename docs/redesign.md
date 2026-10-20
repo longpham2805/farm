@@ -134,8 +134,8 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   stones in courses under two broad slabs, with a low door and moss. They share one pad: the windmill in its middle,
   turned a little left of facing the camera, the shed in the bulge on its left (`PLACES`, moved to the pad).
 - **Hen yard** (`henYard` in `buildings/coop.js`, in `placeBuildings`): one square unit, as the reference draws
-  it, not following the pad's curves: a yard fenced on all four sides with short sections (posts at most 0.3 apart,
-  two rails), the hen house at its back on the right (boards on short legs, a shingled roof, a door with a ramp and
+  it, not following the pad's curves: a yard fenced on all four sides (`woodFence`, posts at most 0.42 apart, 0.36
+  tall), the hen house at its back on the right (boards on short legs, a shingled roof, a door with a ramp and
   a white sign), the small coop on its left (a round window in its gable, straw in its doorway), bales of straw
   stacked between them and straw strewn about, a feeder and a water dish, and grass round the fence, thicker at the
   corners. It stands on the pad of two lobes (`PLACES.henYard`), turned 37° from facing the camera.
@@ -264,10 +264,24 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     size they were a few pixels over the dark forest. They cast no shadows.
   - `dev/animals.html?set=ducks` and `?set=birds` show them close up. The old `addAnimals` in `animals.js` belongs to
     the old 3D valley.
+- **The fences** (`woodFence` in `buildings/fence.js`), redone on 2026-10-20 for all of them, the user finding the
+  old ones too straight and too much in line, their posts too square and upright and their wood a flat colour: round
+  the meadow, round the fields over the big bridge, round the hens' yard (its own `fence` before), the farm's own just
+  inside the ring road (the nature pack's straight `railFence` before; still in the farm's colour, `theme.fence`,
+  and the grass along it still where the old posts stood, so the farm's random numbers stay as they were), and the
+  new one behind the bench in front of the farm. As the reference draws them: posts of rough round wood (seven faces,
+  each a little wider or narrower and further out or in, so they look hewn), a little thicker at the foot, rounded
+  over at the top, kinked a little halfway, each leaning its own way (up to 0.05), a little taller or shorter (7%),
+  a little off the line (0.014) and along it, about 0.6 apart; two rails of round poles (six faces) nailed on one side
+  of them, at 0.4 and 0.82 of the height, each sagging a little, bowed a little sideways, a little off level at
+  either end and running on a little past the posts, their cut ends pale. The wood warm orange-brown (`FENCE_WOOD`,
+  from the reference's fences), each face lit by how it faces the sun from its dark to its light, each face a shade
+  of its own so the grain streaks along the piece, each length a little lighter or darker, each piece its own shade
+  and some greyer with weather, a dark knot on some. Posts 0.088 across at the foot and rails 0.052, as thick as the
+  reference's (a first try at 0.06 and 0.034 read spidery). One mesh for each fence's wood, through the batch.
 - **The meadow's fence and trough**: a rail fence (`woodFence` in `buildings/fence.js`, for the fields' fences too)
   round the painted meadow's edge (`MEADOW`, the faint line in the painting, which runs a little differently from the
-  reference's fence): square posts of weathered wood at most 0.42 apart and at every corner, no two quite the same
-  height or quite upright, each with a lighter cap, two rails from post to post, each a little off level. A gate of
+  reference's fence). A gate of
   three boards and a brace, between two stouter posts, opens onto the road at the front right (`PLACES.meadow.gates`;
   on the right side, square to the camera, it showed only edge on). The trough (`buildings/trough.js`) stands where
   the reference draws it, along the front fence (`PLACES.trough`): a box of planks three to a side on two beams, posts
@@ -668,7 +682,10 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   the reference's in `dev/buildings.html` (measured on the reference alone, 77 px tall against the meadow's 49). The
   painting's road runs up to 0.7 further forward than the reference's there, so both stand as far in front of its edge
   as the reference draws them from its own. Tried first: the bench turned as the painted road runs (-0.3), which
-  showed it nearly side on. The rail fence the reference draws along the road behind them is not there.
+  showed it nearly side on. Behind them the short rail fence the reference draws along the road
+  (`PLACES.frontFence`, `woodFence`), from a little left of the lamp to past the bench's right end, along the painted
+  road's front edge: behind the lamp as in the reference, though nearer it (0.23; the reference's stands 0.5 behind
+  its lamp), since the painted road stands further forward.
   Then the boulders and the cattails, area by area, in `FLOWERS` as kinds of their own (`rock`, turned as
   `dev/plants.html` shows them, and `reeds` in `placePlants`), not in `ROCKS`: the woods keep clear of `ROCKS` while
   they are laid out, so changing it would move every later tree, while the woods leave `FLOWERS` out afterwards. (They

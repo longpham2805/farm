@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import { BOX, GABLE, BALL, cyl, tiledSlope } from './parts.js';
 import { addNature } from '../nature.js';
 import { seeded } from '../../util.js';
+import { woodFence } from './fence.js';
 
 const BOARDS = '#dc9a62';
 const SEAM = '#bf7f4a';
@@ -17,7 +18,6 @@ const TRIM = '#a8703f';
 const DARK = '#3e2618';
 const SHINGLES = ['#c7844f', '#b97748', '#d4915b', '#c07e4c'];
 const UNDER = '#7a4c2c';
-const FENCE = '#c48c57';
 const DISC = cyl(1, 1, 16);
 
 /** Boards across a wall w wide facing +z from the batch's origin, from y0 up to y1: seams every few centimetres. */
@@ -96,28 +96,10 @@ export function coop(batch) {
   batch.pop();
 }
 
-// The yard, square to the huts: HX either side of its middle and HZ in front and behind; fence posts at most POST
-// apart, with two rails between them.
+// The yard, square to the huts: HX either side of its middle and HZ in front and behind.
 const HX = 1.05;
 const HZ = 1.0;
-const POST = 0.3;
 const GRASS = ['PLANT_01_GrassShort', 'PLANT_02_GrassMedium', 'PLANT_03_GrassTall'];
-
-/** A rail fence from (ax, az) to (bx, bz) in the batch's frame: posts at most POST apart, two rails between. */
-function fence(batch, ax, az, bx, bz) {
-  const len = Math.hypot(bx - ax, bz - az);
-  const n = Math.ceil(len / POST);
-  const turn = Math.atan2(-(bz - az), bx - ax);
-  for (let k = 0; k <= n; k++) {
-    const x = ax + ((bx - ax) * k) / n;
-    const z = az + ((bz - az) * k) / n;
-    batch.add(BOX, TRIM, [x, 0.18, z], [0.045, 0.36, 0.045]);
-    batch.add(BOX, '#94603a', [x, 0.365, z], [0.055, 0.02, 0.055]);
-  }
-  batch.push((ax + bx) / 2, 0, (az + bz) / 2, turn);
-  for (const y of [0.13, 0.28]) batch.add(BOX, FENCE, [0, y, 0.026], [len, 0.04, 0.022]);
-  batch.pop();
-}
 
 /** A square bale of straw tied with two strings, w × h × d, at (x, y, z) in the batch's frame. */
 function bale(batch, [x, y, z], turn, [w, h, d] = [0.3, 0.16, 0.2]) {
@@ -143,9 +125,9 @@ export function henYard(batch) {
   coop(batch);
   batch.pop();
 
-  // The fence all round, posts and rails.
+  // The fence all round, posts and rails (its own random numbers, so the straw and grass lie as they did).
   const corners = [[-HX, -HZ], [HX, -HZ], [HX, HZ], [-HX, HZ]];
-  corners.forEach(([ax, az], k) => fence(batch, ax, az, ...corners[(k + 1) % 4]));
+  woodFence(batch, corners, seeded(43), { closed: true, spacing: 0.42, height: 0.36 });
 
   // A feeder and a water dish, bales of straw stacked between the huts, and straw strewn about.
   batch.push(0.05, 0, 0.45, 0.25);

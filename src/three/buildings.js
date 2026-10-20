@@ -427,8 +427,9 @@ export function placeBuildings({ at }) {
   const water = place(PLACES.trough, () => waterTrough(batch, seeded(29)));
   hay.push(place(PLACES.hayRack, () => hayRack(batch)));
   const paper = place(PLACES.meadowBench, () => bench(batch, seeded(73), { paper: true }));
-  // A bench by the ring road in front of the farm.
+  // A bench by the ring road in front of the farm, and a short fence behind it along the road.
   place(PLACES.frontBench, () => bench(batch, seeded(79)));
+  woodFence(batch, PLACES.frontFence.ends.map(([u, b]) => [at(u, b).x, at(u, b).z]), seeded(83));
   // The fields over the big bridge on their painted pad, square to the plots.
   const fieldsAt = at(...PLACES.fields.at);
   batch.push(fieldsAt.x, 0, fieldsAt.z);
