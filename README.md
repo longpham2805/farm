@@ -113,26 +113,32 @@ candy crops become fruits of the same tier (see `RENAMED_CROPS`).
 | `src/three/models.js` | Procedural 3D model for every crop, growth stage and mutation |
 | `src/three/scene.js` | Renderer, camera, lights, effects, picking, zoom and pan |
 | `src/three/farm.js` | The farm in the middle: plots, barn, the fence with its lamps, benches and flower beds, the frog's pond (recoloured for neighbours), and the shape of the ring road round them |
-| `src/three/countryside.js` | The valley around it: the map, ground, river and waterfall, roads, forest, mountains, clouds |
-| `src/three/buildings.js`, `src/three/animals.js` | Farmhouse, silo, windmill, coops, well, bridges, fields, meadow…; hens, ducks, a pig, cows, sheep, buffalo, birds |
-| `src/three/buildings/` | The buildings redone for the painted valley, one file each (farmhouse, barn, silo, windmill, stone shed, hen yard, well, cart and hay so far), and the parts they share |
-| `src/three/animals/` | Animals for the painted valley, apart from where they live: chickens of several breeds, and a flock that wanders any patch of ground |
+| `src/three/backdrop.js` | The painted ground: the painting in tiles, sharp or fast, the river's water moving over it, and the plane that shows the shadows on it |
+| `src/three/valleyMap.js` | Where everything stands on the painting, in map units: the ring road, the river, roads, bridges and falls, the meadow, the buildings' places (`PLACES`), the trees, flowers, rocks and water lilies, and the woods' areas |
+| `src/three/countryside.js` | The painted valley put together: the backdrop, the buildings and plants on it, the sun and its shadow fit, clouds |
+| `src/three/buildings.js` | Puts the buildings, their animals, the bridges, benches, lamps and fences on the painted valley where `PLACES` says (`placeBuildings`), and the spray off the falls |
+| `src/three/buildings/` | The buildings and props redone for the painted valley, one file each (farmhouse, barn, silo, windmill, stone shed, hen yard, well, cart and hay, the fields over the big bridge, the bridges, the landing, lamps, benches, a table, the rail fences, the post with its robin, the trough, the falls' spray), and the parts they share |
+| `src/three/animals/` | Animals for the painted valley, apart from where they live: chickens of several breeds, ducks, a pig, cows, sheep, the buffalo and its calf, swallows and the robin; a flock or herd that wanders any patch of ground |
 | `src/three/batch.js` | Merges many small still parts into one mesh, so the valley draws in a few calls |
 | `src/three/stats.js` | `?stats` on the address shows what a frame costs: draw calls, triangles, ms, fps |
 | `src/three/mist.js` | Mist round the farm's grounds, thickest at the corners of the opening view, with wisps of cloud drifting by |
-| `src/three/trees.js` | Trees built in code: tiered pines, round trees with puffy crowns, birches and bushes, painted light on top and dark underneath |
-| `src/three/nature.js`, `src/three/natureModels.js` | Grass, flowers, stones, boulders, stumps, logs, fences, the bench and signs from Cenji's LowPoly Nature pack, in the game's colours; `dev/nature-models.cjs` makes `natureModels.js` from the pack's `.glb` files |
+| `src/three/nature.js`, `src/three/natureModels.js` | Grass, flowers and stones from Cenji's LowPoly Nature pack, in the game's colours, for the farm and round the buildings; `dev/nature-models.cjs` makes `natureModels.js` from the pack's `.glb` files |
 | `src/three/plants/` | The painted valley's plants, built in code from a seed, one kind a file (pines, round and fruit trees, the blossom tree, birches, slim trees, firs, bushes, sunflowers, tomatoes, flowers, rocks, cattails, water lilies); `valley.js` places them, `woods.js` scatters the woods (their shadows cast by cheap stand-ins from `shadowProxy.js`), `edited.js` swaps in any model edited by hand in Blender |
 | `dev/export-models.mjs`, `dev/edited-models.mjs` | Write every placed plant model out as a `.glb` for Blender (`art/models/export/`), and bake the ones edited by hand (`art/models/edited/`) into `src/three/plants/editedModels.js`; how in `art/models/README.md` |
 | `src/ui/` | HUD, bottom bars and the menus (shop, barn, collection, quests, chests…) |
 | `src/i18n.js` | Vietnamese and English text |
-| `public/` | App manifest and icons; `vite.config.js` writes the offline service worker |
+| `public/` | App manifest and icons, the painting in tiles (`backdrop/`: four sharp and one fast) and the river's water maps; `vite.config.js` writes the offline service worker |
 | `dev/gallery.html` | Shows every crop model (`?mode=thumbs` lists all 148 looks) |
-| `dev/trees.html` | Shows the trees from `trees.js` |
 | `dev/nature.html` | Shows the nature models (`?pack` in the pack's own colours) |
-| `dev/animals.html` | Every chicken breed close up |
+| `dev/animals.html` | The animals close up (`?set=ducks`, `?set=birds`…) |
+| `dev/plants.html` | One plant kind beside the reference design wherever it draws one, then a few seeds close up (`?set=pines`) |
 | `dev/buildings.html` | One building beside the reference design, where it stands on the painting (`?b=farmhouse`) |
 | `dev/icons.cjs` | Redraws the app icons from `dev/icon-svg.cjs` |
+| `dev/shot.cjs`, `dev/play.cjs`, `dev/scenarios.cjs` | Screenshots of a page, and scripted play-throughs (Playwright) |
+| `art/backdrop/` | The painting, the reference design, and the Python scripts that fitted, fixed, tiled and mapped the water of the painting; how in its `README.md` |
+| `art/models/` | Plant models written out for Blender, and those edited by hand; how in its `README.md` |
+| `tests/` | The game rules, sync and text, the herds and ducks, and the plant models' round trip to `.glb` (`npm test`) |
+| `docs/redesign.md` | The valley's redesign: what was decided, what is done and what comes next |
 | `docs/game-notes.md` | Notes taken from screenshots of the original game |
 
 ## Credits
