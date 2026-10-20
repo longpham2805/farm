@@ -1,0 +1,39 @@
+Attach two images, in this order:
+  1. 1-layout.png          (the exact composition to follow)
+  2. 2-style-reference.png (the art style to copy)
+
+Then paste this prompt:
+
+-----
+Repaint image 1 as a finished game background illustration in exactly the art style of image 2: a bright, colorful, polished stylized 3D cartoon farming game, seen from the same elevated isometric camera, with soft warm daylight from the upper left, low-poly rounded trees, saturated but harmonious greens, golden sandy dirt roads, and a bright turquoise river.
+
+Keep the composition of image 1 EXACTLY: same 1536x1024 landscape frame, same camera angle, and every road, the river, the waterfall, the forest edges and every colored area in the same position, shape and width. Do not move, add or remove any road or river bend. Do not crop, zoom or shift the view.
+
+What each color in image 1 means:
+- Dark green (only at the top of the picture and its upper left and right): dense forest of many overlapping pine trees and round deciduous trees, on hills that rise towards the top of the picture. Trees may overlap each other but must stay inside the dark green areas. These are the ONLY trees in the whole picture.
+- Slightly lighter dark green above the cliffs: the same dense forest, on top of the cliffs.
+- Olive (dull yellow-green): the floor of a shady woodland whose trees have all been taken away: lush, slightly darker green grass mixed with soft patches of moss, a few fallen leaves and a little bare earth, with gentle dappled shade. NO trees, NO tree trunks, NO bushes, NO rocks, nothing taller than the grass. Trees are added on top of it later.
+- Light green: open, short grass with gentle natural variation in tone. NO trees, NO bushes, NO flowers, NO stones.
+- Large light green rounded area in the middle (inside the road loop): a plain, flat, mowed lawn. Keep it completely empty: no crop plots, no fences, no lamps, no trees, no flowers.
+- Pale pale-yellow-green rectangle on the left: an open, empty pasture of short grass. No animals, no fences.
+- Pale beige ovals: empty, flat patches of packed earth and short grass. Keep them completely empty; buildings will be placed on them later.
+- Tan diamond on the right: an empty, flat patch of bare tilled earth. No crops, no fences.
+- Orange-yellow bands: dirt roads (warm golden sand color with slightly darker edges and a few pebbles).
+- Blue band: a shallow, lively turquoise river with white foam streaks, running in a natural channel with grassy and earthy banks and a few flat stones set into them. NO boulders, NO reeds or water plants. The river must be continuous with NO bridges: where a road meets the river, the road simply ends at the bank.
+- Grey block at the top right: tall rocky cliffs of warm grey stone pillars with a little moss, and the white strip is a waterfall pouring from the cliff into a bright foamy pool.
+- Small white square on the right bank: a small second waterfall falling from a low rocky ledge into the river; the thin blue line is the small stream feeding it.
+- Grey dots (in the dark green forest only): rocky outcrops among the trees.
+
+Do NOT draw any buildings, houses, barns, silos, windmills, wells, bridges, fences, carts, hay bales, crops, animals, people, signs, lamps, user interface, text, numbers or grid lines. Do NOT draw any trees, bushes, flowers, reeds or boulders outside the dark green forest. The picture is only the landscape; everything else is added later on top of it.
+
+No vignette, no blur, no depth of field, no dark corners. Even, bright lighting across the whole picture. Output a single 1536x1024 landscape image.
+-----
+
+If the result moves the roads or the river, reply:
+"Keep the layout of image 1 exactly; the roads, the river and the waterfall must be in the same place as in image 1. Only change the painting style."
+
+If it draws buildings, bridges or crops, reply:
+"Remove all buildings, bridges, fences, crops and animals. Leave those areas as empty grass or packed earth."
+
+If it draws trees, bushes, flowers or boulders outside the dark green forest, reply:
+"Remove every tree, bush, flower and boulder from the olive and light green areas and along the river. Leave only the woodland floor, the grass and the river banks there. Keep the dense forest at the top as it is."

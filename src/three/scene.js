@@ -2,12 +2,13 @@
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { BloomPass, BloomOutputPass } from './bloom.js';
 import { buildFarm, plotCenter, SOIL_TOP, PLANT_SCALE, butterfly } from './farm.js';
-import { buildCountryside, VIEW_BOUNDS, at } from './countryside.js';
+import { buildCountryside, VIEW_BOUNDS, SUN_DIR, fitShadow, at } from './countryside.js';
 import { buildPlant } from './models.js';
 import { updateRainbow } from './materials.js';
+import { frameStats } from './stats.js';
+import { farmMist } from './mist.js';
 import { glowTexture, starTexture, skyTexture, ringTexture, sunRaysTexture, sunFaceTexture } from './textures.js';
 import { STYLES } from '../data/styles.js';
 import { CROP_BY_ID } from '../data/crops.js';
@@ -17,6 +18,9 @@ const DRY = new THREE.Color('#9b6440');
 const WET = new THREE.Color('#5e3720');
 const LOCKED = new THREE.Color('#7dc95a');
 const CAM_DIR = new THREE.Vector3(1, 0.95, 1).normalize();
+// At most 60 frames a second: screens that refresh at 120 Hz (MacBooks, iPad Pros) would draw the slow valley twice
+// as often for nothing.
+const FRAME_MS = 1000 / 60;
 // The sun hangs in the sky behind the mountains, up and to the left.
 const SUN_AT = at(-5, 20, 3.4);
 
@@ -25,7 +29,7 @@ const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 const easeInCubic = (t) => t * t * t;
 
 export const HOME_THEME = {
-  grass: '#86d460', grassDark: '#5fb346', fence: '#c98a4b', barn: '#ef6461', roof: '#8a4b3a', tree: '#4fb35a', tree2: '#7ccf5a',
+  grass: '#86d460', grassDark: '#5fb346', fence: '#c98a4b', barn: '#d8473b', roof: '#d4914f',
 };
 
 export function npcTheme(npc) {
@@ -60,7 +64,13 @@ export class FarmScene {
     renderer.toneMappingExposure = 1.1;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
+    // The shadow map is drawn every other frame, and whenever the view moves (applyView): what moves in the valley
+    // moves slowly, and the map cost a fifth of the frame.
+    renderer.shadowMap.autoUpdate = false;
+    this.shadowTick = 0;
     this.renderer = renderer;
+    // `?stats` in the address shows what each frame costs (stats.js).
+    if (new URLSearchParams(location.search).has('stats')) this.stats = frameStats(renderer);
 
     const scene = new THREE.Scene();
     scene.background = skyTexture('#86cbff', '#fff3bf', '#ffcf5c');
@@ -72,24 +82,22 @@ export class FarmScene {
     this.camera.position.copy(CAM_DIR).multiplyScalar(30);
     this.camera.lookAt(0, 0, 0);
 
-    scene.add(new THREE.HemisphereLight('#fff6dc', '#86a85a', 1.2));
-    const sun = new THREE.DirectionalLight('#fff0c4', 2.4);
-    sun.position.set(3.5, 9, -1.2);
+    // Cool light from the sky fills the shaded sides; the warm sun shines from the upper left, like the sun in the
+    // sky, so the sides of things facing right fall into shade and shadows fall to the right.
+    scene.add(new THREE.HemisphereLight('#e4eeff', '#7b9a4a', 0.8));
+    const sun = new THREE.DirectionalLight('#ffe2a4', 3.2);
+    sun.position.copy(SUN_DIR).multiplyScalar(15);
     sun.castShadow = true;
-    // Shadows cover the farm and the buildings round it; the far valley does without.
-    sun.shadow.camera.left = -8;
-    sun.shadow.camera.right = 8;
-    sun.shadow.camera.top = 8;
-    sun.shadow.camera.bottom = -8;
-    sun.shadow.camera.near = 1;
-    sun.shadow.camera.far = 25;
-    sun.shadow.bias = -0.0006;
+    // Shadows cover what is in view (fitShadow, in applyView).
     sun.shadow.normalBias = 0.02;
-    scene.add(sun);
+    scene.add(sun, sun.target);
     this.sun = sun;
 
     this.world = new THREE.Group();
     scene.add(this.world);
+    // Mist round the farm's grounds (mist.js), laid out from the opening view on the first frame.
+    this.mist = farmMist(this.camera, () => this.mistFrame());
+    scene.add(this.mist.group);
     this.plantsGroup = new THREE.Group();
     this.world.add(this.plantsGroup);
     this.fxGroup = new THREE.Group();
@@ -125,7 +133,13 @@ export class FarmScene {
     this.bindInput();
     this.resize();
     window.addEventListener('resize', () => this.resize());
-    renderer.setAnimationLoop(() => this.frame());
+    let last = -Infinity;
+    renderer.setAnimationLoop((time) => {
+      const gap = time - last;
+      if (gap < FRAME_MS - 2) return;
+      last = gap > 2 * FRAME_MS ? time : last + FRAME_MS;
+      this.frame();
+    });
   }
 
   setTheme(theme) {
@@ -151,7 +165,8 @@ export class FarmScene {
     this.quality = q;
     const high = q === 'high';
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, high ? 2 : 1.25));
-    // The shadow box is 16 units wide: this many texels keep shadow edges as crisp as on the old, smaller island.
+    // The shadow box fits the view (fitShadow): on a wide screen at the usual zoom about 26 × 16 units, some 115 texels
+    // a unit on "Đẹp", 60 on "Nhanh"; zoomed out it grows, but its texels take up no more of the screen.
     const shadowSize = Math.min(high ? 3072 : 1536, this.renderer.capabilities.maxTextureSize);
     this.sun.shadow.mapSize.set(shadowSize, shadowSize);
     if (this.sun.shadow.map) {
@@ -161,11 +176,22 @@ export class FarmScene {
     if (!this.composer) {
       this.composer = new EffectComposer(this.renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }));
       this.composer.addPass(new RenderPass(this.scene, this.camera));
-      this.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.32, 0.35, 0.97);
+      this.bloom = new BloomPass(new THREE.Vector2(256, 256), 0.32, 0.35, 0.97);
       this.composer.addPass(this.bloom);
-      this.composer.addPass(new OutputPass());
+      this.composer.addPass(new BloomOutputPass(this.bloom));
+      // Nothing reads the scene's depth once it is drawn, so its multisamples are not resolved.
+      for (const target of [this.composer.renderTarget1, this.composer.renderTarget2]) target.resolveDepthBuffer = false;
     }
     this.bloom.enabled = high;
+    // The painting's tiles load sharp or fast.
+    this.countryside.setDetail(high);
+    // The painted valley's plants cast shadows only on "Đẹp": a third of the frame's triangles went into them.
+    // (The trees' shadow stand-ins, plants/shadowProxy.js, draw nothing, so they go altogether.)
+    this.countryside.valleyPlants?.traverse((o) => {
+      if (!o.isMesh) return;
+      o.castShadow = high && o.userData.casts;
+      if (o.userData.proxy) o.visible = high;
+    });
     // Smooth edges with MSAA: 4 samples, or 2 where pixels are already small (Retina), which keeps memory near
     // what the old antialiased canvas used.
     const gl = this.renderer.getContext();
@@ -197,9 +223,20 @@ export class FarmScene {
   viewSize() {
     const aspect = this.width / this.height;
     const portrait = aspect < 0.8;
-    const baseH = Math.max(8.0, (portrait ? 8.6 : 12.0) / aspect);
+    const baseH = Math.max(8.8, (portrait ? 8.6 : 12.0) / aspect);
     const viewH = baseH / this.zoom;
     return { aspect, baseH, viewH, viewW: viewH * aspect, shiftY: (portrait ? 0.03 : 0.05) * baseH };
+  }
+
+  /**
+   * The frame the mist is laid round (mist.js): the whole valley, as far as the view can travel (VIEW_BOUNDS), in
+   * the camera's plane, and `unit`, the height of the view the game opens on, which sizes the puffs for the screen;
+   * null before the screen has a size.
+   */
+  mistFrame() {
+    if (!this.width || !this.height) return null;
+    const b = VIEW_BOUNDS;
+    return { left: b.left, right: b.right, top: b.top, bottom: b.bottom, unit: this.viewSize().baseH };
   }
 
   /** Frames the farm for the screen shape, then applies the player's zoom and pan. */
@@ -213,6 +250,8 @@ export class FarmScene {
     this.camera.bottom = cy - viewH / 2;
     this.camera.updateProjectionMatrix();
     this.viewH = viewH;
+    fitShadow(this.sun, this.camera);
+    this.renderer.shadowMap.needsUpdate = true;
   }
 
   /** Zooming out stops once the screen spans the whole valley across or up and down. */
@@ -223,7 +262,8 @@ export class FarmScene {
   }
 
   setZoom(z) {
-    this.zoom = Math.min(2.4, Math.max(this.minZoom(), z));
+    // Past 1.6 the painted backdrop would show its pixels; `npm run dev` goes twice as close, to look at the models.
+    this.zoom = Math.min(import.meta.env.DEV ? 3.2 : 1.6, Math.max(this.minZoom(), z));
     this.clampPan();
     this.applyView();
   }
@@ -595,6 +635,7 @@ export class FarmScene {
   // ── Frame loop ──────────────────────────────────────────────
 
   frame() {
+    this.stats?.begin();
     // iOS reports the old size in the resize event after a rotation, so check every frame.
     const c = this.canvas;
     if (c.clientWidth && c.clientHeight && (c.clientWidth !== this.width || c.clientHeight !== this.height)) this.resize();
@@ -669,6 +710,7 @@ export class FarmScene {
 
     if (this.sunRays) this.sunRays.material.rotation = t * 0.15;
     this.countryside.update(t, dt);
+    this.farm.update(t);
     this.butterflies.forEach((b, k) => {
       const ph = t * 0.35 + b.userData.phase;
       const x = Math.sin(ph) * 2.6;
@@ -684,8 +726,11 @@ export class FarmScene {
     });
 
     for (const fn of this.frameHooks) fn(t);
+    this.mist.update(t);
 
+    if (++this.shadowTick % 2 === 0) this.renderer.shadowMap.needsUpdate = true;
     this.composer.render(dt);
+    this.stats?.end();
   }
 }
 

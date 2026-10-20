@@ -47,7 +47,10 @@ export class Batch {
     return this;
   }
 
-  /** Same placement arguments as the farm's m(): position, scale (number or [x, y, z]), rotation. */
+  /**
+   * Same placement arguments as the farm's m(): position, scale (number or [x, y, z]), rotation.
+   * A null colour keeps the geometry's own vertex colours (a tree model, say).
+   */
   add(geometry, color, p = [0, 0, 0], s = 1, r = null, flat = false) {
     tmpP.set(...p);
     if (typeof s === 'number') tmpS.setScalar(s);
@@ -55,9 +58,11 @@ export class Batch {
     tmpQ.setFromEuler(r ? tmpE.set(...r) : tmpE.set(0, 0, 0));
     tmpM.compose(tmpP, tmpQ, tmpS).premultiply(this.origin);
     const g = geometry.index ? geometry.toNonIndexed() : geometry.clone();
-    for (const name of Object.keys(g.attributes)) if (name !== 'position' && name !== 'normal') g.deleteAttribute(name);
+    for (const name of Object.keys(g.attributes)) {
+      if (name !== 'position' && name !== 'normal' && (color !== null || name !== 'color')) g.deleteAttribute(name);
+    }
     g.applyMatrix4(tmpM);
-    paint(g, color);
+    if (color !== null) paint(g, color);
     this.parts[flat ? 'flat' : 'smooth'].push(g);
   }
 
@@ -66,14 +71,15 @@ export class Batch {
     this.parts[flat ? 'flat' : 'smooth'].push(g);
   }
 
-  build({ castShadow = true, receiveShadow = true } = {}) {
+  /** Merges the parts into meshes of vertex-coloured standard material, as rough and as metallic as asked. */
+  build({ castShadow = true, receiveShadow = true, roughness = 0.85, metalness = 0 } = {}) {
     const group = new THREE.Group();
     for (const kind of ['smooth', 'flat']) {
       const list = this.parts[kind];
       if (!list.length) continue;
       const geometry = mergeGeometries(list, false);
       for (const g of list) g.dispose();
-      const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, flatShading: kind === 'flat' }));
+      const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ vertexColors: true, roughness, metalness, flatShading: kind === 'flat' }));
       mesh.castShadow = castShadow;
       mesh.receiveShadow = receiveShadow;
       mesh.userData.ownMaterial = true;
@@ -102,4 +108,28 @@ export function gableGeometry() {
   g.setAttribute('position', new THREE.Float32BufferAttribute(tris.flat(), 3));
   g.computeVertexNormals();
   return g;
+}
+
+const ROOF_BOX = new THREE.BoxGeometry(1, 1, 1);
+
+/**
+ * A gable roof laid in overlapping rows of tiles or shingles: its ridge along x, its eaves at height y and `depth`
+ * apart, rising `rise` to the ridge. The rows take turns among the colours in `tones`, and each lies a little flatter
+ * than the roof, so its lower edge stands proud of the row below.
+ */
+export function shingleRoof(batch, { y, width, depth, rise, tones, ridge, rows = 6 }) {
+  const d = depth / 2;
+  const slant = Math.hypot(d, rise) + 0.06;
+  const angle = Math.atan2(rise, d);
+  const step = slant / rows;
+  for (const s of [1, -1]) {
+    // From the middle of this side of the roof down towards its eave.
+    const down = new THREE.Vector3(0, -Math.sin(angle), s * Math.cos(angle));
+    const middle = new THREE.Vector3(0, y + rise / 2 + 0.03, (s * d) / 2);
+    for (let k = 0; k < rows; k++) {
+      const p = middle.clone().addScaledVector(down, slant / 2 - (k + 0.5) * step);
+      batch.add(ROOF_BOX, tones[k % tones.length], [p.x, p.y, p.z], [width, 0.06, step * 1.3], [s * (angle - 0.08), 0, 0]);
+    }
+  }
+  batch.add(ROOF_BOX, ridge, [0, y + rise + 0.04, 0], [width + 0.04, 0.08, 0.12]);
 }
