@@ -26,6 +26,8 @@ export function openBarn(app, startTab = 'crops') {
         [['crops', t('crops')], ['useful', t('useful')]].map(([id, label]) => h('button', { class: `tab${tab === id ? ' on' : ''}`, onClick: () => {
           tab = id;
           api.refresh();
+          const list = api.body.querySelector('.grid-wrap'); // a new list starts at its top
+          if (list) list.scrollTop = 0;
         } }, label)));
 
       if (tab === 'useful') {

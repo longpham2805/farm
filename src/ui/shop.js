@@ -42,6 +42,8 @@ export function openShop(app, focus = null) {
           h('button', { class: `tab${tab === id ? ' on' : ''}`, onClick: () => {
             tab = id;
             api.refresh();
+            const list = api.body.querySelector('.grid-wrap'); // a new list starts at its top
+            if (list) list.scrollTop = 0;
           } }, label)));
 
       const grid = h('div', { class: 'grid' }, list.map((d) => seedBag(d.id, {
