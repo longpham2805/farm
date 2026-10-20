@@ -3,23 +3,8 @@
 // strayed from the design there.
 // Everything is in (u, b) map units like countryside.js: u across the screen, b up it, the plots |u| + |b| < 3.6.
 // A place on the painting is where the painting shows it, as if on level ground: the top of a cliff included.
-// Heights are in world units; the plots stand at 0 and the river's surface at WATER_Y.
-// Nothing here draws anything: the terrain, river, roads and forest builders read it.
-
-export const WATER_Y = -0.75;
-
-/**
- * The river's channel, cut down into the land: the banks drop from a grassy lip (`lip` gives the range of its height,
- * which wanders along each bank) down a steep face about `face` wide to the water, and the bed lies `bed` below the
- * water. Above the lip the ground climbs back up to the land's level over a couple of steps.
- */
-export const CHANNEL = { lip: [-0.3, 0.02], face: 0.5, bed: 0.35 };
-
-/** Stretches of bank that are bare rock rather than earth, with boulders along them: [u, b, radius]. */
-export const ROCKY_BANKS = [
-  [9.0, 12.9, 1.2], [11.3, 7.6, 1.6], [12.4, 3.6, 1.6], [14.2, 7.2, 1.4], [15.0, 4.0, 1.8], [13.6, -1.6, 1.5],
-  [3.7, -6.1, 1.4], [-2.3, -7.5, 1.3], [-6.1, -8.1, 1.5], [-10.4, -9.7, 1.6],
-];
+// Heights are in world units; the plots stand at 0.
+// Nothing here draws anything: the plants and buildings that stand on the painting read it.
 
 /**
  * The ring road round the farm: a square to the plots, `half` from the middle to each side's centre line, with each

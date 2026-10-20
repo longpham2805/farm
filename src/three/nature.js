@@ -83,30 +83,6 @@ export function addNature(batch, name, p, s = 1, turn = 0, colors) {
   putNature(batch, name, p, s, [0, turn, 0], colors);
 }
 
-/**
- * A rail fence from `from` to `to` (world points on flat ground) in `color`, with paler post tops and rails:
- * sections about 1.1 long between posts, `height` tall. broken: which sections have a fallen rail.
- * Returns where its posts stand.
- */
-export function railFence(batch, from, to, color, { height = 0.5, broken = [] } = {}) {
-  const c = new THREE.Color(color);
-  const pale = (k) => `#${c.clone().lerp(new THREE.Color('#fff3dc'), k).getHexString()}`;
-  const colors = { Wood: color, WoodLight: pale(0.3), Weathered: pale(0.15) };
-  const dir = new THREE.Vector3().subVectors(to, from).setY(0);
-  const n = Math.max(1, Math.round(dir.length() / 1.1));
-  const s = height / 1.35;
-  const posts = [];
-  // A section runs 3 m along x, from a post at its start to one at its end.
-  for (let i = 0; i <= n; i++) {
-    const p = from.clone().addScaledVector(dir, i / n);
-    posts.push(p);
-    if (i === n) break;
-    const name = broken.includes(i) ? 'PROP_07_FenceBroken' : 'PROP_05_FenceStraight';
-    putNature(batch, name, [p.x, p.y, p.z], [dir.length() / n / 3, s, s], [0, Math.atan2(-dir.z, dir.x), 0], colors);
-  }
-  return posts;
-}
-
 /** Flat stepping stones about every 0.28 along the points of `path` (world points), for a footpath. */
 export function steppingStones(batch, path, groundY = () => 0) {
   let k = 0;

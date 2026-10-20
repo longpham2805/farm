@@ -39,7 +39,6 @@ function m(geometry, material, p, s = 1, r = null, shadow = true) {
 // it (see xz in countryside.js).
 
 const toWorld = (u, b) => [(u - b) * S, -(u + b) * S];
-const toMap = (x, z) => [(x - z) * S, -(x + z) * S];
 
 // The corner in each quarter of the world's x-z plane: back is -x -z (top of the screen), front +x +z, left -x +z.
 const cornerAt = (x, z) => RING.corners[x > 0 ? (z > 0 ? 'front' : 'right') : z > 0 ? 'left' : 'back'];
@@ -51,49 +50,6 @@ export function ringDistance(u, b) {
   const qx = Math.abs(x) - (RING.half - r);
   const qz = Math.abs(z) - (RING.half - r);
   return Math.hypot(Math.max(qx, 0), Math.max(qz, 0)) + Math.min(Math.max(qx, qz), 0) - r;
-}
-
-/**
- * Where the ring `inset` in from the road's middle crosses the line from the middle of the farm towards screen
- * angle a (0 = the right corner, π/2 = the back corner, π = the left one): [u, b].
- */
-export function ringAt(a, inset = 0) {
-  let lo = 0;
-  let hi = 2 * RING.half;
-  for (let k = 0; k < 40; k++) {
-    const mid = (lo + hi) / 2;
-    if (ringDistance(Math.cos(a) * mid, Math.sin(a) * mid) < -inset) lo = mid;
-    else hi = mid;
-  }
-  return [Math.cos(a) * lo, Math.sin(a) * lo];
-}
-
-/** Points about `step` apart all round the ring `inset` in from the road's middle, as [u, b]. */
-export function ringPath(inset = 0, step = 0.3) {
-  const { back, front, left, right } = RING.corners;
-  const h = RING.half - inset;
-  // Each corner's curve: its centre's distance out along both axes, and its radius.
-  const c = (r) => RING.half - r;
-  const out = [];
-  const line = (x0, z0, x1, z1) => {
-    const n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, z1 - z0) / step));
-    for (let k = 0; k < n; k++) out.push(toMap(x0 + ((x1 - x0) * k) / n, z0 + ((z1 - z0) * k) / n));
-  };
-  // A quarter of a circle of radius r0 - inset round (cx, cz), from angle a in the world's x-z plane on to a - π/2.
-  const arc = (cx, cz, r0, a) => {
-    const r = r0 - inset;
-    const n = Math.max(2, Math.ceil((r * Math.PI) / 2 / step));
-    for (let k = 0; k < n; k++) out.push(toMap(cx + r * Math.cos(a - (Math.PI / 2) * (k / n)), cz + r * Math.sin(a - (Math.PI / 2) * (k / n))));
-  };
-  line(-h, -c(back), -h, c(left));
-  arc(-c(left), c(left), left, Math.PI);
-  line(-c(left), h, c(front), h);
-  arc(c(front), c(front), front, Math.PI / 2);
-  line(h, c(front), h, -c(right));
-  arc(c(right), -c(right), right, 0);
-  line(c(right), -h, -c(back), -h);
-  arc(-c(back), -c(back), back, -Math.PI / 2);
-  return out;
 }
 
 /**
@@ -115,13 +71,11 @@ const FENCE = 0.62;
 const GATE = 0.25;
 
 /** Where the barn stands, in map units: on its pad in the painting, across the ring road from the back corner. */
-export const BARN_SPOT = PLACES.barn.at;
+const BARN_SPOT = PLACES.barn.at;
 
 const BARN_AT = toWorld(...BARN_SPOT);
 // The frog's pond, inside the front right side: world x, z.
 const POND = [3.58, 1.13];
-/** Where the pond and the barn stand: [x, z, radius] spots the valley's grass and flowers keep off. */
-export const FARM_CLEAR = [[POND[0], POND[1], 0.8], [BARN_AT[0], BARN_AT[1], 1.5]];
 
 export const plotCenter = (index) => {
   const r = Math.floor(index / 4);
