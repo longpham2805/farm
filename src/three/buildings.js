@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { Batch } from './batch.js';
 import { seeded } from '../util.js';
 import { buildGlow } from './farm.js';
-import { PLACES, BRIDGES, MEADOW } from './valleyMap.js';
+import { PLACES, BRIDGES } from './valleyMap.js';
 import { FACE, smokePuffs } from './buildings/parts.js';
 import { farmhouse } from './buildings/farmhouse.js';
 import { silo } from './buildings/silo.js';
@@ -36,6 +36,31 @@ import { paddle } from './animals/duck.js';
 import { wheel } from './animals/birds.js';
 
 /**
+ * A fence along a smooth curve through `way` (map points), a post about every `spacing`, and a gate `width` across
+ * where the curve passes nearest `gate.at`: the gate stands in the middle of one straight side two spacings long.
+ */
+function arcFence(batch, at, { way, gate }, rand, spacing = 0.6) {
+  const curve = new THREE.CatmullRomCurve3(way.map(([u, b]) => at(u, b).setY(0)), false, 'centripetal');
+  const length = curve.getLength();
+  const g = at(...gate.at);
+  let mid = 0;
+  let best = Infinity;
+  for (let i = 0; i <= 400; i++) {
+    const p = curve.getPointAt(i / 400);
+    const d = Math.hypot(p.x - g.x, p.z - g.z);
+    if (d < best) [best, mid] = [d, i / 400];
+  }
+  const half = spacing / length;
+  const run = (from, to) => {
+    const n = Math.max(1, Math.round(((to - from) * length) / spacing));
+    return Array.from({ length: n + 1 }, (_, k) => curve.getPointAt(from + ((to - from) * k) / n));
+  };
+  const before = run(0, mid - half);
+  const points = [...before, ...run(mid + half, 1)].map((p) => [p.x, p.z]);
+  woodFence(batch, points, rand, { spacing, gates: [[before.length - 1, 0.5, gate.width]] });
+}
+
+/**
  * The buildings redone for the painted valley, each on its pad in the painting (PLACES in valleyMap.js), and the
  * animals that live in them. at(u, b) is the map's point in the world. Returns the group and update(t, dt).
  */
@@ -55,8 +80,8 @@ export function placeBuildings({ at }) {
   const hens = flock(place(PLACES.henYard, () => henYard(batch)), PLACES.henYard.hens);
   const wellParts = place(PLACES.well, () => well(batch));
   const hay = [place(PLACES.cart, () => cart(batch)), place(PLACES.bale, () => hayBale(batch)), place(PLACES.haystack, () => haystack(batch))];
-  // The meadow's fence on the painted meadow's edge, with a gate onto the road, its water trough, hay rack and bench.
-  woodFence(batch, MEADOW.map(([u, b]) => [at(u, b).x, at(u, b).z]), seeded(71), { closed: true, gates: PLACES.meadow.gates });
+  // The meadow's fence round its right side, with a gate onto the road, its water trough, hay rack and bench.
+  arcFence(batch, at, PLACES.meadow.fence, seeded(71));
   const water = place(PLACES.trough, () => waterTrough(batch, seeded(29)));
   hay.push(place(PLACES.hayRack, () => hayRack(batch)));
   const paper = place(PLACES.meadowBench, () => bench(batch, seeded(73), { paper: true }));

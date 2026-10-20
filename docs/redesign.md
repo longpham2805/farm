@@ -228,7 +228,8 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   walk like the cattle. The cows and the sheep are one herd (`PLACES.meadow`, each member naming its kind), so they
   keep out of each other's way: the two cows where they were, a ewe at the right of the meadow walking away to the
   back right, as the reference draws her, and another on the left, where the reference's sheep is hidden behind the
-  harvest button. `tests/herd.test.js` runs the four of them. `dev/animals.html?set=sheep` shows two close up.
+  harvest button. Two more cows and two more ewes joined them later, at the user's word (eight in all, about the left
+  and the middle of the meadow). `tests/herd.test.js` runs all of them. `dev/animals.html?set=sheep` shows two close up.
 - **Pig** (`src/three/animals/pig.js`, kinds in `PIGS`), pink as the reference draws it: a plump round body on short,
   stout legs, a big head straight off the shoulders with full cheeks and a flat round snout, ears flopping forward
   over the eyes, a curly tail (a tube wound a ring and a half), and a coat of fine bristles that hardly shows
@@ -278,8 +279,12 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   reference's (a first try at 0.06 and 0.034 read spidery). One mesh for each fence's wood, through the batch.
 - **The meadow's fence and trough**: a rail fence (`woodFence` in `buildings/fence.js`, for the fields' fences too)
   round the painted meadow's edge (`MEADOW`, the faint line in the painting, which runs a little differently from the
-  reference's fence). A gate of
-  three boards and a brace, between two stouter posts, opens onto the road at the front right (`PLACES.meadow.gates`;
+  reference's fence). The user found it boxed in, so it is now one gentle arc round the right side, along the road,
+  running on along the back and the front to near the woods on the left, its left side open to them (it stopped at
+  first by the hay rack and at the middle of the front) (`PLACES.meadow.fence.way`, through which `arcFence` in `buildings.js` runs a centripetal Catmull-Rom curve, a post
+  every 0.6), its front right drawn in a little so the flowers there stay outside it; the gate stands in a straight
+  stretch of it 1.2 long where it passes nearest `gate.at`. `MEADOW` still keeps the woods out of the meadow. A gate of
+  three boards and a brace, between two stouter posts, opens onto the road at the front right (`PLACES.meadow.fence.gate`;
   on the right side, square to the camera, it showed only edge on). The trough (`buildings/trough.js`) stands where
   the reference draws it, along the front fence (`PLACES.trough`): a box of planks three to a side on two beams, posts
   at its corners, a lip along the top, glossy water a little below it; the meadow's animals keep clear of it (a notch
@@ -804,12 +809,12 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   from the live camera each frame, which also followed the screen; a third ringed only the opening view; the user
   wanted it round the whole grounds, over the woods, dense at the rim and clearing inwards). The sheet is a 30×30
   grid over the frame (±1.3 of its half-extent), each vertex's alpha by how far out it stands, a 4-norm of (nx,
-  ny) so the corners count as further out and the fog reaches further in there: 0 inside 0.5 (the opening view
-  reaches about 0.4), full (0.9) from 0.88 out, gone past 1.3, the fog along the left and right sides reaching only 0.64 as far in as along the top and bottom (`SIDES`, a fifth off twice, the user's call: |nx| is squeezed so the same profile runs from 0.68 to the rim there; the side bands' puffs are smaller and the corner puffs stand nearer the side by the same share), as dense as the rest; the clear middle's quads are left out, and two
+  ny) so the corners count as further out and the fog reaches further in there: 0 inside 0.65 (the opening view
+  reaches about 0.4), full (0.9) from 0.916 out, gone past 1.3 (`SIZE` 0.7: the user took the mist down by 30%, how far in it reaches from the rim and its puffs alike; it was clear inside 0.5 and full from 0.88), the fog along the left and right sides reaching only 0.64 as far in as along the top and bottom (`SIDES`, a fifth off twice, the user's call: |nx| is squeezed so the same profile runs from 0.776 to the rim there; the side bands' puffs are smaller and the corner puffs stand nearer the side by the same share), as dense as the rest; the clear middle's quads are left out, and two
   layers of value noise roll over it in the fragment shader (±30%). Each frame point meets the ground down the
   camera's line of sight from its plane; the puffs are placed from the same three vectors (the middle and the
-  runs of the half-width and half-height on the ground) and sized by the opening view's height (`unit`), so they
-  fit the screen rather than the valley. Each puff faces the camera, floats a little above the ground,
+  runs of the half-width and half-height on the ground) and sized by the opening view's height (`unit`, times `SIZE`), so they
+  fit the screen rather than the valley; a corner's bank stands `SIZE` as far in from its corner. Each puff faces the camera, floats a little above the ground,
   breathes (size ±6%, whiteness ±30%), sways by 2.5% of the view and turns a little, on its own beat of 19–41 s.
   Two draw calls: the sheet, and one `InstancedMesh` of quads with a small shader (the puff's opacity in
   `instanceColor`), both drawn last with no depth test. The puff picture is seven overlapping radial blurs under a

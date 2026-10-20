@@ -74,9 +74,14 @@ img { max-width: 100%; }
 /* ── Shared pieces ─────────────────────────────────── */
 .coin::before { content: '🌏'; margin-right: 2px; }
 .num { font-variant-numeric: tabular-nums; }
+/* The drawn icons (src/ui/icons.js) sit in a line of text at the size an emoji had there; avatars fill their circle. */
+.i { display: inline-block; width: 1.3em; height: 1.3em; vertical-align: -0.3em; flex: none; }
+.av { display: block; width: 100%; height: 100%; }
 
 .btn {
-  --c: var(--leaf); --d: var(--leaf-dark);
+  /* Orange is the main action (buy, sell, claim, open, upgrade, plant); honey a secondary one or a way to
+     somewhere else; ghost cancels; red deletes. */
+  --c: var(--berry); --d: var(--berry-dark);
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   min-height: 44px; padding: 6px 18px;
   border-radius: 999px;
@@ -95,6 +100,7 @@ img { max-width: 100%; }
 .btn.water { --c: var(--water); --d: var(--water-dark); }
 .btn.honey { --c: var(--honey); --d: var(--honey-dark); }
 .btn.ghost { --c: var(--paper-2); --d: var(--paper-3); color: var(--ink); text-shadow: none; }
+.btn.red { --c: #ff4d5e; --d: #c42a3a; }
 
 .badge-dot {
   position: absolute; top: -4px; right: -4px; min-width: 22px; height: 22px; padding: 0 6px;
@@ -150,22 +156,25 @@ img { max-width: 100%; }
 .xpbar > span { position: relative; display: block; font-size: 10px; line-height: 14px; text-align: center; color: var(--ink); }
 .xpbar.ready > i { background: linear-gradient(90deg, #6fe08a, #2fb36a); animation: glowbar 1.2s ease-in-out infinite; }
 @keyframes glowbar { 50% { filter: brightness(1.2); } }
+.modal-foot { display: flex; justify-content: center; margin-top: 14px; padding-top: 12px; border-top: 2px dashed var(--paper-3); }
 .up-arrow { color: #2fb36a; font-size: 13px; margin-left: 4px; animation: bob 1s ease-in-out infinite; display: inline-block; }
 
 .back-btn {
   width: 52px; height: 52px; border-radius: 50%; flex: none;
   background: var(--paper); border: 3px solid #fff; box-shadow: var(--shadow);
   font-size: 26px; display: grid; place-items: center;
+  border-color: var(--honey); box-shadow: 0 3px 0 var(--honey-dark), var(--shadow);
 }
 .spacer { flex: 1; }
+/* The coins, top right, on the same cream card as the profile. */
 .coins {
   display: flex; align-items: center; gap: 6px;
-  padding: 6px 14px 6px 8px; border-radius: 999px;
-  background: rgba(110, 66, 12, 0.78); color: #fff; font-size: 18px;
-  font-family: var(--font-display); border: 3px solid rgba(255,255,255,0.6);
+  padding: 6px 16px 6px 8px; border-radius: 999px;
+  background: rgba(255, 249, 239, 0.92); color: var(--ink); font-size: 18px;
+  font-family: var(--font-display); border: 3px solid #fff;
   box-shadow: var(--shadow);
 }
-.coins .ico { font-size: 22px; }
+.coins .i { width: 28px; height: 28px; }
 .coins.bump { animation: bump 0.4s; }
 @keyframes bump { 40% { transform: scale(1.12); } }
 
@@ -194,6 +203,7 @@ img { max-width: 100%; }
   box-shadow: 0 4px 0 var(--honey-dark), var(--shadow);
   transition: transform 0.1s;
 }
+.hbtn .ico .i { width: 42px; height: 42px; }
 .hbtn:active .ico { transform: translateY(3px); box-shadow: 0 1px 0 var(--honey-dark); }
 .hbtn.on .ico { background: linear-gradient(#fff3b0, #ffd23f); }
 .hbtn .meter {
@@ -325,7 +335,11 @@ img { max-width: 100%; }
   background: rgba(110, 66, 12, 0.55); color: #fff; font-family: var(--font-display); font-size: 15px;
 }
 .sheet-tab.on { background: var(--honey); color: var(--ink); }
-.sheet-tab.close { margin-left: auto; background: var(--paper); color: var(--ink); width: 40px; padding: 4px 0; text-align: center; font-size: 18px; border-radius: 14px 14px 0 0; }
+.sheet-tab.close {
+  margin: 0 0 6px auto; width: 38px; height: 38px; padding: 0; border-radius: 50%; font-size: 16px;
+  display: grid; place-items: center; background: var(--paper); color: var(--ink);
+  border: 3px solid var(--honey); box-shadow: 0 3px 0 var(--honey-dark);
+}
 .sheet-body {
   display: flex; align-items: stretch; gap: 10px;
   padding: 10px; border-radius: 0 16px 16px 16px;
@@ -351,7 +365,7 @@ img { max-width: 100%; }
   clip-path: polygon(8% 10%, 20% 0, 35% 9%, 50% 0, 65% 9%, 80% 0, 92% 10%, 100% 100%, 0 100%);
   border-radius: 4px;
 }
-.bag .thumb { position: absolute; left: 50%; top: 48%; width: 60px; height: 60px; transform: translate(-50%, -50%); }
+.bag .thumb { position: absolute; left: 50%; top: 46%; width: 66px; height: 66px; transform: translate(-50%, -50%); }
 .bag .q-mark { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-family: var(--font-display); font-size: 40px; color: #fff; text-shadow: 0 2px 0 var(--tierc, var(--tier1)); }
 .bag .count, .bag .price {
   position: relative; z-index: 1; width: 100%;
@@ -470,10 +484,11 @@ img { max-width: 100%; }
 .stats dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
 .qty { display: flex; align-items: center; gap: 6px; }
 .qty input[type=range] { flex: 1; accent-color: var(--berry); min-width: 0; }
-.qty .step { width: 34px; height: 34px; border-radius: 50%; background: var(--paper); border: 2px solid var(--paper-3); font-size: 20px; line-height: 1; }
+.qty .step { width: 34px; height: 34px; border-radius: 50%; background: var(--paper); border: 2px solid var(--paper-3); font-size: 20px; line-height: 1; font-family: var(--font-display); box-shadow: 0 3px 0 var(--paper-3); }
 .qty .val { min-width: 36px; text-align: center; font-family: var(--font-display); font-size: 18px; }
 .quick { display: flex; gap: 6px; }
-.quick button { flex: 1; padding: 4px 0; border-radius: 10px; background: var(--paper); border: 2px solid var(--paper-3); font-size: 13px; }
+.quick button { flex: 1; padding: 4px 0; border-radius: 10px; background: var(--paper); border: 2px solid var(--paper-3); font-size: 14px; font-family: var(--font-display); box-shadow: 0 3px 0 var(--paper-3); }
+.qty .step:active, .quick button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--paper-3); }
 
 .item {
   position: relative; width: 84px; height: 92px; border-radius: 16px;
@@ -530,10 +545,10 @@ img { max-width: 100%; }
 .chests { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 .chest { position: relative; padding: 10px 4px 8px; border-radius: 18px; background: var(--paper-2); display: flex; flex-direction: column; align-items: center; gap: 4px; border: 3px solid transparent; }
 .chest.sel { border-color: var(--berry); background: #fff; }
-.chest svg { width: 72px; height: 64px; }
+.chest .chest-svg img { display: block; width: 66px; height: 66px; }
 .chest .n { font-family: var(--font-display); font-size: 18px; }
 .chest .nm { font-size: 12px; text-align: center; line-height: 1.15; }
-.chest.empty svg { filter: grayscale(0.8) opacity(0.6); }
+.chest.empty .chest-svg img { filter: grayscale(0.8) opacity(0.6); }
 .chest-info { margin-top: 12px; padding: 12px; border-radius: 16px; background: var(--paper-2); text-align: center; }
 .chest-info h3 { margin: 0 0 4px; font-family: var(--font-display); }
 .loot { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
@@ -552,6 +567,8 @@ img { max-width: 100%; }
 .unlocks { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 6px 0; }
 .unlocks .u { display: flex; flex-direction: column; align-items: center; font-size: 12px; width: 76px; text-align: center; }
 .unlocks .u img { width: 56px; height: 56px; }
+/* The new plot's picture stands as tall as a seed bag, so every name below lines up. */
+.unlocks .plot-pic { height: 98px; display: grid; place-items: center; }
 .reqs { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 10px 0; }
 .req { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 14px; background: #fff; border: 2px solid var(--paper-3); }
 .req.miss { border-color: var(--berry); color: var(--berry-dark); }
@@ -648,17 +665,20 @@ img { max-width: 100%; }
   .hbtn { width: 56px; font-size: 11.5px; }
   .hbtn .ico { width: 46px; height: 46px; font-size: 25px; border-radius: 14px; }
   .hbtn .meter { top: 40px; }
-  /* Too short for the side buttons above the dock: they get the right edge to themselves, spread
-     down to the dock's line, and the dock, quest banner and bottom sheets end to their left. */
-  .side { top: calc(66px + var(--safe-t)); bottom: calc(10px + var(--safe-b)); gap: 4px; justify-content: space-between; }
-  .dock { right: calc(78px + var(--safe-r)); }
-  .quest-banner { max-width: min(400px, calc(100% - 396px - var(--safe-l) - var(--safe-r))); }
+  /* The bottom sheets are taller than the room under the side buttons: they end to their left. */
+  .side { top: calc(66px + var(--safe-t)); gap: 6px; }
   #hud:has(> .side) ~ #sheet-root .sheet { right: calc(78px + var(--safe-r)); padding-right: 0; }
   .avatar { width: 42px; height: 42px; font-size: 26px; }
   .modal { padding: 26px 14px 10px; }
   .bag { width: 74px; height: 86px; }
-  .bag .thumb { width: 52px; height: 52px; }
+  .unlocks .plot-pic { height: 86px; }
+  .bag .thumb { width: 58px; height: 58px; }
   .visit-info { bottom: calc(140px + var(--safe-b)); }
+}
+@media (max-height: 340px) and (orientation: landscape) {
+  /* Too short for the side buttons above the dock: the dock and the quest banner end to their left. */
+  .dock { right: calc(78px + var(--safe-r)); }
+  .quest-banner { max-width: min(400px, calc(100% - 396px - var(--safe-l) - var(--safe-r))); }
 }
 @media (max-width: 600px) and (max-height: 520px) and (orientation: landscape) {
   /* The quest banner sits above the dock here: it can reach the side buttons. */

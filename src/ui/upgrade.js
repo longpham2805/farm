@@ -3,12 +3,16 @@ import { t, fmtNum, cropName, seedName } from '../i18n.js';
 import * as G from '../game/logic.js';
 import { growReduction, priceBonus, energyBonus, mutationBase, MAX_LEVEL } from '../config.js';
 import { openModal, toast, confetti } from './overlay.js';
-import { cropImg } from '../three/thumbs.js';
+import { cropIcon } from './cropIcons.js';
+import { icon } from './icons.js';
 import { sfx } from '../audio.js';
 
 const pct = (v) => `${Math.round(v * 1000) / 10}%`;
 
 export function openUpgrade(app) {
+  // The settings live at the foot of the farm's own menu (the HUD has no button for them).
+  const settingsRow = () => h('div', { class: 'modal-foot' },
+    h('button', { class: 'btn ghost small', onClick: () => app.go('settings') }, icon('settings'), t('settings')));
   openModal({
     title: t('upgradeTitle'),
     size: 'mid',
@@ -17,7 +21,7 @@ export function openUpgrade(app) {
       const L = s.level;
       const check = G.upgradeCheck(s);
       if (check.max) {
-        body.append(h('div', { class: 'empty-note' }, h('span', { class: 'big' }, '🏆'), t('maxLevel')));
+        body.append(h('div', { class: 'empty-note' }, h('span', { class: 'big' }, icon('trophy')), t('maxLevel')), settingsRow());
         return;
       }
       const need = check.need;
@@ -28,7 +32,7 @@ export function openUpgrade(app) {
           h('div', { class: 'house' }, L),
           h('div', { class: 'up-bar' },
             h('div', { class: 'bar' }, h('i', { style: { width: `${Math.min(100, (s.xp / need.xp) * 100)}%` } }),
-              h('span', { class: 'num' }, `⭐ ${fmtNum(s.xp)} / ${fmtNum(need.xp)}`))),
+              h('span', { class: 'num' }, icon('star'), ` ${fmtNum(s.xp)} / ${fmtNum(need.xp)}`))),
           h('div', { class: 'house next' }, L + 1)),
         h('div', { class: 'bonus' },
           bonusRow(t('bonusGrow'), growReduction),
@@ -41,15 +45,15 @@ export function openUpgrade(app) {
         body.append(h('div', { class: 'section-title center' }, t('newUnlocks')),
           h('div', { class: 'unlocks' },
             unlocks.seeds.map((id) => h('div', { class: 'u' }, seedBag(id, {}), seedName(id))),
-            unlocks.plots ? h('div', { class: 'u' }, h('span', { style: { fontSize: '40px' } }, '🟫'), t('morePlots', { n: unlocks.plots })) : null));
+            unlocks.plots ? h('div', { class: 'u' }, h('span', { class: 'plot-pic' }, icon('plot')), t('morePlots', { n: unlocks.plots })) : null));
       }
       const reqs = [
-        h('div', { class: `req ${check.xpOk ? 'ok' : 'miss'}` }, '⭐', h('b', { class: 'num' }, `${fmtNum(Math.min(s.xp, need.xp))}/${fmtNum(need.xp)}`)),
-        h('div', { class: `req ${check.coinsOk ? 'ok' : 'miss'}` }, '🌏', h('b', { class: 'num' }, fmtNum(need.coins))),
+        h('div', { class: `req ${check.xpOk ? 'ok' : 'miss'}` }, icon('star'), h('b', { class: 'num' }, `${fmtNum(Math.min(s.xp, need.xp))}/${fmtNum(need.xp)}`)),
+        h('div', { class: `req ${check.coinsOk ? 'ok' : 'miss'}` }, icon('earth'), h('b', { class: 'num' }, fmtNum(need.coins))),
       ];
       if (need.material) {
         const have = G.cropCount(s, need.material.crop);
-        reqs.push(h('div', { class: `req ${check.matOk ? 'ok' : 'miss'}` }, cropImg(need.material.crop, 0), cropName(need.material.crop),
+        reqs.push(h('div', { class: `req ${check.matOk ? 'ok' : 'miss'}` }, cropIcon(need.material.crop), cropName(need.material.crop),
           h('b', { class: 'num' }, `${fmtNum(have)}/${fmtNum(need.material.n)}`)));
       }
       body.append(
@@ -61,8 +65,9 @@ export function openUpgrade(app) {
             api.close();
             app.refresh();
             showLevelUp(app, r);
-          } }, '🏡 ', t('upgrade'))),
+          } }, icon('home'), t('upgrade'))),
         !check.xpOk ? h('p', { class: 'muted center' }, t('needXp', { n: fmtNum(need.xp - s.xp) })) : null,
+        settingsRow(),
       );
     },
   });
@@ -81,7 +86,7 @@ export function showLevelUp(app, result) {
         result.unlocks.seeds.length || result.unlocks.plots
           ? h('div', { class: 'unlocks' },
             result.unlocks.seeds.map((id) => h('div', { class: 'u' }, seedBag(id, {}), seedName(id))),
-            result.unlocks.plots ? h('div', { class: 'u' }, h('span', { style: { fontSize: '40px' } }, '🟫'), t('morePlots', { n: result.unlocks.plots })) : null)
+            result.unlocks.plots ? h('div', { class: 'u' }, h('span', { class: 'plot-pic' }, icon('plot')), t('morePlots', { n: result.unlocks.plots })) : null)
           : null,
         h('div', { class: 'row-btns' }, h('button', { class: 'btn', onClick: () => api.close() }, t('ok')))));
     },

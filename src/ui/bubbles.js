@@ -1,5 +1,6 @@
 // Icons floating above the plots: water drop, basket, lock and so on.
 import { h } from './dom.js';
+import { icon as drawIcon } from './icons.js';
 import { PLOT_UNLOCK } from '../config.js';
 
 export class Bubbles {
@@ -27,40 +28,42 @@ export class Bubbles {
       const d = app.describe(i);
       let kind = '';
       let icon = '';
+      let label = '';
       if (d && d.locked) {
         if (!npc && app.sheet === 'seeds' && PLOT_UNLOCK[i] <= app.state.level + 3) {
           kind = 'lock';
-          icon = `🔒 ${PLOT_UNLOCK[i]}`;
+          icon = 'lock';
+          label = PLOT_UNLOCK[i];
         }
       } else if (!d && !npc && app.sheet === 'seeds' && i === app.plantTarget) {
         kind = 'target';
-        icon = '🌱';
+        icon = 'seeds';
       } else if (d) {
         if (d.info.mature) {
           if (npc) {
             if (!d.plot.stolen) {
               kind = 'steal';
-              icon = '✋';
+              icon = 'hand';
             }
           } else {
             kind = 'ripe';
-            icon = '🧺';
+            icon = 'basket';
           }
         } else if (d.info.thirsty) {
           kind = 'water';
-          icon = '💧';
+          icon = 'water';
         } else if (d.mystery && !npc) {
           kind = 'mystery';
-          icon = '❓';
+          icon = 'mystery';
         }
       }
       const item = this.items[i];
-      const k = kind + icon;
+      const k = kind + icon + label;
       if (item.kind === k) continue;
       item.kind = k;
       item.el.dataset.kind = kind;
       item.el.className = `bubble ${kind}`;
-      item.el.textContent = icon;
+      item.el.replaceChildren(...(icon ? [drawIcon(icon)] : []), ...(label ? [String(label)] : []));
       item.el.hidden = !kind;
       item.el.style.animationDelay = `${-(i * 0.17)}s`;
     }

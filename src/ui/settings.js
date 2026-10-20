@@ -1,10 +1,11 @@
 import { h } from './dom.js';
+import { icon } from './icons.js';
+import { avatarImg, PLAYER_AVATARS as AVATARS } from './avatars.js';
 import { t } from '../i18n.js';
 import { openModal } from './overlay.js';
 import { openSync } from './sync.js';
 import { cloudReady } from '../game/cloud.js';
 
-const AVATARS = ['🧑‍🌾', '👦', '👧', '🧒', '🐣', '🦖', '🤖', '🦸', '🧙', '🐻', '🐨', '🦁'];
 
 function nameAndAvatar(app, body, compact = false) {
   const s = app.state;
@@ -23,7 +24,7 @@ function nameAndAvatar(app, body, compact = false) {
       app.save();
       app.hud.update();
     },
-  }, a)));
+  }, avatarImg(a))));
   const fields = [
     h('div', { class: 'field' }, h('label', { for: 'farmer-name' }, t('farmerName')), input),
     h('div', { class: 'field' }, h('label', null, t('avatar')), avatars),
@@ -52,13 +53,13 @@ export function openSettings(app) {
         h('div', { class: 'field' }, h('label', null, t('music')), seg([[true, t('on')], [false, t('off')]], s.music, set('music'))),
         h('div', { class: 'field' }, h('label', null, t('graphics')), seg([['high', t('gfxHigh')], ['low', t('gfxLow')]], s.quality, set('quality'))),
         installField(app, api),
-        h('div', { class: 'field' }, h('label', null, '☁️ ', t('syncField')),
-          h('div', null, h('button', { class: 'btn honey small', onClick: () => openSync(app) }, '☁️ ', t('syncOpen')))),
-        h('p', { class: 'muted' }, '💾 ', t('saveNote')),
+        h('div', { class: 'field' }, h('label', null, icon('cloud'), ' ', t('syncField')),
+          h('div', null, h('button', { class: 'btn honey small', onClick: () => openSync(app) }, icon('cloud'), t('syncOpen')))),
+        h('p', { class: 'muted' }, icon('save'), ' ', t('saveNote')),
         confirmReset
           ? h('div', { class: 'center' }, h('p', { class: 'danger' }, t('resetConfirm')),
             h('div', { class: 'row-btns' },
-              h('button', { class: 'btn berry small', onClick: () => app.resetGame() }, t('resetYes')),
+              h('button', { class: 'btn red small', onClick: () => app.resetGame() }, t('resetYes')),
               h('button', { class: 'btn ghost small', onClick: () => {
                 confirmReset = false;
                 api.refresh();
@@ -66,7 +67,7 @@ export function openSettings(app) {
           : h('div', { class: 'row-btns' }, h('button', { class: 'btn ghost small', onClick: () => {
             confirmReset = true;
             api.refresh();
-          } }, '🔄 ', t('resetGame'))),
+          } }, icon('sync'), t('resetGame'))),
         h('p', { class: 'credits center' }, t('credits')),
       );
     },
@@ -77,7 +78,7 @@ function installField(app, api) {
   const standalone = window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone;
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   let body;
-  if (standalone) body = h('p', { class: 'muted', style: { margin: 0 } }, '✅ ', t('installed'));
+  if (standalone) body = h('p', { class: 'muted', style: { margin: 0 } }, icon('check'), ' ', t('installed'));
   else if (app.installPrompt) {
     body = h('div', null, h('button', { class: 'btn honey small', onClick: async () => {
       const prompt = app.installPrompt;
@@ -85,9 +86,9 @@ function installField(app, api) {
       prompt.prompt();
       await prompt.userChoice.catch(() => null);
       api.refresh();
-    } }, '📲 ', t('installBtn')));
+    } }, icon('install'), t('installBtn')));
   } else body = h('p', { class: 'muted', style: { margin: 0 } }, ios ? t('installIos') : t('installOther'));
-  return h('div', { class: 'field' }, h('label', null, '📲 ', t('installTitle')), body);
+  return h('div', { class: 'field' }, h('label', null, icon('install'), ' ', t('installTitle')), body);
 }
 
 export function openWelcome(app) {
@@ -97,13 +98,13 @@ export function openWelcome(app) {
     dismissable: false,
     render(body, api) {
       body.append(
-        h('h2', { class: 'center', style: { fontFamily: 'var(--font-display)', margin: '0' } }, '☁️ ', t('welcomeTitle'), ' ☁️'),
+        h('h2', { class: 'center', style: { fontFamily: 'var(--font-display)', margin: '0' } }, icon('cloud'), ' ', t('welcomeTitle'), ' ', icon('cloud')),
         h('p', { class: 'center', style: { margin: '0 0 4px' } }, t('welcomeText')),
         h('div', { class: 'how' },
-          h('div', null, h('b', null, '🌱'), t('how1')),
-          h('div', null, h('b', null, '💧'), t('how2')),
-          h('div', null, h('b', null, '🧺'), t('how3')),
-          h('div', null, h('b', null, '✨'), t('how4'))),
+          h('div', null, h('b', null, icon('seeds')), t('how1')),
+          h('div', null, h('b', null, icon('water')), t('how2')),
+          h('div', null, h('b', null, icon('basket')), t('how3')),
+          h('div', null, h('b', null, icon('mutation')), t('how4'))),
       );
       nameAndAvatar(app, body, true);
       body.append(
@@ -117,8 +118,8 @@ export function openWelcome(app) {
           api.close();
           app.refresh();
           app.openSeeds();
-        } }, '🌱 ', t('start'))),
-        h('div', { class: 'center' }, h('button', { class: 'link-btn', onClick: () => openSync(app, cloudReady() ? 'enter' : 'paste') }, '☁️ ', t('haveCode'))));
+        } }, icon('seeds'), t('start'))),
+        h('div', { class: 'center' }, h('button', { class: 'link-btn', onClick: () => openSync(app, cloudReady() ? 'enter' : 'paste') }, icon('cloud'), ' ', t('haveCode'))));
     },
   });
 }

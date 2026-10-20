@@ -3,13 +3,14 @@ import { t, fmtNum, fmtDur, seedName } from '../i18n.js';
 import * as G from '../game/logic.js';
 import { CROPS, PACKS, CROP_BY_ID, PACK_BY_ID, isPack, hasTag, packPool } from '../data/crops.js';
 import { openModal, toast } from './overlay.js';
-import { cropImg } from '../three/thumbs.js';
+import { cropIcon } from './cropIcons.js';
+import { icon } from './icons.js';
 import { sfx } from '../audio.js';
 
 const tagsFor = (crop) => [
   hasTag(crop, 'exp') && h('span', { class: 'tag exp' }, 'EXP'),
-  hasTag(crop, 'special') && h('span', { class: 'tag special' }, '★ ', t('tagSpecial')),
-  hasTag(crop, 'lucky') && h('span', { class: 'tag lucky' }, '🍀 ', t('tagLucky')),
+  hasTag(crop, 'special') && h('span', { class: 'tag special' }, icon('star'), ' ', t('tagSpecial')),
+  hasTag(crop, 'lucky') && h('span', { class: 'tag lucky' }, icon('lucky'), ' ', t('tagLucky')),
 ];
 
 export function openShop(app, focus = null) {
@@ -41,10 +42,12 @@ export function openShop(app, focus = null) {
           h('button', { class: `tab${tab === id ? ' on' : ''}`, onClick: () => {
             tab = id;
             api.refresh();
+            const list = api.body.querySelector('.grid-wrap'); // a new list starts at its top
+            if (list) list.scrollTop = 0;
           } }, label)));
 
       const grid = h('div', { class: 'grid' }, list.map((d) => seedBag(d.id, {
-        label: d.unlock > s.level ? `🔒 ${t('level')} ${d.unlock}` : `🌏${fmtNum(d.price)}`,
+        label: d.unlock > s.level ? [icon('lock'), ` ${t('level')} ${d.unlock}`] : [icon('earth'), fmtNum(d.price)],
         locked: d.unlock > s.level,
         selected: d.id === sel,
         corner: s.seeds[d.id] ? `x${s.seeds[d.id]}` : null,
@@ -56,20 +59,20 @@ export function openShop(app, focus = null) {
         },
       })));
 
-      const pic = h('div', { class: 'detail-pic' }, isPack(def.id) ? h('span', { class: 'q' }, '?') : cropImg(def.id, 0));
+      const pic = h('div', { class: 'detail-pic' }, isPack(def.id) ? h('span', { class: 'q' }, '?') : cropIcon(def.id));
       const stats = h('dl', { class: 'stats' });
       const stat = (k, v) => stats.append(h('dt', null, k), h('dd', null, v));
       if (isPack(def.id)) {
         const pool = packPool(def.id);
         stat(t('mutations'), t('packPool', { n: pool.length }));
-        if (def.mutation) stat('✨', t('packBonus', { n: Math.round(def.mutation * 100) }));
+        if (def.mutation) stat(icon('mutation'), t('packBonus', { n: Math.round(def.mutation * 100) }));
         stat(t('xpGain'), t('random'));
         stat(t('growTime'), t('random'));
       } else {
         stat(t('variants'), `${def.variants}`);
-        stat(t('xpGain'), `⭐ ${fmtNum(def.xp)}`);
-        stat(t('yield'), `${def.yield} (+2 💧)`);
-        stat(t('sellEach'), `🌏 ${fmtNum(G.sellPrice(s, def.id, 0))}`);
+        stat(t('xpGain'), [icon('star'), ` ${fmtNum(def.xp)}`]);
+        stat(t('yield'), [`${def.yield} (+2 `, icon('water'), ')']);
+        stat(t('sellEach'), [icon('earth'), ` ${fmtNum(G.sellPrice(s, def.id, 0))}`]);
         stat(t('growTime'), fmtDur(G.growMsFor(def, s.level)));
       }
       stat(t('owned'), `${fmtNum(s.seeds[def.id] || 0)}`);
@@ -100,7 +103,7 @@ export function openShop(app, focus = null) {
           qty = 1;
           app.refresh();
         },
-      }, `${t('buy')} 🌏`, h('span', { class: 'num' }, fmtNum(def.price * qty)));
+      }, t('buy'), icon('earth'), h('span', { class: 'num' }, fmtNum(def.price * qty)));
 
       const detail = h('div', { class: 'detail' },
         h('div', { class: 'detail-head' }, pic,
@@ -109,7 +112,7 @@ export function openShop(app, focus = null) {
         stats,
         isPack(def.id) ? null : nutritionBlock(def.id),
         locked
-          ? h('div', { class: 'center danger' }, '🔒 ', t('unlockAt', { n: def.unlock }))
+          ? h('div', { class: 'center danger' }, icon('lock'), ' ', t('unlockAt', { n: def.unlock }))
           : [
             h('div', { class: 'qty' },
               h('button', { class: 'step', onClick: () => set(qty - 1), 'aria-label': '-' }, '−'),

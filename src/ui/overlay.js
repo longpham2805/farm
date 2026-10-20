@@ -1,9 +1,30 @@
 import { h, clear } from './dom.js';
+import { icon } from './icons.js';
 import { t } from '../i18n.js';
 import { sfx } from '../audio.js';
 
 const modalRoot = () => document.getElementById('modal-root');
 const stack = [];
+
+/** Where each scrolled pane under root is (the body, the shop's and barn's lists...), by its path of child indices:
+ * render builds the same tree again, so the same path finds the same pane. */
+function scrollPlaces(root) {
+  const out = [];
+  const walk = (el, path) => {
+    if (el.scrollTop) out.push([path, el.scrollTop]);
+    for (let i = 0; i < el.children.length; i++) walk(el.children[i], [...path, i]);
+  };
+  walk(root, []);
+  return out;
+}
+
+function restoreScroll(root, places) {
+  for (const [path, top] of places) {
+    let el = root;
+    for (const i of path) el = el?.children[i];
+    if (el) el.scrollTop = top;
+  }
+}
 
 /**
  * Opens a framed card. render(body, api) fills it and is called again by api.refresh().
@@ -14,16 +35,16 @@ export function openModal({ title, size = '', render, onClose, dismissable = tru
   const api = {
     body,
     refresh: () => {
-      const scroll = body.scrollTop;
+      const scroll = scrollPlaces(body);
       clear(body);
       render(body, api);
-      body.scrollTop = scroll;
+      restoreScroll(body, scroll);
     },
     close: () => closeModal(api),
   };
   const card = h('div', { class: `modal ${size}`, role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
     title ? h('div', { class: 'modal-title' }, title) : null,
-    dismissable ? h('button', { class: 'modal-close', 'aria-label': t('close'), onClick: () => api.close() }, '✕') : null,
+    dismissable ? h('button', { class: 'modal-close', 'aria-label': t('close'), onClick: () => api.close() }, icon('close')) : null,
     body);
   const overlay = h('div', { class: 'overlay' }, card);
   overlay.addEventListener('pointerdown', (e) => {
