@@ -3,7 +3,7 @@ import { t, fmtNum, fmtDur, seedName } from '../i18n.js';
 import * as G from '../game/logic.js';
 import { CROPS, PACKS, CROP_BY_ID, PACK_BY_ID, isPack, hasTag, packPool } from '../data/crops.js';
 import { openModal, toast } from './overlay.js';
-import { cropImg } from '../three/thumbs.js';
+import { cropIcon } from './cropIcons.js';
 import { sfx } from '../audio.js';
 
 const tagsFor = (crop) => [
@@ -56,7 +56,7 @@ export function openShop(app, focus = null) {
         },
       })));
 
-      const pic = h('div', { class: 'detail-pic' }, isPack(def.id) ? h('span', { class: 'q' }, '?') : cropImg(def.id, 0));
+      const pic = h('div', { class: 'detail-pic' }, isPack(def.id) ? h('span', { class: 'q' }, '?') : cropIcon(def.id));
       const stats = h('dl', { class: 'stats' });
       const stat = (k, v) => stats.append(h('dt', null, k), h('dd', null, v));
       if (isPack(def.id)) {

@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Crop icons</title>
+<base href="../">
+<style>
+  body{margin:0;background:var(--paper);font-family:sans-serif;color:#3a2a10}
+  section{padding:10px 16px}
+  h2{font-size:16px;margin:6px 0}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .big figure{margin:0;text-align:center;font-size:12px}
+  .big img{display:block;width:150px;height:150px;background:#fff;border-radius:16px;border:3px solid var(--paper-3)}
+</style></head>
+<body>
+<!-- The menus' crop pictures (src/ui/cropIcons.js), in the catalog's order: in the shop's seed bags at their real size,
+     then large. ?only=watermelon,kiwi shows just those; ?old adds the 3D renders they replaced, for comparison. -->
+<main id="out"></main>
+<script type="module">
+import '../src/styles.css';
+import { cropIcon } from '../src/ui/cropIcons.js';
+import { cropImg } from '../src/three/thumbs.js';
+import { CROPS } from '../src/data/crops.js';
+
+const params = new URLSearchParams(location.search);
+const only = params.get('only')?.split(',');
+const crops = CROPS.filter((c) => !only || only.includes(c.id));
+const out = document.getElementById('out');
+const el = (tag, cls, ...kids) => {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  e.append(...kids);
+  return e;
+};
+const bag = (c, pic) => el('button', `bag tier-${c.tier}`, pic, el('span', 'count', `🌏${c.price}`));
+if (params.has('old')) out.append(el('section', null, el('h2', null, 'Trước (render 3D)'), el('div', 'row', ...crops.map((c) => bag(c, cropImg(c.id, 0))))));
+out.append(el('section', null, el('h2', null, 'Túi hạt giống'), el('div', 'row', ...crops.map((c) => bag(c, cropIcon(c.id))))),
+  el('section', null, el('h2', null, 'Cỡ lớn'), el('div', 'row big', ...crops.map((c) => el('figure', null, cropIcon(c.id, ''), c.name.vi)))));
+</script>
+</body>
+</html>

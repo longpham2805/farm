@@ -1,9 +1,8 @@
-import { h, nutritionBlock } from './dom.js';
+import { h, nutritionBlock, cropPic, cropIcon } from './dom.js';
 import { t, fmtNum, cropName } from '../i18n.js';
 import * as G from '../game/logic.js';
 import { CROP_BY_ID } from '../data/crops.js';
 import { openModal, toast } from './overlay.js';
-import { cropImg } from '../three/thumbs.js';
 import { sfx } from '../audio.js';
 
 export function openBarn(app, startTab = 'crops') {
@@ -40,7 +39,7 @@ export function openBarn(app, startTab = 'crops') {
         body.append(
           h('p', { class: 'muted' }, t('usefulNote')),
           h('div', { class: 'reqs' }, h('div', { class: `req ${have >= mat.n ? 'ok' : 'miss'}` },
-            cropImg(mat.crop, 0), cropName(mat.crop), h('b', { class: 'num' }, `${fmtNum(have)}/${fmtNum(mat.n)}`))),
+            cropIcon(mat.crop), cropName(mat.crop), h('b', { class: 'num' }, `${fmtNum(have)}/${fmtNum(mat.n)}`))),
           h('div', { class: 'row-btns' }, h('button', { class: 'btn honey', onClick: () => app.go('upgrade') }, '🏡 ', t('upgradeTitle'))));
         return;
       }
@@ -69,7 +68,7 @@ export function openBarn(app, startTab = 'crops') {
             sfx.tap();
             api.refresh();
           },
-        }, cropImg(c, Number(v)), Number(v) ? h('span', { class: 'spark' }, '✨') : null,
+        }, cropPic(c, Number(v)), Number(v) ? h('span', { class: 'spark' }, '✨') : null,
         reserved[k] ? h('span', { class: 'keep', title: t('keptForUpgrade') }, '🔒') : null,
         h('span', { class: 'count num' }, fmtNum(s.items[k])));
       }));
@@ -97,7 +96,7 @@ export function openBarn(app, startTab = 'crops') {
 
       const preview = G.sellAllPreview(s);
       const detail = h('div', { class: 'detail' },
-        h('div', { class: 'detail-head' }, h('div', { class: 'detail-pic' }, cropImg(cropId, variant)),
+        h('div', { class: 'detail-head' }, h('div', { class: 'detail-pic' }, cropPic(cropId, variant)),
           h('div', null, h('h3', null, cropName(cropId, variant)),
             h('div', { class: 'tags' }, variant ? h('span', { class: 'tag mut' }, '✨ ', t('tagMutation')) : null))),
         h('dl', { class: 'stats' },

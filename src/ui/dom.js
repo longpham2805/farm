@@ -2,6 +2,7 @@ import { t, fmtNum, seedName, cropName, getLang } from '../i18n.js';
 import { NUTRIENTS, CROP_NUTRITION } from '../data/nutrition.js';
 import { CROP_BY_ID, PACK_BY_ID, isPack } from '../data/crops.js';
 import { cropImg } from '../three/thumbs.js';
+import { cropIcon } from './cropIcons.js';
 
 /** Tiny element builder: h('div', { class: 'x', onClick }, child, ...) */
 export function h(tag, props, ...children) {
@@ -54,10 +55,13 @@ export function seedBag(id, { label, corner, selected, locked, onClick } = {}) {
     'aria-label': seedName(id),
     title: seedName(id),
   },
-  isPack(id) ? h('span', { class: 'q-mark' }, '?') : cropImg(id, 0),
+  isPack(id) ? h('span', { class: 'q-mark' }, '?') : cropIcon(id),
   corner ? h('span', { class: 'corner' }, corner) : null,
   label != null ? h('span', { class: locked ? 'price' : 'count' }, label) : null);
 }
+
+/** A crop's picture: the drawn one for its plain look, the 3D render for a mutation (its own colours and aura). */
+export const cropPic = (id, variant = 0) => (variant ? cropImg(id, variant) : cropIcon(id));
 
 export function chestSvg(tier) {
   const c = { green: ['#5cc46a', '#3a9a4a'], blue: ['#4aa8ff', '#2a74c9'], purple: ['#a066ff', '#6c3ccf'], red: ['#ff4f6d', '#c22a48'] }[tier];
@@ -97,7 +101,7 @@ export function rewardChips(reward) {
   if (reward.seeds) {
     for (const [id, n] of Object.entries(reward.seeds)) {
       out.push(h('span', { class: 'rw', title: seedName(id) },
-        isPack(id) ? h('span', { class: 'e' }, '🎁') : cropImg(id, 0),
+        isPack(id) ? h('span', { class: 'e' }, '🎁') : cropIcon(id),
         `×${n}`));
     }
   }
@@ -140,4 +144,4 @@ export function variantTitle(cropId, variant) {
   return cropName(cropId, variant);
 }
 
-export { t, fmtNum, cropImg, PACK_BY_ID };
+export { t, fmtNum, cropImg, cropIcon, PACK_BY_ID };

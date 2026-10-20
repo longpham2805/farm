@@ -125,7 +125,7 @@ candy crops become fruits of the same tier (see `RENAMED_CROPS`).
 | `src/three/nature.js`, `src/three/natureModels.js` | Grass, flowers and stones from Cenji's LowPoly Nature pack, in the game's colours, for the farm and round the buildings; `dev/nature-models.cjs` makes `natureModels.js` from the pack's `.glb` files |
 | `src/three/plants/` | The painted valley's plants, built in code from a seed, one kind a file (pines, round and fruit trees, the blossom tree, birches, slim trees, firs, bushes, sunflowers, tomatoes, flowers, rocks, cattails, water lilies); `valley.js` places them, `woods.js` scatters the woods (their shadows cast by cheap stand-ins from `shadowProxy.js`), `edited.js` swaps in any model edited by hand in Blender |
 | `dev/export-models.mjs`, `dev/edited-models.mjs` | Write every placed plant model out as a `.glb` for Blender (`art/models/export/`), and bake the ones edited by hand (`art/models/edited/`) into `src/three/plants/editedModels.js`; how in `art/models/README.md` |
-| `src/ui/` | HUD, bottom bars and the menus (shop, barn, collection, quests, chests…) |
+| `src/ui/` | HUD, bottom bars and the menus (shop, barn, collection, quests, chests…); `cropIcons.js` draws each crop's picture for the menus as SVG (mutated looks and the collection still use the 3D renders in `src/three/thumbs.js`) |
 | `src/i18n.js` | Vietnamese and English text |
 | `public/` | App manifest and icons, the painting in tiles (`backdrop/`: four sharp and one fast) and the river's water maps; `vite.config.js` writes the offline service worker |
 | `dev/gallery.html` | Shows every crop model (`?mode=thumbs` lists all 249 looks) |
@@ -133,6 +133,7 @@ candy crops become fruits of the same tier (see `RENAMED_CROPS`).
 | `dev/animals.html` | The animals close up (`?set=ducks`, `?set=birds`…) |
 | `dev/plants.html` | One plant kind beside the reference design wherever it draws one, then a few seeds close up (`?set=pines`) |
 | `dev/buildings.html` | One building beside the reference design, where it stands on the painting (`?b=farmhouse`) |
+| `dev/icons.html` | Every crop's menu picture, in a seed bag at its real size and large (`?only=kiwi,fig`, `?old` adds the 3D renders) |
 | `dev/icons.cjs` | Redraws the app icons from `dev/icon-svg.cjs` |
 | `dev/shot.cjs`, `dev/play.cjs`, `dev/scenarios.cjs` | Screenshots of a page, and scripted play-throughs (Playwright) |
 | `art/backdrop/` | The painting, the reference design, and the Python scripts that fitted, fixed, tiled and mapped the water of the painting; how in its `README.md` |

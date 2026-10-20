@@ -3,7 +3,7 @@ import { t, fmtNum, cropName, seedName } from '../i18n.js';
 import * as G from '../game/logic.js';
 import { growReduction, priceBonus, energyBonus, mutationBase, MAX_LEVEL } from '../config.js';
 import { openModal, toast, confetti } from './overlay.js';
-import { cropImg } from '../three/thumbs.js';
+import { cropIcon } from './cropIcons.js';
 import { sfx } from '../audio.js';
 
 const pct = (v) => `${Math.round(v * 1000) / 10}%`;
@@ -49,7 +49,7 @@ export function openUpgrade(app) {
       ];
       if (need.material) {
         const have = G.cropCount(s, need.material.crop);
-        reqs.push(h('div', { class: `req ${check.matOk ? 'ok' : 'miss'}` }, cropImg(need.material.crop, 0), cropName(need.material.crop),
+        reqs.push(h('div', { class: `req ${check.matOk ? 'ok' : 'miss'}` }, cropIcon(need.material.crop), cropName(need.material.crop),
           h('b', { class: 'num' }, `${fmtNum(have)}/${fmtNum(need.material.n)}`)));
       }
       body.append(
