@@ -241,6 +241,9 @@ export function buildBackdrop(spec = BACKDROP) {
       } catch (err) {
         console.warn('backdrop: could not load the painting', err);
         if (wanted === level) wanted = null;
+        // Offline before the sharp tiles were ever kept (sw.js keeps the fast one from the start): the fast one,
+        // rather than no valley at all.
+        if (high && !group.children.length) await this.setDetail(false);
         return;
       }
       // The setting changed again while these loaded.

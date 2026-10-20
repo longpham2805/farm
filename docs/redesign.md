@@ -20,8 +20,8 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   cast shadows that match the buildings'.
 - The water stays in the painting and a shader makes it flow: streaks of light and glints drift downstream, and the
   painting ripples a pixel or so under them. It is only ambience for now: nothing happens when the player taps it.
-- Not chosen: rebuilding the whole valley in 3D. That code is still there, switched off by the `STAGE` flags in
-  `src/three/countryside.js`.
+- Not chosen: rebuilding the whole valley in 3D. Its code was switched off by `STAGE` flags in
+  `src/three/countryside.js`, then removed before merging (2026-10-20; see "Before merging" under Done).
 
 ## Done
 
@@ -95,10 +95,9 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     the layout's; the front one starts past the new river's far bank; the far bank's open woods lie between its road
     and the river.
   - `LAND.cliff` and `rightLedge`, `ROCKY_BANKS`, and the `ROCKS` along the river and at the back, moved to match.
-  Checked by drawing all of it over the painting. The old 3D scenery still reads these, so with `STAGE.painted` off
-  it no longer lines up with its own buildings and bridges (`LAYOUT` and `ROADS` in `countryside.js`).
-- With `STAGE.painted` on (as now), the valley shows only the painting, the clouds and the buildings redone so far
-  (`placeBuildings` in `buildings.js`); the old 3D terrain, river, buildings, animals and bridges are taken out. The
+  Checked by drawing all of it over the painting.
+- The valley shows only the painting, the clouds and what is redone for it (`placeBuildings` in `buildings.js`,
+  `placePlants` in `plants/valley.js`); the old 3D terrain, river, buildings, animals and bridges are gone. The
   farm itself (`src/three/farm.js`: plots, fences, lamps, pond, barn) still stands on top and lines up with the
   painted ring road.
 - Buildings are redone one at a time, each in its own file under `src/three/buildings/` (shared parts in
@@ -175,8 +174,7 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
 - **Animals apart from where they live**: the chickens are `src/three/animals/chicken.js`, breeds in `CHICKENS`
   (white, brown, gold, black and speckled hens, a rooster, a chick), and `flock(area, breeds)` lets them loose to
   wander and peck in any polygon. The hen yard has a flock (`henYard` returns where, `PLACES.henYard.hens` which);
-  the same birds can be let loose anywhere. `dev/animals.html` shows every breed close up. The old `hen` in
-  `animals.js` belongs to the old 3D valley.
+  the same birds can be let loose anywhere. `dev/animals.html` shows every breed close up.
 - **Buffalo** (`src/three/animals/buffalo.js`, kinds in `BUFFALOES`: a grown buffalo and a calf), built like a Cape
   buffalo from two pictures the user gave: a slate grey body in one smooth piece round its spine (`loft` through
   `TRUNK`), the back rising to a hump over the shoulders and falling away to a smaller rump, a deep chest with a fold
@@ -262,8 +260,7 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     round a spot high over the hills behind the farm (`PLACES.birds`), beating their wings for a few seconds, then
     gliding, banking into the turn. Drawn about twice a swallow's size against the farm (`size` 1.8): at their true
     size they were a few pixels over the dark forest. They cast no shadows.
-  - `dev/animals.html?set=ducks` and `?set=birds` show them close up. The old `addAnimals` in `animals.js` belongs to
-    the old 3D valley.
+  - `dev/animals.html?set=ducks` and `?set=birds` show them close up.
 - **The fences** (`woodFence` in `buildings/fence.js`), redone on 2026-10-20 for all of them, the user finding the
   old ones too straight and too much in line, their posts too square and upright and their wood a flat colour: round
   the meadow, round the fields over the big bridge, round the hens' yard (its own `fence` before), the farm's own just
@@ -818,13 +815,26 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   round mask, drawn on a canvas (none in the tests). Whiteness: corners 0.16–0.42, bands 0.11–0.21, wisps
   0.16–0.22.
 
+- **Before merging** (2026-10-20). The old 3D valley is gone: it was built at every start and thrown away, and its
+  water, falls, buildings and animals were still updated every frame. `countryside.js` is now only the painted
+  valley's assembly (1,201 lines to 121); `buildings.js` only `placeBuildings` (542 to 174); `animals.js`, `trees.js`
+  and `dev/trees.html` deleted; `railFence` (nature.js), the ring helpers only it used (farm.js) and `CHANNEL`,
+  `ROCKY_BANKS` and `WATER_Y` (valleyMap.js) gone; about 2,100 lines, and the bundle 1,165 KB to 1,124 KB. The
+  scene is the same: 566 meshes and 1,571,748 triangles before and after, the same draw calls at the opening view.
+  The README's code map covers the painted valley (backdrop, map, buildings, animals, plants, art, tests, docs). And
+  the painting works offline: `sw.js` (written by `vite.config.js`) keeps the tiles and water maps in a cache of their
+  own, `farm-art-<hash of their contents>` so a new painting replaces the old; the water maps and the fast tile when
+  it installs, the sharp tiles once a device loads them; `backdrop.js` falls back to the fast tile when the sharp
+  ones cannot load. Cache lookups ignore `Vary` (Vite's preview server sends `Vary: Origin`, and a module script
+  asks with an Origin, so offline the game itself did not load there). Checked on `npm run build` served by
+  `vite preview` (the "farm-dist" preview in `.claude/launch.json`) with the server stopped: the sharp painting
+  offline after a second visit, the fast one with the sharp tiles taken out of the cache.
+
 ### Loose ends
 
 - The olive areas came out as bright rolling grass, not dark woodland floor. Fine under 3D trees.
 - Between the layout's dense forest and the painted one there is now open grass (behind the farmhouse and on the
   hillside at the back left). Step 2 can decide whether 3D trees go there.
-- `countryside.js` still has its own older `LAYOUT` (where each building stands) and `ROADS`; they do not match
-  `PLACES` and `ROADS` in `valleyMap.js`.
 
 ## Next steps
 
@@ -848,10 +858,9 @@ In this order:
    robin by the fields, the bench and the lamp in front of the farm, and the boulders and cattails along the river's
    bank in front of the farm, across the river at the front, on the left and on the right, and the water lilies on
    the river at the front and in the main fall's pool. Step 2 is done.
-3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
-   the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
-   of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
-   code either removed or kept behind its flags.
+3. **Before merging:** done (2026-10-20, under Done). Left: `npm run build:single` (`publicDir: false`) has no
+   painting or water maps, so its one-file game shows no valley; the nature pack's unused models could be dropped
+   from `natureModels.js`; the farm's ring fence could take the shared wood colour at home.
 
 ## Known bug
 
@@ -864,7 +873,8 @@ becomes NaN in `FarmScene.resize` → `setZoom`, and the valley stays blank unti
   on port 5174, or on a free port the app picks when another session already has 5174.
 - `src/three/backdrop.js`: the painting, where it sits, its tiles, and the water shader.
 - `src/three/valleyMap.js`: where everything in the valley is, in map units, as the painting shows it.
-- `src/three/countryside.js`: builds the valley from the map; `STAGE` says which parts are on.
+- `src/three/countryside.js`: puts the painted valley together (the backdrop, the buildings and plants, clouds), and
+  holds the map's coordinates (`at`) and the sun's shadow fit.
 - `src/three/farm.js`: the ring road's shape and the farm inside it.
 - `art/backdrop/README.md`: coordinates, and how to make, fit and animate a new painting.
 - `?stats` on the game's address: draw calls, triangles, ms and fps in the corner, for measuring on a phone.
