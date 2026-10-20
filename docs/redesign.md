@@ -719,9 +719,10 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   within 0.7 of one, and the reference has a fir there too). A pale patch below it in the reference, half under its
   harvest button, is left out. Then the right, in two parts: the painted river below the small fall runs where the
   reference's does, but above it the reference's river and riverside road stand about two units further left. Below
-  the fall: five big boulders (0.35 to 0.58) along the near bank from the landing down to the buffalo's grass, at the
-  painted water's edge as the reference draws them at its own (the three it draws further up, where the painted road
-  runs down to the landing, are left out), one on the far bank by the slim trees, and three cattails (1.15) on the far
+  the fall: four big boulders (0.35 to 0.58) along the near bank from beside the landing down to the buffalo's grass,
+  at the painted water's edge as the reference draws them at its own (the three it draws further up, where the painted
+  road runs down to the landing, are left out, and so is a fifth beside the landing, taken out on 2026-10-20 as it hid
+  the boat), one on the far bank by the slim trees, and three cattails (1.15) on the far
   bank below the fall's pool, which the reference has there too. Above the fall, up to the small bridge, the painted
   river runs three or four units further right than the reference's, its bridge two right and 2.4 further back, so
   each thing keeps how far down the stretch from the bridge to the fall it stands (by b) and how far from its bank's
