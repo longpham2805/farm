@@ -745,6 +745,27 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   game size; near the camera that is not worth 76K triangles. If the 22 extra calls matter on a phone, the next
   step is to draw the shadow map by hand each frame (`renderer.shadowMap.render` with the stand-ins visible, then
   hide them for the camera).
+- **Mist round the valley** (`mist.js`, `farmMist`, added to the scene in `scene.js`). A sheet of fog on the
+  ground round the whole valley, as far as the view can travel (`mistFrame` in `scene.js`: `VIEW_BOUNDS`), thick
+  over the woods at the top, the bottom and the sides and thinning towards the farm, thickest in the four corners,
+  with soft white puffs over it (a bank of four big ones at each corner, a ragged band of six smaller ones along
+  each side) and four thin wisps of cloud drifting along its top and bottom (to the right, downwind as the clouds
+  in the sky go); the farm in the middle, the view the game opens on, stays clear. It all stands in the world, so
+  panning and zooming move past it (a first version hung it on the camera, like a vignette; a second laid it out
+  from the live camera each frame, which also followed the screen; a third ringed only the opening view; the user
+  wanted it round the whole grounds, over the woods, dense at the rim and clearing inwards). The sheet is a 30×30
+  grid over the frame (±1.3 of its half-extent), each vertex's alpha by how far out it stands, a 4-norm of (nx,
+  ny) so the corners count as further out and the fog reaches further in there: 0 inside 0.5 (the opening view
+  reaches about 0.4), full (0.9) from 0.88 out, gone past 1.3, the fog along the left and right sides reaching only 0.64 as far in as along the top and bottom (`SIDES`, a fifth off twice, the user's call: |nx| is squeezed so the same profile runs from 0.68 to the rim there; the side bands' puffs are smaller and the corner puffs stand nearer the side by the same share), as dense as the rest; the clear middle's quads are left out, and two
+  layers of value noise roll over it in the fragment shader (±30%). Each frame point meets the ground down the
+  camera's line of sight from its plane; the puffs are placed from the same three vectors (the middle and the
+  runs of the half-width and half-height on the ground) and sized by the opening view's height (`unit`), so they
+  fit the screen rather than the valley. Each puff faces the camera, floats a little above the ground,
+  breathes (size ±6%, whiteness ±30%), sways by 2.5% of the view and turns a little, on its own beat of 19–41 s.
+  Two draw calls: the sheet, and one `InstancedMesh` of quads with a small shader (the puff's opacity in
+  `instanceColor`), both drawn last with no depth test. The puff picture is seven overlapping radial blurs under a
+  round mask, drawn on a canvas (none in the tests). Whiteness: corners 0.16–0.42, bands 0.11–0.21, wisps
+  0.16–0.22.
 
 ### Loose ends
 

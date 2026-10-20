@@ -9,6 +9,7 @@ import { buildCountryside, VIEW_BOUNDS, SUN_DIR, fitShadow, at } from './country
 import { buildPlant } from './models.js';
 import { updateRainbow } from './materials.js';
 import { frameStats } from './stats.js';
+import { farmMist } from './mist.js';
 import { glowTexture, starTexture, skyTexture, ringTexture, sunRaysTexture, sunFaceTexture } from './textures.js';
 import { STYLES } from '../data/styles.js';
 import { CROP_BY_ID } from '../data/crops.js';
@@ -88,6 +89,9 @@ export class FarmScene {
 
     this.world = new THREE.Group();
     scene.add(this.world);
+    // Mist round the farm's grounds (mist.js), laid out from the opening view on the first frame.
+    this.mist = farmMist(this.camera, () => this.mistFrame());
+    scene.add(this.mist.group);
     this.plantsGroup = new THREE.Group();
     this.world.add(this.plantsGroup);
     this.fxGroup = new THREE.Group();
@@ -209,6 +213,17 @@ export class FarmScene {
     const baseH = Math.max(8.8, (portrait ? 8.6 : 12.0) / aspect);
     const viewH = baseH / this.zoom;
     return { aspect, baseH, viewH, viewW: viewH * aspect, shiftY: (portrait ? 0.03 : 0.05) * baseH };
+  }
+
+  /**
+   * The frame the mist is laid round (mist.js): the whole valley, as far as the view can travel (VIEW_BOUNDS), in
+   * the camera's plane, and `unit`, the height of the view the game opens on, which sizes the puffs for the screen;
+   * null before the screen has a size.
+   */
+  mistFrame() {
+    if (!this.width || !this.height) return null;
+    const b = VIEW_BOUNDS;
+    return { left: b.left, right: b.right, top: b.top, bottom: b.bottom, unit: this.viewSize().baseH };
   }
 
   /** Frames the farm for the screen shape, then applies the player's zoom and pan. */
@@ -697,6 +712,7 @@ export class FarmScene {
     });
 
     for (const fn of this.frameHooks) fn(t);
+    this.mist.update(t);
 
     this.composer.render(dt);
     this.stats?.end();
