@@ -228,7 +228,8 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   walk like the cattle. The cows and the sheep are one herd (`PLACES.meadow`, each member naming its kind), so they
   keep out of each other's way: the two cows where they were, a ewe at the right of the meadow walking away to the
   back right, as the reference draws her, and another on the left, where the reference's sheep is hidden behind the
-  harvest button. `tests/herd.test.js` runs the four of them. `dev/animals.html?set=sheep` shows two close up.
+  harvest button. Two more cows and two more ewes joined them later, at the user's word (eight in all, about the left
+  and the middle of the meadow). `tests/herd.test.js` runs all of them. `dev/animals.html?set=sheep` shows two close up.
 - **Pig** (`src/three/animals/pig.js`, kinds in `PIGS`), pink as the reference draws it: a plump round body on short,
   stout legs, a big head straight off the shoulders with full cheeks and a flat round snout, ears flopping forward
   over the eyes, a curly tail (a tube wound a ring and a half), and a coat of fine bristles that hardly shows
@@ -278,8 +279,12 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   reference's (a first try at 0.06 and 0.034 read spidery). One mesh for each fence's wood, through the batch.
 - **The meadow's fence and trough**: a rail fence (`woodFence` in `buildings/fence.js`, for the fields' fences too)
   round the painted meadow's edge (`MEADOW`, the faint line in the painting, which runs a little differently from the
-  reference's fence). A gate of
-  three boards and a brace, between two stouter posts, opens onto the road at the front right (`PLACES.meadow.gates`;
+  reference's fence). The user found it boxed in, so it is now one gentle arc round the right side, along the road,
+  running on along the back and the front to near the woods on the left, its left side open to them (it stopped at
+  first by the hay rack and at the middle of the front) (`PLACES.meadow.fence.way`, through which `arcFence` in `buildings.js` runs a centripetal Catmull-Rom curve, a post
+  every 0.6), its front right drawn in a little so the flowers there stay outside it; the gate stands in a straight
+  stretch of it 1.2 long where it passes nearest `gate.at`. `MEADOW` still keeps the woods out of the meadow. A gate of
+  three boards and a brace, between two stouter posts, opens onto the road at the front right (`PLACES.meadow.fence.gate`;
   on the right side, square to the camera, it showed only edge on). The trough (`buildings/trough.js`) stands where
   the reference draws it, along the front fence (`PLACES.trough`): a box of planks three to a side on two beams, posts
   at its corners, a lip along the top, glossy water a little below it; the meadow's animals keep clear of it (a notch

@@ -187,19 +187,29 @@ export const PLACES = {
   // running on from the road out over the river between its `ends`, `width` across, a boat tied up on its `side` (1:
   // its left looking out over the water), away from the fall.
   landing: { ends: [[10.62, -0.3], [10.86, -1.2]], width: 0.5, side: 1 },
-  // The animals grazing in the meadow, where the reference draws them: two black and white cows, side on, facing
-  // right and a little towards the camera (animals/cow.js), and two ewes, the one in view walking away to the back
-  // right (animals/sheep.js). They wander about `area`, the meadow inside its fence, clear of the trough, the hay
-  // rack, the bench and the round tree inside its right side (TREES). The fence (MEADOW) has `gates`: [side, how far
-  // along it, how wide], here one onto the road at its front right (the right side, square to the camera, would show
-  // a gate only edge on).
+  // The animals grazing in the meadow: four black and white cows, the first two side on, facing right and a little
+  // towards the camera where the reference draws them (animals/cow.js), and four ewes, the first walking away to the
+  // back right as the reference draws her (animals/sheep.js). They wander about `area`, the meadow, clear of the
+  // trough, the hay rack, the bench and the round tree inside its right side (TREES). Its fence is one gentle arc
+  // round its right side, along the road, and on along the back and the front to near the woods on the left, the
+  // user's call (it ran right round the meadow on its painted edge, MEADOW), smoothed through `way`, with a gate onto
+  // the road where it passes nearest `gate.at` (the front right; the right side, square to the camera, would show a
+  // gate only edge on).
   meadow: {
-    gates: [[3, 0.5, 0.62]],
+    fence: {
+      way: [[-13.9, 1.33], [-12.2, 1.69], [-10.8, 1.95], [-9.3, 1.24], [-8.35, 0.85], [-7.72, -0.6], [-8.0, -2.4], [-9.3, -3.68],
+        [-10.6, -4.28], [-11.9, -4.55], [-13.8, -4.88]],
+      gate: { at: [-8.5, -3.15], width: 0.62 },
+    },
     herd: [
       { name: 'holstein', at: [-11.9, -2.75], turn: 1.3 },
       { name: 'holstein', at: [-11.5, -0.6], turn: 1.3 },
+      { name: 'holstein', at: [-13.0, -1.4], turn: 0.9 },
+      { name: 'holstein', at: [-13.2, -3.4], turn: 1.5 },
       { name: 'ewe', at: [-10.4, 0.1], turn: 2.0 },
       { name: 'ewe', at: [-12.9, 0.3], turn: 1.0 },
+      { name: 'ewe', at: [-10.8, -1.9], turn: 2.4 },
+      { name: 'ewe', at: [-9.2, -0.35], turn: 1.6 },
     ],
     area: [[-14.0, 0.8], [-10.85, 1.45], [-10.45, 1.25], [-10.18, 0.8], [-9.4, 0.4], [-9.05, 0.53], [-8.2, 0.1], [-8.5, 0.0], [-9.0, -0.8], [-9.9, -1.2], [-10.15, -1.75], [-9.9, -2.3], [-9.1, -2.3], [-8.2, -2.0], [-9.4, -3.3], [-10.0, -2.85], [-12.1, -2.85], [-12.5, -3.8], [-13.9, -4.4]],
   },
