@@ -14,6 +14,8 @@ import { Bubbles } from './ui/bubbles.js';
 import { Sheets } from './ui/sheets.js';
 import { Popover } from './ui/popover.js';
 import { toast, floatText, refreshModals, anyModal, closeAll } from './ui/overlay.js';
+import { icon } from './ui/icons.js';
+import { avatarImg } from './ui/avatars.js';
 import { openShop } from './ui/shop.js';
 import { openBarn } from './ui/barn.js';
 import { openBook } from './ui/book.js';
@@ -81,7 +83,7 @@ export class App {
       if (!state.seenIntro) openWelcome(this);
       prewarm(CROPS.map((c) => c.id));
       for (const [id, n] of Object.entries(helped)) toast(t('whileAway', { name: NPC_BY_ID[id].name, n }), 'good');
-      if (this.cloud.startToast) toast(`☁️ ${t(this.cloud.startToast)}`, 'good');
+      if (this.cloud.startToast) toast([icon('cloud'), ' ', t(this.cloud.startToast)], 'good');
     }, 350);
   }
 
@@ -118,7 +120,7 @@ export class App {
 
   handleChests(chests) {
     for (const tier of chests || []) {
-      toast(`🎁 ${t('newChest', { chest: t('chest_' + tier) })}`, 'good');
+      toast([icon('gift'), ' ', t('newChest', { chest: t('chest_' + tier) })], 'good');
       sfx.chest();
     }
   }
@@ -177,7 +179,7 @@ export class App {
     const r = G.friendHelp(this.state, this.now());
     if (!r) return;
     this.scene.fxWater(r.index);
-    toast(`${NPC_BY_ID[r.npc].avatar} ${t('friendHelped', { name: NPC_BY_ID[r.npc].name })}`, 'good');
+    toast([avatarImg(NPC_BY_ID[r.npc].avatar, 'i'), ' ', t('friendHelped', { name: NPC_BY_ID[r.npc].name })], 'good');
     this.refresh();
   }
 
@@ -200,7 +202,7 @@ export class App {
     if (d && d.locked) {
       this.popover.close();
       sfx.error();
-      toast(`🔒 ${t('plotLocked', { n: lockLevel(i) })}`);
+      toast([icon('lock'), ' ', t('plotLocked', { n: lockLevel(i) })]);
       return;
     }
     if (!d) {
@@ -291,7 +293,7 @@ export class App {
     this.scene.fxWater(i);
     if (!quiet) sfx.water();
     const p = this.plotScreen(i);
-    floatText(p.x, p.y - 20, '💧+1');
+    floatText(p.x, p.y - 20, [icon('water'), '+1']);
     this.handleChests(r.chests);
     this.refresh();
     return true;
@@ -317,7 +319,7 @@ export class App {
     this.scene.fxHarvest(i);
     const p = this.plotScreen(i);
     floatText(p.x, p.y - 10, `+${r.count} ${shortName(r.crop)}`, r.variant ? 'pink' : '');
-    if (r.xp) setTimeout(() => floatText(p.x + 30, p.y + 16, `⭐+${r.xp}`, 'gold'), 180);
+    if (r.xp) setTimeout(() => floatText(p.x + 30, p.y + 16, [icon('star'), `+${r.xp}`], 'gold'), 180);
     if (!quiet) (r.variant ? sfx.mutate : sfx.harvest)();
     if (r.newDiscovery || (plot && plot.pack)) {
       this.queueReveal({ crop: r.crop, variant: r.variant, newDiscovery: r.newDiscovery, pack: plot && plot.pack });
@@ -402,7 +404,7 @@ export class App {
     this.scene.fxWater(i);
     sfx.water();
     const p = this.plotScreen(i);
-    if (r.rewarded) floatText(p.x, p.y - 10, `🌏+${r.coins}`, 'gold');
+    if (r.rewarded) floatText(p.x, p.y - 10, [icon('earth'), `+${r.coins}`], 'gold');
     else toast(t('helpedFriend'));
     this.handleChests(r.chests);
     this.refresh();
@@ -463,7 +465,7 @@ export class App {
     this.setTarget(next);
     this.sheets.render();
     if (next == null) {
-      toast(`🌱 ${t('allPlanted')}`, 'good');
+      toast([icon('seeds'), ' ', t('allPlanted')], 'good');
       this.closeSheetSoon();
     }
   }

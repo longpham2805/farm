@@ -233,7 +233,7 @@ const S = {
   codeMissing: { vi: 'Không tìm thấy nông trại nào có mã này.', en: 'No farm has this code.' },
   netError: { vi: 'Không kết nối được mạng. Thử lại sau nhé.', en: 'Could not reach the internet. Try again later.' },
   joinConfirm: { vi: 'Nông trại trên mã này sẽ thay cho nông trại trên máy này.', en: 'The farm on this code will replace the farm on this device.' },
-  farmSummary: { vi: 'Cấp {level} · 🌏 {coins}', en: 'Level {level} · 🌏 {coins}' },
+  farmSummary: { vi: 'Cấp {level}', en: 'Level {level}' },
   thisDevice: { vi: 'Máy này', en: 'This device' },
   onCode: { vi: 'Trên mã', en: 'On the code' },
   fromSaveCode: { vi: 'Trong mã lưu', en: 'In the save code' },

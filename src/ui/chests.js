@@ -1,4 +1,5 @@
 import { h, chestSvg, rewardChips } from './dom.js';
+import { icon } from './icons.js';
 import { t, fmtNum } from '../i18n.js';
 import * as G from '../game/logic.js';
 import { CHEST_TIERS, ENERGY_PER_CHEST } from '../config.js';
@@ -16,7 +17,7 @@ export function openChests(app) {
     render(body, api) {
       body.append(
         h('p', { class: 'muted center', style: { margin: '0 0 10px' } }, t('chestsIntro')),
-        h('div', { class: 'energy' }, h('span', null, '✨ ', t('energy')),
+        h('div', { class: 'energy' }, h('span', null, icon('energy'), ' ', t('energy')),
           h('div', { class: 'bar' }, h('i', { style: { width: `${(s.energy / ENERGY_PER_CHEST) * 100}%` } }),
             h('span', { class: 'num' }, `${Math.floor(s.energy)}/${ENERGY_PER_CHEST}`))),
         h('div', { class: 'chests' }, CHEST_TIERS.map((tier) => h('button', {
@@ -40,7 +41,7 @@ export function openChests(app) {
             sfx.chest();
             app.handleChests(r.chests);
             app.refresh();
-          } }, '🎁 ', t('openAll', { n: fmtNum(n) }))
+          } }, icon('gift'), t('openAll', { n: fmtNum(n) }))
           : h('span', { class: 'muted' }, t('noChests')),
         loot ? h('div', null, h('div', { class: 'section-title' }, t('youGot')),
           h('div', { class: 'loot' }, mergeLoot(loot).map((chip, i) => {

@@ -1,5 +1,6 @@
 // Small info card above a growing plant.
 import { h, clear } from './dom.js';
+import { icon } from './icons.js';
 import { t, fmtClock, cropName } from '../i18n.js';
 import * as G from '../game/logic.js';
 import { CROP_BY_ID } from '../data/crops.js';
@@ -42,11 +43,11 @@ export class Popover {
     const r = (this.refs = {});
     clear(this.el);
     this.el.append(
-      h('h4', null, h('span', null, mystery ? `❓ ${t('mysteryPlant')}` : cropName(plot.crop)),
+      h('h4', null, h('span', null, mystery ? [icon('mystery'), ' ', t('mysteryPlant')] : cropName(plot.crop)),
         !npc ? h('button', { class: 'shovel', title: t('removePlant'), 'aria-label': t('removePlant'), onClick: () => {
           this.confirming = !this.confirming;
           this.build();
-        } }, '🗑️') : null),
+        } }, icon('shovel')) : null),
       (r.stage = h('div', { class: 'muted', style: { color: '#e3d6f0' } })),
       h('div', { class: 'progress' }, (r.bar = h('i'))),
       h('div', { class: 'row' }, h('span', null, t('grows')), (r.left = h('b', { class: 'num' }))),
@@ -61,7 +62,7 @@ export class Popover {
     if (this.confirming) {
       this.el.append(h('div', { class: 'confirm' },
         h('span', { style: { flex: '1' } }, t('removePlant')),
-        h('button', { class: 'btn small berry', onClick: () => app.removePlant(this.index) }, t('yes')),
+        h('button', { class: 'btn small red', onClick: () => app.removePlant(this.index) }, t('yes')),
         h('button', { class: 'btn small ghost', onClick: () => {
           this.confirming = false;
           this.build();
@@ -82,7 +83,7 @@ export class Popover {
     r.left.textContent = fmtClock(info.remainingMs);
     if (info.thirsty) {
       r.waterRow.hidden = false;
-      r.waterLabel.textContent = '💧';
+      r.waterLabel.replaceChildren(icon('water'));
       r.water.textContent = t('needsWater');
     } else if (info.waterInMs != null) {
       r.waterRow.hidden = false;

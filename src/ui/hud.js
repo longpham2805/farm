@@ -6,6 +6,8 @@ import { CHAPTERS } from '../data/quests.js';
 import { ENERGY_PER_CHEST } from '../config.js';
 import { openUpgrade } from './upgrade.js';
 import { openQuests, taskText } from './quests.js';
+import { icon } from './icons.js';
+import { avatarImg } from './avatars.js';
 
 export class Hud {
   constructor(app) {
@@ -23,15 +25,15 @@ export class Hud {
     const btn = (key, icon, label, onClick, extra) =>
       (r[key] = h('button', { class: 'hbtn', onClick, 'aria-label': label }, h('span', { class: 'ico' }, icon), label, extra || null));
 
-    r.coins = h('div', { class: 'coins' }, h('span', { class: 'ico' }, '🌏'), (r.coinText = h('span', { class: 'num' })));
+    r.coins = h('div', { class: 'coins' }, icon('earth'), (r.coinText = h('span', { class: 'num' })));
 
     if (app.view.mode === 'npc') {
       const npc = NPC_BY_ID[app.view.npcId];
       this.root.append(
         h('div', { class: 'hud-top' },
-          h('button', { class: 'back-btn', onClick: () => app.goHome(), 'aria-label': t('back'), title: t('back') }, '🏡'),
+          h('button', { class: 'back-btn', onClick: () => app.goHome(), 'aria-label': t('back'), title: t('back') }, icon('home')),
           h('div', { class: 'profile' },
-            h('div', { class: 'avatar' }, npc.avatar, h('span', { class: 'lvl' }, npc.level)),
+            h('div', { class: 'avatar' }, avatarImg(npc.avatar), h('span', { class: 'lvl' }, npc.level)),
             h('div', { class: 'profile-text' }, h('div', { class: 'profile-name' }, t('visiting', { name: npc.name })))),
           h('div', { class: 'spacer' }),
           r.coins),
@@ -51,19 +53,18 @@ export class Hud {
     this.root.append(
       h('div', { class: 'hud-top' }, r.profile, h('div', { class: 'spacer' }), r.coins),
       h('div', { class: 'side' },
-        btn('shop', '🏪', t('shop'), () => app.go('shop')),
-        btn('chests', '🎁', t('chests'), () => app.go('chests'), r.meter),
-        btn('quests', '📜', t('quests'), () => app.go('quests')),
-        btn('settings', '⚙️', t('settings'), () => app.go('settings'))),
+        btn('shop', icon('shop'), t('shop'), () => app.go('shop')),
+        btn('chests', icon('chest'), t('chests'), () => app.go('chests'), r.meter),
+        btn('quests', icon('quests'), t('quests'), () => app.go('quests'))),
       (r.actions = h('div', { class: 'actions' })),
       (r.banner = h('button', { class: 'quest-banner', onClick: () => openQuests(app) },
-        h('span', { class: 'qi' }, '📜'),
+        h('span', { class: 'qi' }, icon('quests')),
         (r.bannerText = h('span', { class: 'qt' })))),
       h('div', { class: 'dock' },
-        btn('barn', '🏚️', t('warehouse'), () => app.go('warehouse')),
-        btn('seeds', '🌱', t('seeds'), () => (app.sheet === 'seeds' ? app.closeSheet() : app.openSeeds())),
-        btn('friends', '👫', t('friends'), () => app.openFriends()),
-        btn('book', '📖', t('book'), () => app.go('book'))),
+        btn('barn', icon('barn'), t('warehouse'), () => app.go('warehouse')),
+        btn('seeds', icon('seeds'), t('seeds'), () => (app.sheet === 'seeds' ? app.closeSheet() : app.openSeeds())),
+        btn('friends', icon('friends'), t('friends'), () => app.openFriends()),
+        btn('book', icon('book'), t('book'), () => app.go('book'))),
     );
     this.update();
   }
@@ -103,8 +104,10 @@ export class Hud {
       return;
     }
 
-    r.avatar.textContent = s.profile.avatar;
-    r.avatar.append(h('span', { class: 'lvl' }, s.level));
+    if (r.avatar.dataset.k !== `${s.profile.avatar}|${s.level}`) {
+      r.avatar.dataset.k = `${s.profile.avatar}|${s.level}`;
+      r.avatar.replaceChildren(avatarImg(s.profile.avatar), h('span', { class: 'lvl' }, s.level));
+    }
     r.name.textContent = s.profile.name ? t('myFarm', { name: s.profile.name }) : t('gameName');
     const need = G.levelNeeds(s);
     const check = G.upgradeCheck(s);
@@ -117,7 +120,7 @@ export class Hud {
       r.xpText.textContent = 'MAX';
     }
     let arrow = r.name.querySelector('.up-arrow');
-    if (check.ok && !arrow) r.name.append(h('span', { class: 'up-arrow', title: t('upgradeReady') }, '⬆'));
+    if (check.ok && !arrow) r.name.append(h('span', { class: 'up-arrow', title: t('upgradeReady') }, icon('up')));
     if (!check.ok && arrow) arrow.remove();
 
     r.meterFill.style.width = `${(s.energy / ENERGY_PER_CHEST) * 100}%`;
@@ -167,8 +170,8 @@ export class Hud {
     if (r.actions.dataset.k !== key) {
       r.actions.dataset.k = key;
       clear(r.actions);
-      if (ripe) r.actions.append(h('button', { class: 'pill-act harvest', onClick: () => app.harvestAll() }, h('span', { class: 'ico' }, '🧺'), t('harvestAll', { n: ripe })));
-      if (thirsty) r.actions.append(h('button', { class: 'pill-act', onClick: () => app.waterAll() }, h('span', { class: 'ico' }, '💧'), t('waterAll', { n: thirsty })));
+      if (ripe) r.actions.append(h('button', { class: 'pill-act harvest', onClick: () => app.harvestAll() }, h('span', { class: 'ico' }, icon('basket')), t('harvestAll', { n: ripe })));
+      if (thirsty) r.actions.append(h('button', { class: 'pill-act', onClick: () => app.waterAll() }, h('span', { class: 'ico' }, icon('water')), t('waterAll', { n: thirsty })));
     }
   }
 }

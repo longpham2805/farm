@@ -1,4 +1,5 @@
 import { h, clear } from './dom.js';
+import { icon } from './icons.js';
 import { t } from '../i18n.js';
 import { sfx } from '../audio.js';
 
@@ -23,7 +24,7 @@ export function openModal({ title, size = '', render, onClose, dismissable = tru
   };
   const card = h('div', { class: `modal ${size}`, role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
     title ? h('div', { class: 'modal-title' }, title) : null,
-    dismissable ? h('button', { class: 'modal-close', 'aria-label': t('close'), onClick: () => api.close() }, '✕') : null,
+    dismissable ? h('button', { class: 'modal-close', 'aria-label': t('close'), onClick: () => api.close() }, icon('close')) : null,
     body);
   const overlay = h('div', { class: 'overlay' }, card);
   overlay.addEventListener('pointerdown', (e) => {

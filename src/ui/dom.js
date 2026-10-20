@@ -3,6 +3,8 @@ import { NUTRIENTS, CROP_NUTRITION } from '../data/nutrition.js';
 import { CROP_BY_ID, PACK_BY_ID, isPack } from '../data/crops.js';
 import { cropImg } from '../three/thumbs.js';
 import { cropIcon } from './cropIcons.js';
+import { icon, chestSvg as chestArt } from './icons.js';
+import { svgImg } from './draw.js';
 
 /** Tiny element builder: h('div', { class: 'x', onClick }, child, ...) */
 export function h(tag, props, ...children) {
@@ -63,50 +65,30 @@ export function seedBag(id, { label, corner, selected, locked, onClick } = {}) {
 /** A crop's picture: the drawn one for its plain look, the 3D render for a mutation (its own colours and aura). */
 export const cropPic = (id, variant = 0) => (variant ? cropImg(id, variant) : cropIcon(id));
 
+/** A chest in its tier's colours (icons.js). */
 export function chestSvg(tier) {
-  const c = { green: ['#5cc46a', '#3a9a4a'], blue: ['#4aa8ff', '#2a74c9'], purple: ['#a066ff', '#6c3ccf'], red: ['#ff4f6d', '#c22a48'] }[tier];
-  const trim = tier === 'green' ? '#d9dde3' : '#ffcf3a';
-  return h('span', {
-    class: 'chest-svg',
-    html: null,
-  }, svg(`<svg viewBox="0 0 72 64" aria-hidden="true">
-    <ellipse cx="36" cy="60" rx="28" ry="4" fill="rgba(0,0,0,0.15)"/>
-    <rect x="8" y="28" width="56" height="30" rx="6" fill="${c[1]}"/>
-    <rect x="10" y="30" width="52" height="26" rx="5" fill="${c[0]}"/>
-    <path d="M8 30 Q8 8 36 8 Q64 8 64 30 Z" fill="${c[1]}"/>
-    <path d="M11 29 Q11 11 36 11 Q61 11 61 29 Z" fill="${c[0]}"/>
-    <rect x="6" y="26" width="60" height="6" rx="3" fill="${trim}"/>
-    <rect x="16" y="9" width="6" height="49" fill="${trim}" opacity="0.9"/>
-    <rect x="50" y="9" width="6" height="49" fill="${trim}" opacity="0.9"/>
-    <rect x="29" y="24" width="14" height="16" rx="4" fill="${trim}"/>
-    <circle cx="36" cy="31" r="3" fill="${c[1]}"/>
-    ${tier === 'red' ? '<path d="M36 1 L40 9 L36 7 L32 9 Z" fill="#ffcf3a"/><circle cx="36" cy="18" r="3" fill="#fff6a8"/>' : ''}
-    ${tier === 'purple' ? '<path d="M36 13 L40 19 L36 25 L32 19 Z" fill="#fff" opacity="0.85"/>' : ''}
-  </svg>`));
-}
-
-function svg(markup) {
-  const tpl = document.createElement('template');
-  tpl.innerHTML = markup.trim();
-  return tpl.content.firstChild;
+  return h('span', { class: 'chest-svg' }, svgImg(`chest:${tier}`, () => chestArt(tier), ''));
 }
 
 /** Little chips showing what a reward contains. */
 export function rewardChips(reward) {
   const out = [];
   if (!reward) return out;
-  if (reward.coins) out.push(h('span', { class: 'rw' }, h('span', { class: 'e' }, '🌏'), fmtNum(reward.coins)));
-  if (reward.xp) out.push(h('span', { class: 'rw' }, h('span', { class: 'e' }, '⭐'), fmtNum(reward.xp)));
-  if (reward.energy) out.push(h('span', { class: 'rw' }, h('span', { class: 'e' }, '✨'), fmtNum(reward.energy)));
+  if (reward.coins) out.push(h('span', { class: 'rw' }, icon('earth'), fmtNum(reward.coins)));
+  if (reward.xp) out.push(h('span', { class: 'rw' }, icon('star'), fmtNum(reward.xp)));
+  if (reward.energy) out.push(h('span', { class: 'rw' }, icon('energy'), fmtNum(reward.energy)));
   if (reward.seeds) {
     for (const [id, n] of Object.entries(reward.seeds)) {
       out.push(h('span', { class: 'rw', title: seedName(id) },
-        isPack(id) ? h('span', { class: 'e' }, '🎁') : cropIcon(id),
+        isPack(id) ? icon('gift') : cropIcon(id),
         `×${n}`));
     }
   }
   return out;
 }
+
+/** A nutrient's badge: its letters (vitamins, minerals) or its icon. */
+const nutriMark = (n) => (n.icon ? (n.icon === 'avocado' ? cropIcon('avocado', 'i') : icon(n.icon)) : n.code);
 
 /**
  * What is good inside a crop: nutrient badges (tap one to read what it does) and a fun fact.
@@ -118,7 +100,7 @@ export function nutritionBlock(cropId, { compact = false } = {}) {
   const lang = getLang();
   if (compact) {
     return h('div', { class: 'nutri-dots' }, info.n.map((id) =>
-      h('span', { class: 'nutri-dot', style: { '--nc': NUTRIENTS[id].color }, title: NUTRIENTS[id].name[lang] }, NUTRIENTS[id].code)));
+      h('span', { class: 'nutri-dot', style: { '--nc': NUTRIENTS[id].color }, title: NUTRIENTS[id].name[lang] }, nutriMark(NUTRIENTS[id]))));
   }
   const line = h('p', { class: 'nutri-benefit' });
   const chips = info.n.map((id) => h('button', {
@@ -126,7 +108,7 @@ export function nutritionBlock(cropId, { compact = false } = {}) {
     style: { '--nc': NUTRIENTS[id].color },
     'data-id': id,
     onClick: () => show(id),
-  }, h('b', null, NUTRIENTS[id].code), NUTRIENTS[id].name[lang]));
+  }, h('b', null, nutriMark(NUTRIENTS[id])), NUTRIENTS[id].name[lang]));
   function show(id) {
     const n = NUTRIENTS[id];
     line.textContent = `${n.name[lang]} ${n.benefit[lang]}.`;
@@ -134,10 +116,10 @@ export function nutritionBlock(cropId, { compact = false } = {}) {
   }
   show(info.n[0]);
   return h('div', { class: 'nutri-box' },
-    h('div', { class: 'nutri-title' }, '🍎 ', t('nutrition')),
+    h('div', { class: 'nutri-title' }, icon('apple'), ' ', t('nutrition')),
     h('div', { class: 'nutri-row' }, chips),
     line,
-    h('p', { class: 'nutri-fact' }, '💡 ', info.fact[lang]));
+    h('p', { class: 'nutri-fact' }, icon('bulb'), ' ', info.fact[lang]));
 }
 
 export function variantTitle(cropId, variant) {

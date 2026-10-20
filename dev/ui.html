@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>UI kit</title>
+<base href="../">
+<style>
+  html,body{overflow:auto;height:auto}
+  body{margin:0;background:var(--paper);font-family:var(--font-body);color:var(--ink)}
+  h2{font-family:var(--font-display);font-size:18px;margin:16px 16px 8px}
+  .row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:0 16px}
+  .grass{background:linear-gradient(#9ad65a,#6fbf45);border-radius:16px;margin:0 16px;padding:12px}
+  figure{margin:0;width:76px;text-align:center;font-size:11px}
+  figure img{display:block;width:60px;height:60px;margin:0 auto 2px;background:#fff;border-radius:12px;padding:4px}
+  .chest{width:110px}
+  .avatar{width:64px;height:64px}
+  body .quest-banner{position:static;max-width:none}
+  body .modal-close{position:relative;top:0;right:0;flex:none}
+  .roles .btn{min-width:120px}
+  .row + .row{margin-top:12px}
+</style></head>
+<body>
+<!-- The interface's look in one place: every drawn icon (src/ui/icons.js), the chests, the avatars (avatars.js),
+     the HUD's buttons and the menu buttons by what each colour is for (orange the main action, honey a secondary
+     one or a way somewhere, cream to cancel, red to delete). -->
+<main id="out"></main>
+<script type="module">
+import '../src/styles.css';
+import { icon, ICON_NAMES } from '../src/ui/icons.js';
+import { avatarImg, AVATARS } from '../src/ui/avatars.js';
+import { chestSvg } from '../src/ui/dom.js';
+
+const el = (tag, cls, ...kids) => {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  for (const k of kids) if (k != null) e.append(k);
+  return e;
+};
+const btn = (cls, ...kids) => el('button', `btn ${cls}`.trim(), ...kids);
+const hbtn = (name, label) => el('button', 'hbtn', el('span', 'ico', icon(name)), label);
+const off = btn('', 'Hết xu');
+off.disabled = true;
+
+document.getElementById('out').append(
+  el('h2', null, 'Nút trên màn hình chính'),
+  el('div', 'grass',
+    el('div', 'row', el('button', 'profile', el('div', 'avatar', avatarImg('🐣'), el('span', 'lvl', '3')),
+        el('div', 'profile-text', el('div', 'profile-name', 'Nông Trại Trên Mây'),
+          el('div', 'xpbar', Object.assign(document.createElement('i'), { style: 'width:36%' }), el('span', 'num', '38/105')))),
+      el('div', 'coins', icon('earth'), el('span', 'num', '672')),
+      hbtn('shop', 'Cửa hàng'), hbtn('chest', 'Rương'), hbtn('quests', 'Nhiệm vụ'),
+      hbtn('barn', 'Kho'), hbtn('seeds', 'Hạt giống'), hbtn('friends', 'Bạn bè'), hbtn('book', 'Bách khoa'),
+      el('button', 'back-btn', icon('home'))),
+    el('div', 'row',
+      el('button', 'pill-act', el('span', 'ico', icon('water')), 'Tưới hết'),
+      el('button', 'pill-act harvest', el('span', 'ico', icon('basket')), 'Thu hoạch hết'),
+      el('button', 'quest-banner', el('span', 'qi', icon('quests')), el('span', 'qt', el('b', null, 'Chương 1 · Nông trại đầu tiên'), 'Bán 5 nông sản (0/5)')))),
+  el('h2', null, 'Nút trong menu, theo việc của mỗi màu'),
+  el('div', 'row roles',
+    btn('', 'Mua ', icon('earth'), ' 83'), btn('honey', icon('basket'), 'Bán hết'), btn('ghost', 'Hủy'), btn('red', 'Xóa nông trại'), off),
+  el('div', 'row roles',
+    btn('small', icon('gift'), 'Nhận'), btn('honey small', 'Đi đến'), btn('ghost small', icon('sync'), 'Đồng bộ ngay'), btn('red small', 'Có')),
+  el('div', 'row',
+    el('div', 'tabs', el('button', 'tab on', 'Tất cả'), el('button', 'tab', 'Thường'), el('button', 'tab', 'Đặc biệt')),
+    el('div', 'qty', el('button', 'step', '−'), el('span', 'val', '1'), el('button', 'step', '+')),
+    el('div', 'quick', el('button', null, '1'), el('button', null, '5'), el('button', null, '10'), el('button', null, 'Tối đa')),
+    el('button', 'modal-close', icon('close'))),
+  el('h2', null, 'Icon'),
+  el('div', 'row', ...ICON_NAMES.map((n) => el('figure', null, icon(n, ''), n))),
+  el('h2', null, 'Rương'),
+  el('div', 'row', ...['green', 'blue', 'purple', 'red'].map((tier) => el('div', 'chest', chestSvg(tier), tier))),
+  el('h2', null, 'Ảnh đại diện'),
+  el('div', 'row', ...AVATARS.map((a) => el('div', 'avatar', avatarImg(a)))),
+  el('div', null, el('br')),
+);
+</script>
+</body>
+</html>

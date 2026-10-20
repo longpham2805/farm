@@ -1,5 +1,7 @@
 // Bottom sheets: the planting bar and the friends strip.
 import { h, clear, seedBag } from './dom.js';
+import { icon } from './icons.js';
+import { avatarImg } from './avatars.js';
 import { t, fmtNum, seedName } from '../i18n.js';
 import * as G from '../game/logic.js';
 import { CROP_BY_ID, isPack, hasTag } from '../data/crops.js';
@@ -40,7 +42,7 @@ export class Sheets {
     return h('div', { class: 'sheet-tabs' },
       list.map(([id, label]) => h('button', { class: `sheet-tab${current === id ? ' on' : ''}`, onClick: () => onPick(id) }, label)),
       hint ? h('span', { class: 'sheet-hint' }, hint) : null,
-      closable ? h('button', { class: 'sheet-tab close', 'aria-label': t('close'), onClick: () => this.app.closeSheet() }, '✕') : null);
+      closable ? h('button', { class: 'sheet-tab close', 'aria-label': t('close'), onClick: () => this.app.closeSheet() }, icon('close')) : null);
   }
 
   seedSheet() {
@@ -64,12 +66,12 @@ export class Sheets {
       this.tabs([['all', t('tabAll')], ['normal', t('tabNormal')], ['special', t('tabSpecial')]], this.seedTab, (id) => {
         this.seedTab = id;
         this.render();
-      }, true, app.plantTarget == null ? t('seedHintFull') : `👆 ${t('seedHint')}`),
+      }, true, app.plantTarget == null ? t('seedHintFull') : [icon('point'), ' ', t('seedHint')]),
       h('div', { class: 'sheet-body' },
         list,
         h('div', { class: 'sheet-side' },
-          app.seedSel ? h('button', { class: 'btn small', onClick: () => app.plantAll(app.seedSel) }, '🌱 ', t('plantAll')) : null,
-          h('button', { class: 'btn small honey', onClick: () => app.go('shop') }, '🏪 ', t('shop')))));
+          app.seedSel ? h('button', { class: 'btn small', onClick: () => app.plantAll(app.seedSel) }, icon('seeds'), t('plantAll')) : null,
+          h('button', { class: 'btn small honey', onClick: () => app.go('shop') }, icon('shop'), t('shop')))));
   }
 
   friendKey() {
@@ -89,7 +91,7 @@ export class Sheets {
       const st = G.npcStatus(app.state, n.id, now);
       const status = st.canSteal ? ['steal', t('canSteal')] : st.thirsty ? ['water', t('canWater')] : ['none', t('nothing')];
       return h('button', { class: `friend${app.view.npcId === n.id ? ' here' : ''}`, onClick: () => app.visit(n.id) },
-        h('div', { class: 'avatar' }, n.avatar, h('span', { class: 'lvl' }, n.level)),
+        h('div', { class: 'avatar' }, avatarImg(n.avatar), h('span', { class: 'lvl' }, n.level)),
         h('div', null, h('div', { class: 'fn' }, n.name), h('span', { class: `fs ${status[0]}` }, status[1])));
     });
     return h('div', { class: 'sheet' },

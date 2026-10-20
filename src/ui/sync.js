@@ -1,5 +1,7 @@
 // The "play on several devices" screen: family code (cloud) and save code (copy by hand).
 import { h } from './dom.js';
+import { icon } from './icons.js';
+import { avatarImg } from './avatars.js';
 import { t, fmtNum } from '../i18n.js';
 import { openModal, toast } from './overlay.js';
 import * as C from '../game/cloud.js';
@@ -27,22 +29,22 @@ export function openSync(app, start = null) {
   };
 
   const statusText = () => {
-    if (cloud.status === 'syncing') return `⏳ ${t('syncing')}`;
-    if (cloud.status === 'offline') return `📴 ${t('syncOffline')}`;
-    if (cloud.status === 'error') return `⚠️ ${t('syncError')}`;
-    if (cloud.lastOk) return `✅ ${t('syncOk', { time: new Date(cloud.lastOk).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) })}`;
-    return `☁️ ${t('syncIdle')}`;
+    if (cloud.status === 'syncing') return [icon('hourglass'), ' ', t('syncing')];
+    if (cloud.status === 'offline') return [icon('offline'), ' ', t('syncOffline')];
+    if (cloud.status === 'error') return [icon('warning'), ' ', t('syncError')];
+    if (cloud.lastOk) return [icon('check'), ' ', t('syncOk', { time: new Date(cloud.lastOk).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) })];
+    return [icon('cloud'), ' ', t('syncIdle')];
   };
 
   const summary = (label, farm) => h('div', { class: 'farm-card' },
     h('div', { class: 'muted' }, label),
-    h('b', null, `${farm.profile?.avatar || '🧑‍🌾'} ${farm.profile?.name || t('defaultName')}`),
-    h('div', null, t('farmSummary', { level: farm.level, coins: fmtNum(farm.coins || 0) })));
+    h('b', null, avatarImg(farm.profile?.avatar || '🧑‍🌾', 'i'), ` ${farm.profile?.name || t('defaultName')}`),
+    h('div', null, t('farmSummary', { level: farm.level }), ' · ', icon('earth'), ` ${fmtNum(farm.coins || 0)}`));
 
   const copy = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast(`📋 ${t('copied')}`, 'good');
+      toast([icon('copy'), ' ', t('copied')], 'good');
     } catch {
       toast(t('copyFailed'), 'warn');
     }
@@ -50,7 +52,7 @@ export function openSync(app, start = null) {
 
   const familySection = (api) => {
     const code = C.getCode();
-    const box = h('div', { class: 'sync-box' }, h('div', { class: 'section-title' }, '☁️ ', t('familyCode')));
+    const box = h('div', { class: 'sync-box' }, h('div', { class: 'section-title' }, icon('cloud'), ' ', t('familyCode')));
 
     if (code && mode === 'stop') {
       add(box, h('p', null, t('stopConfirm')),
@@ -69,8 +71,8 @@ export function openSync(app, start = null) {
         h('div', { class: 'muted' }, t('yourCode')),
         h('div', { class: 'sync-code' }, C.showCode(code)),
         h('div', { class: 'row-btns' },
-          h('button', { class: 'btn honey small', onClick: () => copy(C.showCode(code)) }, '📋 ', t('copy')),
-          h('button', { class: 'btn ghost small', onClick: () => cloud.sync() }, '🔄 ', t('syncNow'))),
+          h('button', { class: 'btn honey small', onClick: () => copy(C.showCode(code)) }, icon('copy'), t('copy')),
+          h('button', { class: 'btn ghost small', onClick: () => cloud.sync() }, icon('sync'), t('syncNow'))),
         statusEl,
         h('p', { class: 'muted' }, t('codeHint')),
         h('div', { class: 'row-btns' }, h('button', { class: 'btn ghost small', onClick: () => go('stop', api) }, t('stopSync'))));
@@ -80,9 +82,9 @@ export function openSync(app, start = null) {
     if (mode === 'join' && remote) {
       add(box, 
         h('p', null, t('joinConfirm')),
-        h('div', { class: 'farm-cards' }, summary(t('thisDevice'), app.state), h('span', { class: 'arrow' }, '➜'), summary(t('onCode'), remote.farm.save)),
+        h('div', { class: 'farm-cards' }, summary(t('thisDevice'), app.state), h('span', { class: 'arrow' }, '→'), summary(t('onCode'), remote.farm.save)),
         h('div', { class: 'row-btns' },
-          h('button', { class: 'btn berry small', onClick: () => cloud.join(remote.code, remote.farm) }, '☁️ ', t('useThisFarm')),
+          h('button', { class: 'btn berry small', onClick: () => cloud.join(remote.code, remote.farm) }, icon('cloud'), t('useThisFarm')),
           h('button', { class: 'btn ghost small', onClick: () => go(null, api) }, t('cancel'))));
       return box;
     }
@@ -125,7 +127,7 @@ export function openSync(app, start = null) {
         h('div', { class: 'field' }, h('label', { for: 'family-code' }, t('codeInputLabel')), input),
         error ? h('p', { class: 'danger' }, error) : null,
         h('div', { class: 'row-btns' },
-          h('button', { class: 'btn berry small', disabled: busy, onClick: connect }, busy ? '⏳' : '☁️ ', t('connect')),
+          h('button', { class: 'btn berry small', disabled: busy, onClick: connect }, icon(busy ? 'hourglass' : 'cloud'), t('connect')),
           h('button', { class: 'btn ghost small', onClick: () => go(null, api) }, t('cancel'))));
       setTimeout(() => input.focus(), 50);
       return box;
@@ -147,20 +149,20 @@ export function openSync(app, start = null) {
           }
           busy = false;
           api.refresh();
-        } }, busy ? '⏳ ' : '✨ ', t('createCode')),
-        h('button', { class: 'btn honey small', onClick: () => go('enter', api) }, '🔑 ', t('enterCode'))));
+        } }, icon(busy ? 'hourglass' : 'mutation'), t('createCode')),
+        h('button', { class: 'btn honey small', onClick: () => go('enter', api) }, icon('key'), t('enterCode'))));
     return box;
   };
 
   const saveCodeSection = (api) => {
-    const box = h('div', { class: 'sync-box' }, h('div', { class: 'section-title' }, '📦 ', t('saveCode')));
+    const box = h('div', { class: 'sync-box' }, h('div', { class: 'section-title' }, icon('box'), ' ', t('saveCode')));
 
     if (mode === 'load' && pasted) {
       add(box, 
         h('p', null, t('loadConfirm'), cloud.active ? ` ${t('loadConfirmCloud')}` : ''),
-        h('div', { class: 'farm-cards' }, summary(t('thisDevice'), app.state), h('span', { class: 'arrow' }, '➜'), summary(t('fromSaveCode'), pasted)),
+        h('div', { class: 'farm-cards' }, summary(t('thisDevice'), app.state), h('span', { class: 'arrow' }, '→'), summary(t('fromSaveCode'), pasted)),
         h('div', { class: 'row-btns' },
-          h('button', { class: 'btn berry small', onClick: () => cloud.loadSaveCode(pasted) }, '📥 ', t('loadSave')),
+          h('button', { class: 'btn berry small', onClick: () => cloud.loadSaveCode(pasted) }, icon('load'), t('loadSave')),
           h('button', { class: 'btn ghost small', onClick: () => go(null, api) }, t('cancel'))));
       return box;
     }
@@ -183,7 +185,7 @@ export function openSync(app, start = null) {
               error = t('saveCodeBad');
               api.refresh();
             }
-          } }, '📥 ', t('loadSave')),
+          } }, icon('load'), t('loadSave')),
           h('button', { class: 'btn ghost small', onClick: () => go(null, api) }, t('cancel'))));
       setTimeout(() => area.focus(), 50);
       return box;
@@ -199,12 +201,12 @@ export function openSync(app, start = null) {
       h('p', null, t('saveCodeIntro')),
       saveText ? h('textarea', { class: 'code-area', rows: 3, readonly: true, onClick: (e) => e.currentTarget.select() }, saveText) : null,
       h('div', { class: 'row-btns' },
-        h('button', { class: 'btn honey small', onClick: async () => copy(await makeCode()) }, '📋 ', t('copySaveCode')),
+        h('button', { class: 'btn honey small', onClick: async () => copy(await makeCode()) }, icon('copy'), t('copySaveCode')),
         navigator.share ? h('button', { class: 'btn ghost small', onClick: async () => {
           const text = await makeCode();
           navigator.share({ title: t('gameName'), text }).catch(() => {});
-        } }, '📤 ', t('shareSaveCode')) : null,
-        h('button', { class: 'btn ghost small', onClick: () => go('paste', api) }, '📥 ', t('pasteSaveCode'))));
+        } }, icon('share'), t('shareSaveCode')) : null,
+        h('button', { class: 'btn ghost small', onClick: () => go('paste', api) }, icon('load'), t('pasteSaveCode'))));
     return box;
   };
 
@@ -220,7 +222,7 @@ export function openSync(app, start = null) {
       if (C.cloudReady()) body.append(familySection(api));
       body.append(saveCodeSection(api));
       cloud.onChange = () => {
-        if (statusEl) statusEl.textContent = statusText();
+        if (statusEl) statusEl.replaceChildren(...statusText());
       };
     },
   });

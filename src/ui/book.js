@@ -5,6 +5,7 @@ import { CROPS, TOTAL_VARIETIES } from '../data/crops.js';
 import { MILESTONES } from '../config.js';
 import { openModal, toast } from './overlay.js';
 import { cropImg } from '../three/thumbs.js';
+import { icon } from './icons.js';
 import { sfx } from '../audio.js';
 
 export function openBook(app) {
@@ -18,7 +19,7 @@ export function openBook(app) {
         const r = fn();
         if (r.ok) {
           sfx.chest();
-          toast(`🎁 ${t('youGot')}: ${rewardText(r.reward)}`, 'good');
+          toast([icon('gift'), ' ', t('youGot'), ': ', rewardLine(r.reward)], 'good');
           app.handleChests(r.chests);
           app.refresh();
         }
@@ -32,7 +33,7 @@ export function openBook(app) {
           disabled: !ready,
           title: rewardText(m.reward),
           onClick: () => claimGift(() => G.claimMilestone(s, i)),
-        }, done ? '✅' : '🎁', h('span', { class: 'num' }, n));
+        }, icon(done ? 'check' : 'gift'), h('span', { class: 'num' }, n));
       }));
       body.append(
         h('div', { class: 'book-top' },
@@ -55,8 +56,8 @@ export function openBook(app) {
           vars.push(h('div', { class: `var${known ? '' : ' unknown'}${v && known ? ' mut' : ''}`, title: known ? cropName(crop.id, v) : '?' }, cropImg(crop.id, v)));
         }
         let action;
-        if (claimed) action = h('span', { class: 'muted' }, '✅ ', t('claimed'));
-        else if (complete) action = h('button', { class: 'btn small honey', onClick: () => claimGift(() => G.claimSet(s, crop.id)) }, '🎁 ', t('claim'));
+        if (claimed) action = h('span', { class: 'muted' }, icon('check'), ' ', t('claimed'));
+        else if (complete) action = h('button', { class: 'btn small', onClick: () => claimGift(() => G.claimSet(s, crop.id)) }, icon('gift'), t('claim'));
         else action = h('div', { class: 'rewards' }, rewardChips(G.setReward(crop)));
         body.append(h('div', { class: 'set-row' },
           h('div', { class: 'set-name' }, cropName(crop.id), h('small', { class: 'num' }, `${have}/${crop.variants}`), nutritionBlock(crop.id, { compact: true })),
@@ -67,6 +68,17 @@ export function openBook(app) {
   });
 }
 
+/** What a reward holds, with its icons, for a toast. */
+export function rewardLine(reward) {
+  const parts = [];
+  if (reward.coins) parts.push([icon('earth'), fmtNum(reward.coins)]);
+  if (reward.energy) parts.push([icon('energy'), reward.energy]);
+  if (reward.xp) parts.push([icon('star'), reward.xp]);
+  if (reward.seeds) for (const [id, n] of Object.entries(reward.seeds)) parts.push(`${n}× ${seedName(id)}`);
+  return parts.flatMap((p, i) => (i ? [' · ', p] : [p]));
+}
+
+/** The same as plain text, for a tooltip. */
 export function rewardText(reward) {
   const parts = [];
   if (reward.coins) parts.push(`🌏${fmtNum(reward.coins)}`);

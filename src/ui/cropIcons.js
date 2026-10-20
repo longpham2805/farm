@@ -1,137 +1,12 @@
 // Pictures of each crop's fruit, flower or vegetable for the menus, drawn as SVG so they stay sharp at any size and
-// work in the single-file build. One look for all of them: bright colours, a thick dark outline, a shine, and a
-// smiling face (after the art reference the user picked, a cute watermelon slice). The 3D renders in thumbs.js are
-// still used for the mutated looks, which have their own colours and auras.
-// Each picture is drawn in a 100×100 box, lit from the upper right.
+// work in the single-file build, in the look of draw.js with a smiling face (after the art reference the user picked,
+// a cute watermelon slice). The 3D renders in thumbs.js are still used for the mutated looks, which have their own
+// colours and auras.
 
-const OL = '#3b1f5e'; // the outline and the eyes
-const DEEP = '#1a0a1e'; // eyes on dark skins
-const LEAF = '#4cc24a';
-const LEAF_DARK = '#36a83a';
-const WOOD = '#8a5a2b';
-const f = (n) => +n.toFixed(2);
-const TAU = Math.PI * 2;
-
-const circle = (cx, cy, r) => `M${f(cx - r)} ${f(cy)}A${r} ${r} 0 1 0 ${f(cx + r)} ${f(cy)}A${r} ${r} 0 1 0 ${f(cx - r)} ${f(cy)}Z`;
-const ellipse = (cx, cy, rx, ry) => `M${f(cx - rx)} ${f(cy)}A${rx} ${ry} 0 1 0 ${f(cx + rx)} ${f(cy)}A${rx} ${ry} 0 1 0 ${f(cx - rx)} ${f(cy)}Z`;
-
-let clipN = 0;
-
-/** A shape in its colour, darker on the side away from the light (the shape again, moved toward the light, is the
- * lit part), with extra drawn inside it and the dark outline round it. */
-function body(d, base, dark, extra = '', { dx = 5, dy = -4, sw = 3.4, transform = '' } = {}) {
-  const id = `k${clipN++}`;
-  const tr = transform ? ` transform="${transform}"` : '';
-  return `<g${tr}><clipPath id="${id}"><path d="${d}"/></clipPath>`
-    + `<g clip-path="url(#${id})"><path d="${d}" fill="${dark}"/><path d="${d}" fill="${base}" transform="translate(${dx} ${dy})"/>${extra}</g>`
-    + `<path d="${d}" fill="none" stroke="${OL}" stroke-width="${sw}" stroke-linejoin="round"/></g>`;
-}
-
-/** A line drawn with the outline round it (stems, stalks). */
-const stroke = (d, color, w = 3) =>
-  `<path d="${d}" fill="none" stroke="${OL}" stroke-width="${f(w + 3.2)}" stroke-linecap="round" stroke-linejoin="round"/>`
-  + `<path d="${d}" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
-
-/** A thin line inside a shape (creases, veins). */
-const line = (d, color, w = 2, op = 1) =>
-  `<path d="${d}" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round"${op < 1 ? ` opacity="${op}"` : ''}/>`;
-
-/** A leaf from (x, y), len long, pointing rot degrees clockwise from +x, with its midrib. */
-function leaf(x, y, len, w, rot, fill = LEAF, vein = LEAF_DARK) {
-  return `<g transform="translate(${f(x)} ${f(y)}) rotate(${f(rot)})">`
-    + `<path d="M0 0Q${f(len / 2)} ${f(-w)} ${len} 0Q${f(len / 2)} ${w} 0 0Z" fill="${fill}" stroke="${OL}" stroke-width="2.4" stroke-linejoin="round"/>`
-    + (vein ? `<path d="M2 0Q${f(len / 2)} ${f(-w * 0.12)} ${f(len * 0.78)} 0" fill="none" stroke="${vein}" stroke-width="1.3" stroke-linecap="round"/>` : '')
-    + '</g>';
-}
-
-/** A seed or pip: a little teardrop, tip up at rot 0. */
-const drop = (x, y, rot, s, fill) =>
-  `<path d="M0 -3.2C1.9 -1 2.1 1.8 0 2.8C-2.1 1.8 -1.9 -1 0 -3.2Z" fill="${fill}" transform="translate(${f(x)} ${f(y)}) rotate(${f(rot)}) scale(${s})"/>`;
-
-const dots = (pts, r, fill, op = 1) => pts.map(([x, y, rr]) =>
-  `<circle cx="${f(x)}" cy="${f(y)}" r="${rr ?? r}" fill="${fill}"${op < 1 ? ` opacity="${op}"` : ''}/>`).join('');
-
-/** Points spread evenly over an ellipse (a sunflower's spiral), leaving out those within the face's box. */
-function scatter(cx, cy, rx, ry, n, keepOut = null) {
-  const out = [];
-  for (let i = 0; i < n; i++) {
-    const a = i * 2.39996;
-    const r = Math.sqrt((i + 0.5) / n);
-    const p = [cx + Math.cos(a) * r * rx, cy + Math.sin(a) * r * ry];
-    if (keepOut && Math.abs(p[0] - keepOut[0]) < keepOut[2] && Math.abs(p[1] - keepOut[1]) < keepOut[3]) continue;
-    out.push(p);
-  }
-  return out;
-}
-
-/** Points on a staggered grid over a box. */
-function grid(x0, y0, x1, y1, dx, dy) {
-  const out = [];
-  for (let y = y0, row = 0; y <= y1; y += dy, row++) {
-    for (let x = x0 + (row % 2 ? dx / 2 : 0); x <= x1; x += dx) out.push([x, y]);
-  }
-  return out;
-}
-
-/** A round shape with a scalloped edge (lettuce, cabbage leaves). */
-function scallop(cx, cy, r, n, amp, rot = 0, ry = r) {
-  let d = '';
-  for (let i = 0; i <= n; i++) {
-    const a = rot + (i / n) * TAU;
-    const p = [cx + Math.cos(a) * r, cy + Math.sin(a) * ry];
-    if (!i) {
-      d = `M${f(p[0])} ${f(p[1])}`;
-      continue;
-    }
-    const m = rot + ((i - 0.5) / n) * TAU;
-    d += `Q${f(cx + Math.cos(m) * (r + amp * 2))} ${f(cy + Math.sin(m) * (ry + amp * 2))} ${f(p[0])} ${f(p[1])}`;
-  }
-  return `${d}Z`;
-}
-
-/** A star with rounded points (the starfruit, calyxes). */
-function star(cx, cy, ro, ri, n, round = 0.22, rot = -90) {
-  const pts = [];
-  for (let k = 0; k < n * 2; k++) {
-    const a = ((rot + (k * 180) / n) * Math.PI) / 180;
-    const r = k % 2 ? ri : ro;
-    pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
-  }
-  const lerp = (a, b, s) => [a[0] + (b[0] - a[0]) * s, a[1] + (b[1] - a[1]) * s];
-  let d = '';
-  pts.forEach((v, k) => {
-    const s = k % 2 ? round * 0.6 : round;
-    const p1 = lerp(v, pts[(k + pts.length - 1) % pts.length], s);
-    const p2 = lerp(v, pts[(k + 1) % pts.length], s);
-    d += `${k ? 'L' : 'M'}${f(p1[0])} ${f(p1[1])}Q${f(v[0])} ${f(v[1])} ${f(p2[0])} ${f(p2[1])}`;
-  });
-  return `${d}Z`;
-}
-
-/** Circles merged into one outlined shape (broccoli florets, bunches). */
-const cloud = (circles, fill) =>
-  circles.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${OL}" stroke="${OL}" stroke-width="6.8"/>`).join('')
-  + circles.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}"/>`).join('');
-
-/** The face: eyes with a shine, an open smile and pink cheeks, centred on (x, y). */
-function face(x, y, s = 1, eyes = OL) {
-  const eye = (ex) => `<ellipse cx="${f(ex)}" cy="${f(y)}" rx="${f(4 * s)}" ry="${f(4.8 * s)}" fill="${eyes}"/>`
-    + `<circle cx="${f(ex - 1.3 * s)}" cy="${f(y - 1.8 * s)}" r="${f(1.6 * s)}" fill="#fff"/>`
-    + `<circle cx="${f(ex + 1.4 * s)}" cy="${f(y + 1.6 * s)}" r="${f(0.8 * s)}" fill="#fff"/>`;
-  const mouth = `<path d="M${f(x - 4 * s)} ${f(y + 5 * s)}Q${f(x)} ${f(y + 13 * s)} ${f(x + 4 * s)} ${f(y + 5 * s)}Z" fill="${eyes}" stroke="${eyes}" stroke-width="${f(0.8 * s)}" stroke-linejoin="round"/>`
-    + `<ellipse cx="${f(x)}" cy="${f(y + 7.9 * s)}" rx="${f(1.9 * s)}" ry="${f(1.1 * s)}" fill="#ff7a9a"/>`;
-  const cheeks = [-1, 1].map((k) => `<ellipse cx="${f(x + k * 13.5 * s)}" cy="${f(y + 5.5 * s)}" rx="${f(3.6 * s)}" ry="${f(2.2 * s)}" fill="#ff8fb3" opacity="0.85"/>`).join('');
-  return eye(x - 10 * s) + eye(x + 10 * s) + mouth + cheeks;
-}
-
-/** The shine: a white streak (rot turns it) and maybe a dot. */
-const gloss = (x, y, rx, ry, rot, dot = null) =>
-  `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" transform="rotate(${rot} ${x} ${y})" fill="#fff" opacity="0.6"/>`
-  + (dot ? `<circle cx="${dot[0]}" cy="${dot[1]}" r="${dot[2]}" fill="#fff" opacity="0.6"/>` : '');
-
-/** A little stalk from (x, y) up to the right, with a leaf. */
-const stalkLeaf = (x, y, { len = 20, rot = -30, h = 8, lean = 4 } = {}) =>
-  stroke(`M${x} ${y}Q${x} ${y - h * 0.6} ${x + lean} ${y - h}`, WOOD, 2.8) + leaf(x + lean * 0.4, y - h * 0.55, len, len * 0.36, rot);
+import {
+  OL, DEEP, LEAF, LEAF_DARK, WOOD, f, TAU, circle, ellipse, body, stroke, line, leaf, drop, dots, scatter, grid, scallop, star,
+  cloud, face, gloss, svgDoc, svgImg,
+} from './draw.js';
 
 // Shapes used by more than one picture.
 const BERRY = 'M50 28C66 22 86 30 86 48C86 68 64 88 50 92C36 88 14 68 14 48C14 30 34 22 50 28Z';
@@ -657,26 +532,10 @@ const ICONS = {
 /** The SVG markup of a crop's picture, or null if it has none. */
 export function cropIconSvg(cropId) {
   const draw = ICONS[cropId];
-  if (!draw) return null;
-  clipN = 0;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">${draw()}</svg>`;
+  return draw ? svgDoc(draw) : null;
 }
 
 export const ICON_CROPS = Object.keys(ICONS);
 
-const urls = new Map();
-
 /** An <img> of a crop's picture. */
-export function cropIcon(cropId, className = 'thumb') {
-  const img = document.createElement('img');
-  img.className = className;
-  img.alt = '';
-  img.draggable = false;
-  let url = urls.get(cropId);
-  if (!url) {
-    url = `data:image/svg+xml,${encodeURIComponent(cropIconSvg(cropId))}`;
-    urls.set(cropId, url);
-  }
-  img.src = url;
-  return img;
-}
+export const cropIcon = (cropId, className = 'thumb') => svgImg(`crop:${cropId}`, () => cropIconSvg(cropId), className);
