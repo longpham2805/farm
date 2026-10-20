@@ -2,8 +2,7 @@
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { BloomPass, BloomOutputPass } from './bloom.js';
 import { buildFarm, plotCenter, SOIL_TOP, PLANT_SCALE, butterfly } from './farm.js';
 import { buildCountryside, VIEW_BOUNDS, SUN_DIR, fitShadow, at } from './countryside.js';
 import { buildPlant } from './models.js';
@@ -19,6 +18,9 @@ const DRY = new THREE.Color('#9b6440');
 const WET = new THREE.Color('#5e3720');
 const LOCKED = new THREE.Color('#7dc95a');
 const CAM_DIR = new THREE.Vector3(1, 0.95, 1).normalize();
+// At most 60 frames a second: screens that refresh at 120 Hz (MacBooks, iPad Pros) would draw the slow valley twice
+// as often for nothing.
+const FRAME_MS = 1000 / 60;
 // The sun hangs in the sky behind the mountains, up and to the left.
 const SUN_AT = at(-5, 20, 3.4);
 
@@ -62,6 +64,10 @@ export class FarmScene {
     renderer.toneMappingExposure = 1.1;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
+    // The shadow map is drawn every other frame, and whenever the view moves (applyView): what moves in the valley
+    // moves slowly, and the map cost a fifth of the frame.
+    renderer.shadowMap.autoUpdate = false;
+    this.shadowTick = 0;
     this.renderer = renderer;
     // `?stats` in the address shows what each frame costs (stats.js).
     if (new URLSearchParams(location.search).has('stats')) this.stats = frameStats(renderer);
@@ -127,7 +133,13 @@ export class FarmScene {
     this.bindInput();
     this.resize();
     window.addEventListener('resize', () => this.resize());
-    renderer.setAnimationLoop(() => this.frame());
+    let last = -Infinity;
+    renderer.setAnimationLoop((time) => {
+      const gap = time - last;
+      if (gap < FRAME_MS - 2) return;
+      last = gap > 2 * FRAME_MS ? time : last + FRAME_MS;
+      this.frame();
+    });
   }
 
   setTheme(theme) {
@@ -164,9 +176,11 @@ export class FarmScene {
     if (!this.composer) {
       this.composer = new EffectComposer(this.renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }));
       this.composer.addPass(new RenderPass(this.scene, this.camera));
-      this.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.32, 0.35, 0.97);
+      this.bloom = new BloomPass(new THREE.Vector2(256, 256), 0.32, 0.35, 0.97);
       this.composer.addPass(this.bloom);
-      this.composer.addPass(new OutputPass());
+      this.composer.addPass(new BloomOutputPass(this.bloom));
+      // Nothing reads the scene's depth once it is drawn, so its multisamples are not resolved.
+      for (const target of [this.composer.renderTarget1, this.composer.renderTarget2]) target.resolveDepthBuffer = false;
     }
     this.bloom.enabled = high;
     // The painting's tiles load sharp or fast.
@@ -237,6 +251,7 @@ export class FarmScene {
     this.camera.updateProjectionMatrix();
     this.viewH = viewH;
     fitShadow(this.sun, this.camera);
+    this.renderer.shadowMap.needsUpdate = true;
   }
 
   /** Zooming out stops once the screen spans the whole valley across or up and down. */
@@ -713,6 +728,7 @@ export class FarmScene {
     for (const fn of this.frameHooks) fn(t);
     this.mist.update(t);
 
+    if (++this.shadowTick % 2 === 0) this.renderer.shadowMap.needsUpdate = true;
     this.composer.render(dt);
     this.stats?.end();
   }

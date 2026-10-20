@@ -829,6 +829,21 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   asks with an Origin, so offline the game itself did not load there). Checked on `npm run build` served by
   `vite preview` (the "farm-dist" preview in `.claude/launch.json`) with the server stopped: the sharp painting
   offline after a second visit, the fast one with the sharp tiles taken out of the cache.
+- **Lighter frames** (2026-10-20, `scene.js`, `bloom.js`), the game running down an iPad's battery and Chrome's task
+  manager showing ~30% CPU on a MacBook. Measured in Chrome on an M4 at an iPad's size (1180×820, pixel ratio 2,
+  "Đẹp"), drawing frames back to back with one `readPixels` at the end: 10.8 ms a frame, of which the scene ~4 ms;
+  the bloom ~4, the multisampling of the half-float buffer ~4.5 (the two together 6.6), the shadow map ~2. Three
+  cuts that leave the picture as it was: (1) at most 60 frames a second (`FRAME_MS`, in the animation loop, not in
+  `frame()`): 120 Hz screens drew 120, which on the MacBook the GPU held at ~85 and which made the 30% (≈3 ms of JS a
+  frame). (2) `BloomPass` stops at the composite of its mips and `BloomOutputPass` adds it before tone mapping, where
+  UnrealBloomPass blended it back into the multisampled buffer and made the GPU resolve the whole screen again; and
+  the composer's targets no longer resolve their depth (`resolveDepthBuffer`), which nothing reads: 10.8 → 7.3 ms,
+  the picture within one level in 4.7% of the pixels (the half-float sum's rounding). (3) The shadow map is drawn
+  every other frame (`shadowMap.autoUpdate` off) and whenever the view moves (`applyView`): −0.8 ms; what moves casts
+  its shadow 30 times a second. Together 10.8 → 6.85 ms. Not done, as they change the picture (the user to choose
+  from side-by-side crops): 30 frames a second when the player has not touched for a few seconds
+  (about half of what is left while watching), no multisampling (−1.7 ms, jagged fence rails and lamp posts), pixel
+  ratio 1.5 (−2.0 ms, softer). "Nhanh" is 3.9 ms.
 
 ### Loose ends
 
@@ -860,7 +875,8 @@ In this order:
    the river at the front and in the main fall's pool. Step 2 is done.
 3. **Before merging:** done (2026-10-20, under Done). Left: `npm run build:single` (`publicDir: false`) has no
    painting or water maps, so its one-file game shows no valley; the nature pack's unused models could be dropped
-   from `natureModels.js`; the farm's ring fence could take the shared wood colour at home.
+   from `natureModels.js`; the farm's ring fence could take the shared wood colour at home; the cuts to the frame
+   that change the picture (under Done, "Lighter frames") wait for the user.
 
 ## Known bug
 
