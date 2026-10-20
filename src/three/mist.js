@@ -9,11 +9,14 @@ import * as THREE from 'three';
 import { seeded } from '../util.js';
 
 const TAU = Math.PI * 2;
+// How big the mist is, of what it first was (the user took it down by 30%): how far in from the rim its sheet
+// reaches, how big its puffs are and how far in from a corner they stand.
+const SIZE = 0.7;
 // The sheet, by how far out a point stands (d: 1 at the rim of the valley, measured so the corners count as
 // further out than the sides, see `far`): clear inside INNER, full from RIM out (over the woods), gone again past
 // OUTER; FULL how white. The view the game opens on reaches about 0.4.
-const INNER = 0.5;
-const RIM = 0.88;
+const INNER = 1 - 0.5 * SIZE;
+const RIM = 1 - 0.12 * SIZE;
 const OUTER = 1.3;
 const FULL = 0.9;
 // The fog along the sides (left and right) reaches this much as far in as along the top and the bottom: the woods
@@ -206,7 +209,7 @@ export function farmMist(camera, opening) {
   const rand = seeded(7);
   for (const [sx, sy] of [[-1, 1], [1, 1], [-1, -1], [1, -1]]) {
     // A corner's puffs stand nearer the side than the top or bottom, as the sides' fog is narrower.
-    for (const p of BANK) puffs.push({ ...p, dx: p.dx * SIDES, sx, sy, phase: rand() * TAU, turn: (rand() - 0.5) * 0.6, spin: (rand() - 0.5) * 0.01, stretch: 1.15 + rand() * 0.35 });
+    for (const p of BANK) puffs.push({ ...p, dx: p.dx * SIDES * SIZE, dy: p.dy * SIZE, sx, sy, phase: rand() * TAU, turn: (rand() - 0.5) * 0.6, spin: (rand() - 0.5) * 0.01, stretch: 1.15 + rand() * 0.35 });
   }
   for (const [ex, ey] of [[0, 1], [0, -1], [-1, 0], [1, 0]]) {
     for (const k of BAND) {
@@ -284,7 +287,7 @@ export function farmMist(camera, opening) {
         nx = p.sx * (1 - p.dx) + SWAY * Math.sin((t / 29) * TAU + p.phase);
         ny = p.sy * (1 - p.dy) + SWAY * 0.7 * Math.cos((t / 37) * TAU + p.phase * 1.7);
       }
-      const size = p.size * unit * (1 + SWELL * breath);
+      const size = p.size * SIZE * unit * (1 + SWELL * breath);
       pos.copy(ground(nx, ny)).addScaledVector(up, LIFT + size * 0.25);
       scale.set(size * p.stretch, size, 1);
       q.copy(facing).multiply(spin.setFromAxisAngle(z, p.turn + t * p.spin));

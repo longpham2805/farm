@@ -804,12 +804,12 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   from the live camera each frame, which also followed the screen; a third ringed only the opening view; the user
   wanted it round the whole grounds, over the woods, dense at the rim and clearing inwards). The sheet is a 30×30
   grid over the frame (±1.3 of its half-extent), each vertex's alpha by how far out it stands, a 4-norm of (nx,
-  ny) so the corners count as further out and the fog reaches further in there: 0 inside 0.5 (the opening view
-  reaches about 0.4), full (0.9) from 0.88 out, gone past 1.3, the fog along the left and right sides reaching only 0.64 as far in as along the top and bottom (`SIDES`, a fifth off twice, the user's call: |nx| is squeezed so the same profile runs from 0.68 to the rim there; the side bands' puffs are smaller and the corner puffs stand nearer the side by the same share), as dense as the rest; the clear middle's quads are left out, and two
+  ny) so the corners count as further out and the fog reaches further in there: 0 inside 0.65 (the opening view
+  reaches about 0.4), full (0.9) from 0.916 out, gone past 1.3 (`SIZE` 0.7: the user took the mist down by 30%, how far in it reaches from the rim and its puffs alike; it was clear inside 0.5 and full from 0.88), the fog along the left and right sides reaching only 0.64 as far in as along the top and bottom (`SIDES`, a fifth off twice, the user's call: |nx| is squeezed so the same profile runs from 0.776 to the rim there; the side bands' puffs are smaller and the corner puffs stand nearer the side by the same share), as dense as the rest; the clear middle's quads are left out, and two
   layers of value noise roll over it in the fragment shader (±30%). Each frame point meets the ground down the
   camera's line of sight from its plane; the puffs are placed from the same three vectors (the middle and the
-  runs of the half-width and half-height on the ground) and sized by the opening view's height (`unit`), so they
-  fit the screen rather than the valley. Each puff faces the camera, floats a little above the ground,
+  runs of the half-width and half-height on the ground) and sized by the opening view's height (`unit`, times `SIZE`), so they
+  fit the screen rather than the valley; a corner's bank stands `SIZE` as far in from its corner. Each puff faces the camera, floats a little above the ground,
   breathes (size ±6%, whiteness ±30%), sways by 2.5% of the view and turns a little, on its own beat of 19–41 s.
   Two draw calls: the sheet, and one `InstancedMesh` of quads with a small shader (the puff's opacity in
   `instanceColor`), both drawn last with no depth test. The puff picture is seven overlapping radial blurs under a
