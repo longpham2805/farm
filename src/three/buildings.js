@@ -20,6 +20,7 @@ import { cart, hayBale, haystack, hayRack } from './buildings/hay.js';
 import { bridge as plankBridge } from './buildings/bridge.js';
 import { lamp, lanternGlows } from './buildings/lamp.js';
 import { woodFence } from './buildings/fence.js';
+import { table } from './buildings/table.js';
 import { trough as waterTrough } from './buildings/trough.js';
 import { bench } from './buildings/bench.js';
 import { fields as fieldBeds } from './buildings/fields.js';
@@ -430,6 +431,10 @@ export function placeBuildings({ at }) {
   // A bench by the ring road in front of the farm, and a short fence behind it along the road.
   place(PLACES.frontBench, () => bench(batch, seeded(79)));
   woodFence(batch, PLACES.frontFence.ends.map(([u, b]) => [at(u, b).x, at(u, b).z]), seeded(83));
+  // By the windmill's road above the small fall: a fence along it, a bench in front of it and a table across the road.
+  woodFence(batch, PLACES.fallFence.points.map(([u, b]) => [at(u, b).x, at(u, b).z]), seeded(89));
+  place(PLACES.fallBench, () => bench(batch, seeded(97)));
+  place(PLACES.fallTable, () => table(batch, seeded(101)));
   // The fields over the big bridge on their painted pad, square to the plots.
   const fieldsAt = at(...PLACES.fields.at);
   batch.push(fieldsAt.x, 0, fieldsAt.z);
@@ -488,6 +493,7 @@ export function placeBuildings({ at }) {
   // The meadow's lamp behind its bench, and a bigger one behind the bench by the ring road in front of the farm.
   place(PLACES.meadowLamp, () => lamp(batch, glow, glows));
   place(PLACES.frontLamp, () => lamp(batch, glow, glows, PLACES.frontLamp.size));
+  place(PLACES.fallLamp, () => lamp(batch, glow, glows, PLACES.fallLamp.size));
   // Spray off a line of the painting's pixels along a fall, heading `outward`: droplets, and a mist over them.
   const fallSpray = (pixels, outward, drops, mist) => {
     const line = pixels.map(([x, y]) => paintedPoint(x, y));

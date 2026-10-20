@@ -7,12 +7,12 @@ import { BOX, cyl } from './parts.js';
 import { Batch } from '../batch.js';
 import { glowing } from '../plants/parts.js';
 
-const PLANKS = ['#dca468', '#d39a5e', '#e2ac70', '#d8a064'];
-const FRAME = '#c08a56';
+export const PLANKS = ['#dca468', '#d39a5e', '#e2ac70', '#d8a064'];
+export const FRAME = '#c08a56';
 const [LONG, DEEP, SEAT] = [0.9, 0.34, 0.21];
-const LEG = cyl(1, 1.15, 6);
+export const LEG = cyl(1, 1.15, 6);
 // A plank of its own size, its edges and ends rounded over a little.
-const plank = (len, thick, w) => new RoundedBoxGeometry(len, thick, w, 2, Math.min(thick, w) * 0.4);
+export const plank = (len, thick, w) => new RoundedBoxGeometry(len, thick, w, 2, Math.min(thick, w) * 0.4);
 const PAPER = '#ffffff';
 const PRINT = ['#a29d94', '#d8d4cb']; // the headline, the lines of print
 

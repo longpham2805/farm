@@ -165,6 +165,15 @@ export const PLACES = {
   // the lamp to past the bench's right end: behind the lamp, as there, though nearer it (the painted road stands
   // further forward), and running as the painted edge does.
   frontFence: { ends: [[-2.44, -5.05], [-0.07, -5.78]] },
+  // On the grass by the windmill's road above the small fall, as the reference draws them: a rail fence along the
+  // road's outer edge from its straight down round its bend towards the fork, as long as the reference's (the painted
+  // road runs further right and bends sooner, so the fence follows its edge); a bench in front of the fence's last
+  // section, along it, as there; across the road a table beside the end of the windmill's flower bed; and a lamp post
+  // as big as the one in front of the farm on the grass left of the road down to the landing, below the fork.
+  fallFence: { points: [[9.12, 4.48], [9.05, 3.46], [8.88, 2.8], [8.62, 2.25], [8.2, 1.72], [7.6, 1.3]] },
+  fallBench: { at: [8.15, 1.15], turn: 0.7 },
+  fallTable: { at: [7.85, 3.45], turn: -0.3 },
+  fallLamp: { at: [6.22, -0.5], size: 1.4 },
   // The buffalo grazing on the grass at the top of the river's rocky bank, facing left and a little towards the
   // camera, and her calf behind her by the road (animals/buffalo.js). They wander about `area`, the grass between
   // the road to the big bridge and the river, up into the meadow below the small fall.

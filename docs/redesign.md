@@ -655,7 +655,17 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   orange one; the reference's riverside road and river stand two units further left there, so these follow the
   painting's bank, and a pink clump by the ring road's fence, which fell on the painted road, was left out. Across
   the small bridge, two mixed beds above the far bank's road. The reference also draws a bench, a fence along the
-  road, a table and a lamp on that grass, which no list has yet.
+  road, a table and a lamp there; they came later (2026-10-20, `PLACES.fallFence`, `fallBench`, `fallTable`,
+  `fallLamp`, in `placeBuildings`). The road the reference fences is the painting's windmill road, the hook from the
+  windmill's pad down to the fork (the painted one runs further right and bends sooner), so the fence (`woodFence`)
+  follows its outer edge from its straight down round its bend towards the fork, as long as the reference's (3.6);
+  the bench (the front one's, along the fence) stands in front of the fence's last section as the reference's does,
+  its pansies and beds round it; across the road a table (`buildings/table.js`: a thick top of three rough planks on
+  a bearer and two crossed legs at each end, a rail between, in the benches' wood) beside the end of the windmill's
+  flower bed, as the reference draws it (placed first on the bed's end, too big and flat, like a bench); and a lamp
+  post as big as the front one at the left edge of the road down to the landing, as far below the fork as the
+  reference's (first placed nearer the fork, crowded between the farm's two lanterns at its fence's opening). The
+  reference's bit of fence behind its table, on the road's other side, is not made.
   Last, behind the farm: yellow and purple clumps behind the cart and a mixed bed left of the barn at the woods' edge,
   pink spikes at the barn's left, a little bed between the cart and the ring road, a tall orange spike on the grass
   between the barn's and the silo's pads (the reference's is a tall dark-leaved plant), a little bed at the silo's
