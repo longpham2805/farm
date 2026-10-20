@@ -106,7 +106,7 @@ const FORM = { leaves: [40, 48], leaf: 0.34, wide: 0.62, spread: 0.6, stem: 0.01
  * towards its tip and ridged a little down its middle, and the kind's rings of shorter, deeper petals inside them; a
  * small green cup behind.
  */
-function head(m, rand, C, F, R, k, c) {
+export function head(m, rand, C, F, R, k, c) {
   const e1 = new THREE.Vector3().crossVectors(F, new THREE.Vector3(0, 0, 1)).normalize();
   const e2 = new THREE.Vector3().crossVectors(e1, F);
   const at = (r, a, up) => C.clone().addScaledVector(e1, Math.cos(a) * r).addScaledVector(e2, Math.sin(a) * r).addScaledVector(F, up * R);

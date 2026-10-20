@@ -452,6 +452,11 @@ export const FLOWERS = [
   ['rock', 13.72, 7.55, 0.56, 22], ['rock', 14.03, 7.18, 0.26, 90], ['reeds', 14.6, 7.14, 0.88, 6, { stalks: 2, leaves: 3 }],
   ['rock', 15.43, 4.52, 0.34, 83], ['rock', 15.25, 3.51, 0.37, 25], ['rock', 15.58, 2.86, 0.42, 103],
   ['reeds', 12.57, 5.39, 0.7, 7, { stalks: 2, leaves: 3 }], ['reeds', 13.01, 3.58, 0.8, 3, { stalks: 2, leaves: 3 }],
+  // Water lilies (their size is across the screen): a raft with three flowers on the river across from the front bank,
+  // as far from the far bank's water edge as the reference draws it from its own; and one in the main fall's pool,
+  // which the painting draws twice as long as the reference's, from the small bridge up to the fall: in its wide
+  // basin near the left bank, as the reference draws it, in the calm water below the foam.
+  ['lilies', 2.53, -8.36, 1.1, 1, { flowers: 3 }], ['lilies', 10.0, 13.0, 0.95, 2],
 ];
 
 /**

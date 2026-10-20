@@ -1,6 +1,6 @@
 // The plants on the painted valley: the trees and bushes round the farm, where TREES in valleyMap.js puts them, and the
-// flowers, crops, boulders and cattails, where FLOWERS does, each standing as it was modelled to be seen from the
-// camera, and the woods (woods.js), all swaying gently in the wind.
+// flowers, crops, boulders, cattails and water lilies, where FLOWERS does, each standing as it was modelled to be seen
+// from the camera, and the woods (woods.js), all swaying gently in the wind.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { TREES, FLOWERS } from '../valleyMap.js';
@@ -18,6 +18,7 @@ import { tomatoRow } from './tomato.js';
 import { flowers, flowerRow, flowerBed } from './flowers.js';
 import { rock } from './rock.js';
 import { reeds } from './reeds.js';
+import { lilies } from './lilies.js';
 import { woods } from './woods.js';
 import { sway } from './sway.js';
 import { edited } from './edited.js';
@@ -45,10 +46,11 @@ export const KINDS = {
   lupin: (seed, height) => flowers(seed, height, 'lupin'),
   pinks: (seed, height, { length }) => flowerRow(seed, length, height, 'pink'),
   bed: (seed, height, { path }) => flowerBed(seed, path, height),
-  // A boulder, turned as dev/plants.html shows it (longest across the screen, a little its own way), and a clump of
-  // cattails.
+  // A boulder, turned as dev/plants.html shows it (longest across the screen, a little its own way), a clump of
+  // cattails, and a raft of water lilies (its height is how wide it is across the screen: it lies on the water).
   rock: (seed, height, { plants }) => rock(seed, height, { turn: Math.PI / 4 + Math.sin(seed * 2.4) * 0.4, plants }),
   reeds: (seed, height, { stalks, leaves }) => reeds(seed, height, { stalks, leaves }),
+  lilies: (seed, size, { flowers, buds }) => lilies(seed, size, { flowers, buds }),
 };
 
 /**

@@ -17,7 +17,7 @@
 <!-- The plants of step 2 of the redesign, one kind at a time (?set=pines): for each place the reference design draws
      one, the reference cut round it beside the model at the same scale, in the game's light and from its camera (the
      slider lays the reference over the model); then a few of the model close up, from other seeds
-     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=fir the full light green fir on the upper riverbank, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence, ?set=daisies the white daisies (flowers.js), ?set=pinks the row of tall pink flowers along the ring road, ?set=yellow the yellow clumps, ?set=purple the purple ones, ?set=orange and ?set=lupins the spikes by the well, ?set=beds the mixed beds, ?set=rocks the boulders along the river (rock.js), ?set=reeds the cattails at the water's edge (reeds.js). -->
+     (?seeds=1,2,3,4, ?h=1.4 their height, ?close for their trunks and where they fork); ?set=round for the round trees (?leaves=green, the darker ones), ?set=fruit the fruit trees (?fruit=orange), ?set=blossom the pink blossom tree, ?set=birch the birches, ?set=slim the slim upright trees by the river, ?set=fir the full light green fir on the upper riverbank, ?set=bushes the bushes, ?set=sunflowers the sunflowers, ?set=tomatoes the tomato plants, ?set=post the post with a robin on it by the fields' back fence, ?set=daisies the white daisies (flowers.js), ?set=pinks the row of tall pink flowers along the ring road, ?set=yellow the yellow clumps, ?set=purple the purple ones, ?set=orange and ?set=lupins the spikes by the well, ?set=beds the mixed beds, ?set=rocks the boulders along the river (rock.js), ?set=reeds the cattails at the water's edge (reeds.js), ?set=lilies the water lilies on the river (lilies.js; their size is across the screen, not tall, and they lie on the river's blue). -->
 <div id="refs"></div>
 <label>Chồng thiết kế lên <input id="mix" type="range" min="0" max="1" step="0.05" value="0"></label>
 <main id="seeds"></main>
@@ -39,6 +39,8 @@ import { birdPost } from '../src/three/buildings/birdPost.js';
 import { flowers, flowerRow, flowerBed } from '../src/three/plants/flowers.js';
 import { rock } from '../src/three/plants/rock.js';
 import { reeds } from '../src/three/plants/reeds.js';
+import { lilies } from '../src/three/plants/lilies.js';
+import { shadowCatcher } from '../src/three/backdrop.js';
 
 // The reference design (art/backdrop/2-style-reference.png) and how many of its pixels a world unit takes across the
 // screen and up it (REF in dev/buildings.html).
@@ -241,6 +243,19 @@ const SETS = {
       { name: 'Hai cỏ nến mảnh phía trên cây linh sam (gốc bị che)', box: [1350, 350, 1412, 420], foot: [1381, 408], height: 0.8, seed: 3, make: (seed, h) => reeds(seed, h, { stalks: 2, leaves: 3 }) },
     ],
   },
+  lilies: {
+    // `h` is how wide a raft is across the screen; it lies on the water, so close up, framed wider and round its middle.
+    make: (seed, h) => lilies(seed, h),
+    h: 1,
+    span: 1.75,
+    low: 0.85,
+    // The painted river's blue (sampled from the reference round them), unlit, the shadows laid over it as in the game.
+    water: '#2ab6d2',
+    refs: [
+      { name: 'Hoa súng trên sông, trước bờ phía trước', box: [890, 745, 1000, 815], foot: [945, 782], height: 1.1, seed: 1, make: (seed, h) => lilies(seed, h, { flowers: 3 }) },
+      { name: 'Hoa súng trong hồ dưới thác chính', box: [1220, 135, 1320, 200], foot: [1270, 168], height: 0.95, seed: 2 },
+    ],
+  },
 };
 const params = new URLSearchParams(location.search);
 // The rocks' look: turned `turn` (π/4 lays its x along the screen), mossy and planted as ?moss= and ?plants= say.
@@ -334,6 +349,10 @@ scene.add(sun);
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 20).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#86c94f', roughness: 0.95 }));
 ground.receiveShadow = true;
 scene.add(ground);
+if (set.water) {
+  ground.material = new THREE.MeshBasicMaterial({ color: set.water, toneMapped: false });
+  scene.add(shadowCatcher(20));
+}
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
 camera.position.copy(CAM_DIR).multiplyScalar(30);
 camera.lookAt(0, 0, 0);

@@ -522,6 +522,22 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
     leaves rising and arching over, their faces turned to the camera. `reeds(seed, h, { stalks, leaves })`; about 420
     to 740 triangles a clump. Tried first: fat orange-rust heads; stalks leaning most near the top (the heads slanted);
     leaves turned edge on to the camera (blades of grass lying on the ground).
+  - **Water lilies** (`plants/lilies.js`, `?set=lilies`, on the river's blue: `water` in the set, unlit, with the
+    game's shadow catcher over it), as the reference draws them: a raft on the river across from the front bank (1.1
+    across, three flowers) and one in the main fall's pool (0.95). Its size is how wide it is across the screen, as it
+    lies on the water. Six to nine round pads, overlapping, laid over an oval longer across the screen, the middle ones
+    the biggest, each a little higher than those behind it so a nearer one lies over a further one; each with a notch
+    cut in to its middle and its rim turned up a little, a fan of broad flat facets each a green of its own, and a dark
+    edge down to the water. Two to four flowers spread over the raft (the first on one of the bigger pads, each next on
+    the pad furthest from those flowering already), each sitting low on its pad as a round open cup: eight pointed
+    petals lying open and two rings inside cupped up further and deeper in colour, round a yellow heart (`head` from
+    `flowers.js`), pink, deeper pink, pale pink or lilac (the reference's front raft has a lilac one); now and then a
+    closed bud standing up near the rim of a pad with no flower. `lilies(seed, size, { flowers, buds })`; about 1,300
+    to 2,000 triangles a raft. Tried first: tall narrow cups of petals (they read as lotuses or agaves, where the
+    reference's are low round blobs); thick pads (each 0.003 higher, their rims up to 0.03: a stack of plates); the
+    flowers on the biggest pads (all in the middle, the reference spreads them out); a bud standing in the water past
+    the rim. The reference's pool also draws a yellow ring left of its flowers (a yellow lily, or a curled pad catching
+    the light); not made.
   - Pictures of low-poly leafy trees the user found, kept for later on the user's machine in `art/plants/found/` (not
     in git: stock previews): crowns of big separate leaves, pointed or rounded, laid over a few lobes like shingles,
     pale on top and deep under the crown, on twisted trunks forking into a few limbs that show under it; and one of
@@ -618,8 +634,7 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   Then across the river at the front, where the reference draws few: a little mixed clump at the water's edge on the
   left (out of the painted water onto the bank), on the open bank below the big bridge a mixed bed with a tall orange
   spike behind it (the reference's is a pink-red torch), daisies and a small white clump, and two clumps deep in the
-  woods beyond (`inWoods`); the woods lose 5 trees. The reference's lily pads on the river there are left for the
-  cattails.
+  woods beyond (`inWoods`); the woods lose 5 trees. The reference's lily pads on the river there came last (below).
   Then the right: a long bed in front of the windmill curving with its road (placed from the windmill as the reference
   draws it from its own), and on the grass between the windmill's road and the riverside road down to the small fall,
   purple pansies (one by the bank's edge, where the reference has it by a rock), a little mixed clump, a yellow and an
@@ -670,8 +685,8 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   three pines went); the big clump of six cattails (1.75) on the grass in front of them, 1.15 from the water as in the
   reference; and the big boulder among the trees at the front (1.1, grey, no moss), below the white daisies as the
   reference draws it, half hidden by the trees round it, a little left of where the reference has it so the round tree
-  beside it does not hide it all. The lily pads with pink flowers the reference draws on the river there have no model
-  yet (left for later, the user's choice). Then the left, past the meadow road: five boulders along the river's bank
+  beside it does not hide it all. The lily pads with pink flowers the reference draws on the river there came last
+  (below). Then the left, past the meadow road: five boulders along the river's bank
   below the birches, placed by eye at the painted water's edge as the reference draws them at its own (its bank runs
   across there and the measuring missed it), the biggest the one `dev/plants.html` sized (0.65), one on the grass
   behind them and two at the edge further down, one of them in the water; a big mossy one (1.0) at the left edge
@@ -693,7 +708,16 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   two clumps of slim cattails at the water's edge, one of them the two the reference draws above the fir (the fir
   stands further from the water in the game, so it no longer hides their foot). The old clusters on the near bank
   (`ROCKS` at 11.7, 6.4 and 12.6, 3.2) have no boulders in the reference and get none. That ends the rocks and
-  cattails; the lily pads are still to come.
+  cattails.
+  Last, the water lilies, in `FLOWERS` as the kind `lilies` (their height is how wide they are across the screen): a
+  raft with three flowers on the river across from the front bank, as far from the far bank's water edge as the
+  reference draws it from its own (the painted edge stands 0.1 further up there, and rises to the right, so the raft
+  stands at b -8.36 rather than the reference's -8.49), the tall orange spike on the bank in front of its right end
+  as the reference's pink-red torch is; and one in the main fall's pool. The painting draws that pool twice as long as
+  the reference's, from the small bridge up to the fall, and further up the river, so the raft stands in its wide
+  basin near its left bank, as the reference draws it near its own, in the calmer water below the foam (10.0, 13.0);
+  at game size it sits between the fall and the small bridge as the reference's does, a little further from the
+  bridge. The woods keep all their trees. That ends step 2's plants.
 - **Editing a model by hand** (`dev/export-models.mjs`, `dev/edited-models.mjs`, `plants/edited.js`; how to in
   `art/models/README.md`). The plants stay code built from seeds, but any one placed model can go to Blender and
   back: the export writes each `TREES` and `FLOWERS` entry's model as `art/models/export/<kind>-<seed>.glb` (`-2`,
@@ -792,11 +816,11 @@ In this order:
    the sunflower, the
    tomatoes by the pig, the post with a birdhouse and a robin by the fields' back fence, the white daisies, the
    row of pinks along the ring road, the yellow clumps, the purple ones, the orange and purple spikes by the well,
-   the mixed beds, the rocks by the river and the cattails. Placed, swaying: the trees round the farm, the woods, the
+   the mixed beds, the rocks by the river, the cattails and the water lilies. Placed, swaying: the trees round the farm, the woods, the
    sunflowers round the fields, the tomatoes by the pig and the flowers outside the ring road; and the post with its
    robin by the fields, the bench and the lamp in front of the farm, and the boulders and cattails along the river's
-   bank in front of the farm, across the river at the front, on the left and on the right. Next: the lily pads with
-   pink flowers the reference draws on the river, which have no model yet (left for later, the user's choice).
+   bank in front of the farm, across the river at the front, on the left and on the right, and the water lilies on
+   the river at the front and in the main fall's pool. Step 2 is done.
 3. **Before merging:** the README's code map (`backdrop.js`, `valleyMap.js`, `art/backdrop`), the new public files in
    the offline cache (`backdrop/`, `backdrop-water.png`, `water-noise.png`; a device needs only one of the two sets
    of tiles, so perhaps cache what it loaded rather than list them all in `PUBLIC_FILES`), and the old 3D scenery's
