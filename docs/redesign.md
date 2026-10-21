@@ -899,7 +899,8 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   instead of ten (`smallLeaf`, the outline of `leaf` in birch.js in fewer points); every head and leaf where it was,
   as the random numbers are drawn as before. Halving the leaves instead showed the dark core under them, like dark
   stones. The other plants are the same to the byte (the plant-fingerprint hashes). The beds: 1,475 → 944 triangles a
-  clump, the valley's 18 beds about 83K → 53K.
+  clump, the valley's 18 beds about 83K → 53K. The yellow clumps: 3,114 → 2,082 a clump, the 17 of them about 52K →
+  35K; their dark hearts show six facets close up.
 
 ### Loose ends
 

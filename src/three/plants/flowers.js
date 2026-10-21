@@ -50,7 +50,7 @@ export const FLOWERS = {
       ['#f4a800', '#e07000', '#4a220a', '#7a3a12'],
       ['#d2401a', '#801a0c', '#2e1408', '#5a2a10'],
     ],
-    petals: 9, petalWide: 0.6, cup: 0.35, rings: [[8, 0.72, 0.6]], heads: [7, 9], head: 0.16, glow: 0.4,
+    petals: 9, petalWide: 0.6, cup: 0.35, rings: [[8, 0.72, 0.6]], heads: [7, 9], head: 0.16, glow: 0.4, small: true,
   },
   purple: {
     colors: { petal: '#b8a4f0', petalFoot: '#4a1a8a', heart: '#ffc61e', heartTop: '#ffe066', shade: '#18440f', dark: '#28621a', mid: '#468e28', light: '#80bc44' },
