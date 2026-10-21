@@ -37,11 +37,6 @@ const TRUNK = [
   [0.334, -0.01, 0, 0, 0],
 ];
 const TRUNK_GEOMETRY = loft(TRUNK, 5, 28, 2.8);
-// Round its middle, and along it in model units.
-TRUNK_GEOMETRY.userData.hair = [1.3, 1];
-
-// A cow's coat is short and sleek: the hair stands off it half as far as a buffalo's, and streaks it less.
-const SLEEK = { stand: 0.5, streak: 0.4 };
 
 // How far a cow goes in one stride (both pairs of legs stepping), as modelled, before its size.
 const STRIDE = 0.42;
@@ -57,7 +52,7 @@ function leg(kind, h, w, patches) {
     coat.add(BALL, kind.hide, [0, -h * 0.58, 0], [w * 0.85, w * 0.85, w * 0.9], null, 0);
     coat.add(CYL, kind.hide, [0, -h * 0.78, 0], [w * 0.74, h * 0.4, w * 0.78], null, 0);
     b.add(HOOF, kind.hoof, [0, -h + 0.02, 0.006], [w * 0.92, 0.04, w]);
-  }, { patches, ...SLEEK });
+  }, { patches });
 }
 
 /**
@@ -88,7 +83,7 @@ export function cow(name, phase = 0) {
     // The udder between the hind legs, and its teats.
     b.add(BALL, kind.udder, [0, y - 0.2, -0.17], [0.075, 0.06, 0.08]);
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) b.add(CYL, kind.udder, [sx * 0.035, y - 0.265, -0.17 + sz * 0.033], [0.011, 0.04, 0.011]);
-  }, { patches, ...SLEEK }));
+  }, { patches }));
   // The legs swing from the top: front left with back right, then front right with back left.
   // Each leg's patches fall their own way, though the legs are alike.
   const legs = [[-0.105, 0.18, 0.058, 0], [0.105, 0.18, 0.058, Math.PI], [-0.105, -0.235, 0.06, Math.PI], [0.105, -0.235, 0.06, 0]].map(([x, z, w, step], k) => {
@@ -105,13 +100,13 @@ export function cow(name, phase = 0) {
   tail.add(merged((b, coat) => {
     coat.add(CYL, kind.hide, [0, -0.14, -0.01], [0.011, 0.28, 0.011], [0.08, 0, 0]);
     coat.add(BALL, kind.patch, [0, -0.3, -0.02], [0.024, 0.06, 0.024]);
-  }, { flat: true, ...SLEEK }));
+  }));
   rig.add(tail);
 
   // The neck swings down from the shoulders to graze, carrying the head.
   const neck = new THREE.Group();
   neck.position.set(0, y + 0.06, 0.255);
-  neck.add(merged((b, coat) => coat.add(BALL, kind.hide, [0, -0.02, 0.08], [0.105, 0.13, 0.15], [0.35, 0, 0]), { patches, ...SLEEK }));
+  neck.add(merged((b, coat) => coat.add(BALL, kind.hide, [0, -0.02, 0.08], [0.105, 0.13, 0.15], [0.35, 0, 0]), { patches }));
   // The head turns about the top of the skull: black, a long face sloping down and forward to a broad pale muzzle.
   const head = new THREE.Group();
   head.position.set(0, 0.0, 0.2);
@@ -128,13 +123,13 @@ export function cow(name, phase = 0) {
       // Short horns, up and out from the top of the skull.
       b.add(hornGeometry([[s * 0.05, 0.05, 0.0], [s * 0.075, 0.068, 0.0], [s * 0.088, 0.092, 0.01]], 0.016, 0.006, 8, 6), kind.horn);
     }
-  }, { flat: true, ...SLEEK }));
+  }));
   // The ears, standing out sideways under the horns, black, pink inside, flicking now and then.
   const ears = [-1, 1].map((s) => {
     const ear = merged((b, coat) => {
       coat.add(BALL, kind.head, [s * 0.058, 0, 0], [0.064, 0.026, 0.013]);
       b.add(BALL, kind.ear, [s * 0.06, -0.002, 0.007], [0.046, 0.017, 0.008]);
-    }, { flat: true, ...SLEEK });
+    });
     ear.position.set(s * 0.075, 0.015, -0.01);
     head.add(ear);
     return ear;

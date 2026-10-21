@@ -67,7 +67,8 @@ export function placedModels() {
 }
 
 /**
- * Puts the plants on the valley; at(u, b) is the map's point in the world. Returns the group and update(t).
+ * Puts the plants on the valley; at(u, b) is the map's point in the world. Returns the group, update(t) and the
+ * woods' cull(view, shadow) (woods.js).
  * Each plant is built where it stands, then all the plants of one material (and the same shadow flags) are merged
  * into one mesh, so the hundred and fifty of them draw in a score of calls rather than one each, and as many again
  * for their shadows; each corner carries its plant's `foot` for the wind (sway.js). The woods are instanced instead.
@@ -107,10 +108,11 @@ export function placePlants({ at }) {
     mesh.receiveShadow = receiveShadow;
     group.add(mesh);
   }
-  group.add(woods(at));
+  const forest = woods(at);
+  group.add(forest.group);
   // What casts a shadow on "Đẹp"; "Nhanh" turns the plants' shadows off (setQuality in scene.js).
   group.traverse((m) => {
     if (m.isMesh) m.userData.casts = m.castShadow;
   });
-  return { group, update: sway(group) };
+  return { group, update: sway(group), cull: forest.cull };
 }

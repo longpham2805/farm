@@ -1,5 +1,5 @@
 // Sheep, built like the cattle (parts.js): white ewes, as the reference draws them in the meadow. A plump round body of
-// wool, lumpy as a fleece is, a woolly tuft of a tail; a pale face, long and narrow, under a cap of wool, a pink nose,
+// wool in round puffs, like a cloud, a woolly tuft of a tail; a pale face, long and narrow, under a cap of wool, a pink nose,
 // ears standing out sideways, pink inside; slender pale legs on dark hooves. They graze, now and then lift their heads
 // to look about, flick their ears and waggle their tails, and every so often walk a little way to another spot (herd
 // in herd.js).
@@ -30,13 +30,9 @@ const FLEECE = [
   [0.3, 0.03, 0, 0, 0],
 ];
 const FLEECE_GEOMETRY = loft(FLEECE, 8, 56, 2.2);
-// Round its middle, and along it in model units.
-FLEECE_GEOMETRY.userData.hair = [1.2, 1];
 
-// The fleece: wool, standing off the hide farther than hair, streaking it a little, in lumps.
-const fleece = (seed) => ({ wool: true, stand: 1.8, streak: 0.35, lumps: { size: 0.06, height: 0.03, seed } });
-// The face and legs: short, sleek hair.
-const SKIN = { flat: true, stand: 0.5, streak: 0.3 };
+// The fleece: wool in round puffs.
+const fleece = (seed) => ({ puffs: { size: 0.084, height: 0.042, seed } });
 
 // How far a sheep goes in one stride (both pairs of legs stepping), as modelled, before its size.
 const STRIDE = 0.3;
@@ -50,7 +46,7 @@ function leg(kind, h, w, seed) {
   const g = merged((b, coat) => {
     coat.add(CYL, kind.face, [0, -h * 0.55, 0], [w, h * 0.9, w * 1.05]);
     b.add(HOOF, kind.hoof, [0, -h + 0.016, 0.004], [w * 1.05, 0.032, w * 1.1]);
-  }, SKIN);
+  });
   g.add(merged((b, coat) => coat.add(FINE_BALL, kind.wool, [0, -h * 0.12, 0], [w * 2.2, h * 0.3, w * 2.3]), fleece(seed)));
   return g;
 }
@@ -104,14 +100,14 @@ export function sheep(name, phase = 0) {
       b.add(BALL, EYE, [s * 0.04, -0.015, 0.054], 0.007);
       b.add(BALL, '#ffffff', [s * 0.043, -0.012, 0.058], 0.0025);
     }
-  }, SKIN));
+  }));
   head.add(merged((b, coat) => coat.add(FINE_BALL, kind.wool, [0, 0.03, 0.005], [0.055, 0.035, 0.055]), fleece(phase + 11)));
   // The ears, standing out sideways from under the cap, pink inside, flicking now and then.
   const ears = [-1, 1].map((s) => {
     const ear = merged((b, coat) => {
       coat.add(BALL, kind.face, [s * 0.04, 0, 0], [0.045, 0.016, 0.02]);
       b.add(BALL, kind.ear, [s * 0.042, -0.002, 0.008], [0.034, 0.011, 0.012]);
-    }, SKIN);
+    });
     ear.position.set(s * 0.04, 0.005, 0.0);
     head.add(ear);
     return ear;

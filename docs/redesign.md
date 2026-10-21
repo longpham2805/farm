@@ -850,6 +850,61 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   from side-by-side crops): 30 frames a second when the player has not touched for a few seconds
   (about half of what is left while watching), no multisampling (−1.7 ms, jagged fence rails and lamp posts), pixel
   ratio 1.5 (−2.0 ms, softer). "Nhanh" is 3.9 ms.
+- **Lighter frames on a phone** (2026-10-21, `woods.js`, `batch.js`, `buildings.js`, `countryside.js`, `scene.js`,
+  `bubbles.js`), the user's iPhone 14 warming up within ten minutes and not smooth. Measured as above in Chrome on the
+  M4 at an iPhone 14's size (390×844, pixel ratio 3, drawn at 2 on "Đẹp" and 1.25 on "Nhanh"; Safari on an iPhone
+  reports 2 or 4 cores, so `guessQuality` picks "Nhanh" there). The frame was GPU-bound (≈1.5 ms of JS); the main
+  pass drew 1.04M triangles, half of them the woods: each of their instanced meshes holds a model's trees all over the
+  valley, so the renderer drew all of them whatever the view, and the buildings' batch (181K) was one mesh too. Three
+  cuts that leave the picture as it was (both checked pixel for pixel, 0 pixels different, at the opening view and
+  panned and zoomed out): (1) the woods keep in each instanced mesh only the trees in the view or, if it casts
+  shadows, in the sun's shadow box (`cull` in `woods.js`, from `applyView`; a mesh with none is left out): 518K → 136K
+  triangles at the opening view. (2) The buildings' batch is a mesh for each 8-unit square of the world (`cell` in
+  `Batch.build`, `BATCH_CELL`), as the plants already were: 181K → 139K, 2 calls → 10. Main pass 1.04M → 0.62M
+  triangles; GPU 4.35 → 3.6 ms on "Đẹp", 2.97 → 2.2 ms on "Nhanh". At an iPad's size, which sees most of the valley,
+  about the same as before. (3) 30 frames a second once the player has not touched the scene for 3 s and nothing
+  pops (`IDLE_FRAME_MS`, `IDLE_AFTER_MS`, `touchedAt`), 60 again at the first touch; the shadow map goes by time,
+  30 times a second either way (`shadowAt`). While watching, about 60% less GPU work a second than before. And two
+  small ones for the CPU: the canvas's size comes from a `ResizeObserver` instead of being read every frame (which,
+  after the bubbles moved, made the browser work out the page's style each frame), and the bubbles write their place
+  only when it changes. Left, changing the picture: on a phone at "Đẹp" the effects alone (sky, multisampling, bloom,
+  tone mapping) take 1.6 ms of the 3.6, on "Nhanh" 0.7 of 2.2; the fur's three shells on each animal (alpha-tested,
+  hard on a phone's GPU; gone since, the next entry); the bloom on phones (gone since, "No bloom").
+- **Smooth hides** (2026-10-21, `animals/parts.js`, `cow.js`, `sheep.js`, `buffalo.js`, `pig.js`), the user finding the
+  fur not pretty. The coat of hair described above for the buffalo, the cows, the sheep and the pig (strands streaking
+  and raising the hide, three alpha-tested shells standing off it) came out at the game's size as grain over the hide
+  and ragged, aliased edges, and the patches' edges ragged with it; the reference draws clean, smooth animals. Now each
+  part's hide is one mesh of plain matt colour (`hideMaterial`, `Coat`); the cows' patches are round and crisp (two
+  octaves of noise, no strands across the edge); the sheep's fleece swells in round puffs like a cloud (`puffs` in
+  parts.js, about 0.084 across and 0.042 high), which keeps it fluffy without the shells. The user picked this from
+  side-by-side samples over one with the strands showing faintly (no different at the game's size) and one with a
+  sheen at the edges (it turned the black patches brown). A cow 36 meshes and 34K triangles → 18 and 13.5K, a buffalo
+  35 and 34K → 17 and 13.6K, a pig 31 and 23K → 16 and 9.5K; the meadow's herd 328 meshes and 487K → 160 and 156K. At
+  an iPhone 14's size looking at the meadow, GPU 5.15 → about 3.4 ms a frame on "Đẹp", 4.47 → about 2.4 on "Nhanh".
+  Close up, the smooth hides show where the shoulders, haunches and knees join the body and legs, which the hair hid.
+- **No bloom** (2026-10-21, `scene.js`; `bloom.js` gone), at the user's word, after measuring what was left on a phone.
+  The glow round bright things was on "Đẹp" only; at an iPhone 14's size it cost 3.51 → 3.11 ms a frame at 60 frames a
+  second and 4.15 → 3.73 at 30 (about a tenth). The composer is now `RenderPass` and three's `OutputPass`, which is
+  what `BloomOutputPass` did with the bloom off: "Nhanh" the same to the pixel. On "Đẹp" the frost and gold crops and
+  the sparkles glow a little less; their auras, which are sprites of their own, are as they were. Tried and dropped the
+  same day: caching the shadows of what stands still (copying a 3072² depth map back each time cost the GPU more than
+  the triangles it saved: 4.03 → 4.98 ms at 30 frames a second on "Đẹp") and working out the matrices of what stands
+  still only once (0.11 → 0.07 ms of about 1 ms of JS a frame, not worth a trap for later edits).
+- **Lighter flowers** (2026-10-21, `plants/flowers.js`), one kind at a time, each approved by the user from
+  side-by-side shots. Measured at an iPhone 14's size, the valley's plants took a third of the GPU's frame ("Đẹp" 3.02
+  → 2.01 ms without them, "Nhanh" 2.08 → 1.32), most of it the trees and flowers placed by hand round the farm, not the
+  woods: a clump of flowers shows a few pixels across and was drawn in a thousand or more triangles. A kind built
+  `small` has its heads' petals in two pieces instead of four, a heart of six facets instead of a dome of twenty-four,
+  no green cup behind its heads (the camera looks down on them), stems of three sides, and leaves in six triangles
+  instead of ten (`smallLeaf`, the outline of `leaf` in birch.js in fewer points); every head and leaf where it was,
+  as the random numbers are drawn as before. Halving the leaves instead showed the dark core under them, like dark
+  stones. The other plants are the same to the byte (the plant-fingerprint hashes). The beds: 1,475 → 944 triangles a
+  clump, the valley's 18 beds about 83K → 53K. The yellow clumps: 3,114 → 2,082 a clump, the 17 of them about 52K →
+  35K; their dark hearts show six facets close up. The lupins, their buds small too (`SMALL_BUD`; the gladioli and the
+  pinks keep `BUD`): 5,818 → 3,338 a clump, the 6 of them about 36K → 21K. The gladioli (`orange`), their buds small
+  now too: 1,813 → 1,145 a clump, the 12 of them about 20K → 13K. The white daisies: 2,045 → 1,301 a clump, the 7 of
+  them about 14K → 9K. The purple clumps: 1,771 → 1,122 a clump, the 3 of them about 5.3K → 3.4K. The row of pinks
+  (`flowerRow`) is placed nowhere in the valley and was left as it was.
 
 ### Loose ends
 

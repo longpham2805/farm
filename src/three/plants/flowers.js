@@ -29,12 +29,13 @@ const FACING = new THREE.Vector3(1, 2.2, 1).normalize();
  * sun (see glowing). A kind that stands in a row (flowerRow) gives its sizes in
  * world units: the heads' radius, the stems' radius, its leaves' length, how many plants to a unit of the row.
  * `mix`: the colours ([petals' tip, petals' foot, heart, heart's top, the foot's colour if not given]) each head takes
- * one of, in place of those in `colors`.
+ * one of, in place of those in `colors`. A kind whose flowers show only a few pixels across is built `small`: its heads'
+ * petals and its leaves in fewer pieces, their hearts plainer, no green cup behind them, its stems fewer-sided.
  */
 export const FLOWERS = {
   daisy: {
     colors: { petal: '#eef3ff', petalFoot: '#e6ebf2', heart: '#ec8c1c', heartTop: '#ffc43a', shade: '#16420e', dark: '#24601a', mid: '#3f8a26', light: '#7ab844' },
-    petals: 6, petalWide: 0.85, cup: 0.3, heads: [8, 10], head: 0.12, glow: 0.5,
+    petals: 6, petalWide: 0.85, cup: 0.3, heads: [8, 10], head: 0.12, glow: 0.5, small: true,
   },
   pink: {
     colors: { petal: '#ff8cc0', petalFoot: '#d42c78', heart: '#8a1446', heartTop: '#d42c78', shade: '#173f10', dark: '#255c18', mid: '#3d8526', light: '#74b040' },
@@ -49,7 +50,7 @@ export const FLOWERS = {
       ['#f4a800', '#e07000', '#4a220a', '#7a3a12'],
       ['#d2401a', '#801a0c', '#2e1408', '#5a2a10'],
     ],
-    petals: 9, petalWide: 0.6, cup: 0.35, rings: [[8, 0.72, 0.6]], heads: [7, 9], head: 0.16, glow: 0.4,
+    petals: 9, petalWide: 0.6, cup: 0.35, rings: [[8, 0.72, 0.6]], heads: [7, 9], head: 0.16, glow: 0.4, small: true,
   },
   purple: {
     colors: { petal: '#b8a4f0', petalFoot: '#4a1a8a', heart: '#ffc61e', heartTop: '#ffe066', shade: '#18440f', dark: '#28621a', mid: '#468e28', light: '#80bc44' },
@@ -59,19 +60,19 @@ export const FLOWERS = {
       ['#ece4fc', '#6a3ab0', '#ffc61e', '#ffe066'],
       ['#a4aaf2', '#3a2a90', '#ffc61e', '#ffe066'],
     ],
-    petals: 5, petalWide: 1.1, cup: 0.15, eye: 0.14, heads: [7, 9], head: 0.17, glow: 0.3,
+    petals: 5, petalWide: 1.1, cup: 0.15, eye: 0.14, heads: [7, 9], head: 0.17, glow: 0.3, small: true,
   },
   // Spikes like gladioli, orange and yellow, the florets big and turned to the camera, on the well's left.
   orange: {
     colors: { petal: '#ffb020', petalFoot: '#e85a0a', heart: '#c83a06', heartTop: '#f08a10', shade: '#18440f', dark: '#28621a', mid: '#468e28', light: '#80bc44' },
     mix: [['#ffb020', '#e85a0a', '#c83a06'], ['#ffd040', '#f08a10', '#c85a08'], ['#ff8a20', '#d8400a', '#a02a06']],
-    petals: 6, petalWide: 0.75, cup: 0.6, spikes: [1, 2], florets: 7, floret: 0.09, spike: 0.55, side: true, mound: 0.6, glow: 0.3,
+    petals: 6, petalWide: 0.75, cup: 0.6, spikes: [1, 2], florets: 7, floret: 0.09, spike: 0.55, side: true, mound: 0.6, glow: 0.3, small: true,
   },
   // Spikes like lupins, purple and now and then pink, dense with small florets all round, by the bench beyond the well.
   lupin: {
     colors: { petal: '#b48af0', petalFoot: '#5a2ab0', heart: '#3a1680', heartTop: '#5a2ab0', shade: '#18440f', dark: '#28621a', mid: '#468e28', light: '#80bc44' },
     mix: [['#9a86f0', '#3e2aa0', '#2a1a70'], ['#9a86f0', '#3e2aa0', '#2a1a70'], ['#b48af0', '#5a2ab0', '#3a1680'], ['#e6a0e0', '#a03aa0', '#701a70']],
-    petals: 4, petalWide: 1.1, cup: 1.3, spikes: [3, 5], florets: 14, floret: 0.055, spike: 0.5, mound: 0.6, glow: 0.3,
+    petals: 4, petalWide: 1.1, cup: 1.3, spikes: [3, 5], florets: 14, floret: 0.055, spike: 0.5, mound: 0.6, glow: 0.3, small: true,
   },
   // Small flowers of every colour, the clumps of a bed (flowerBed).
   bed: {
@@ -85,21 +86,27 @@ export const FLOWERS = {
       ['#ffe23a', '#f0b000', '#c86a08', '#e08a10'],
       ['#9aa4f2', '#3a3a9a', '#ffd23a', '#ffe680'],
     ],
-    petals: 5, petalWide: 1, cup: 0.3, eye: 0.18, heads: [5, 7], head: 0.16, glow: 0.3,
+    petals: 5, petalWide: 1, cup: 0.3, eye: 0.18, heads: [5, 7], head: 0.16, glow: 0.3, small: true,
   },
 };
 
 /** `c` with the petals' and heart's colours from an entry of a kind's `mix`. */
 const mixed = (c, [tip, deep, heart, top]) => ({ ...c, petal: new THREE.Color(tip), petalFoot: new THREE.Color(deep), heart: new THREE.Color(heart), heartTop: new THREE.Color(top ?? deep) });
 
-// A bud: a head of five petals cupped up so far they close over it.
+// A bud: a head of five petals cupped up so far they close over it; on a kind built small, small too.
 const BUD = { petals: 5, petalWide: 1, cup: 2.4 };
+const SMALL_BUD = { ...BUD, small: true };
 
 /**
  * How a clump grows, in units of its height: its leaves ([least, most], how long, how wide of their length), how far
  * out from its middle the heads spread, and the stems' radius.
  */
 const FORM = { leaves: [40, 48], leaf: 0.34, wide: 0.62, spread: 0.6, stem: 0.012 };
+
+// Along a petal: how far out (0 at its foot, 1 at its tip) and how wide there, of its widest; a small kind's in fewer
+// pieces.
+const PETAL = [[0, 0.35], [0.3, 0.85], [0.62, 1], [0.88, 0.7]];
+const SMALL_PETAL = [[0, 0.35], [0.5, 1], [0.85, 0.75]];
 
 /**
  * A head at `C` facing `F`, radius `R`: petals round a domed heart, each a broad oval with a rounded tip, cupped up
@@ -113,8 +120,8 @@ export function head(m, rand, C, F, R, k, c) {
   const front = () => F;
   const back = () => F.clone().negate();
   const r0 = R * (k.eye ?? 0.26);
-  // The petals: along each, how far out (0 at its foot, 1 at its tip) and how wide there, of its widest.
-  const edge = [[0, 0.35], [0.3, 0.85], [0.62, 1], [0.88, 0.7]];
+  const edge = k.small ? SMALL_PETAL : PETAL;
+  const last = edge.length - 1;
   // A ring of n petals `scale` as long as the outer ones, cupped up `cup`, `deep` of the way to the foot's colour.
   const petals = (n, scale, cup, deep) => {
     const half = (R * scale * k.petalWide) / 2;
@@ -132,16 +139,23 @@ export function head(m, rand, C, F, R, k, c) {
       for (const s of [1, -1]) {
         const rim = edge.map(([f, w]) => at(r(f), a + (s * w * half) / r(f), rise(f)));
         const cols = edge.map(([f]) => tone(f));
-        for (let j = 0; j < edge.length - 1; j++) {
+        for (let j = 0; j < last; j++) {
           m.tri(mids[j], rim[j], rim[j + 1], cols[j], cols[j], cols[j + 1], front);
           m.tri(mids[j], rim[j + 1], mids[j + 1], cols[j], cols[j + 1], cols[j + 1], front);
         }
-        m.tri(mids[3], rim[3], tip, cols[3], cols[3], lit, front);
+        m.tri(mids[last], rim[last], tip, cols[last], cols[last], lit, front);
       }
     }
   };
   petals(k.petals, 1, k.cup, 0);
   (k.rings ?? []).forEach(([n, scale, cup], i) => petals(n, scale, cup, 0.35 * (i + 1)));
+  if (k.small) {
+    // The heart, a low cone of six facets; no cup behind, which the camera does not see from above.
+    const ring = Array.from({ length: 6 }, (_, j) => at(r0 * 1.15, (j / 6) * TAU, 0.05));
+    const top = at(0, 0, 0.2);
+    for (let j = 0; j < 6; j++) m.tri(ring[j], ring[(j + 1) % 6], top, c.heart, c.heart, c.heartTop, front);
+    return;
+  }
   // The heart, domed, in two rings of facets.
   const D = 8;
   const ring = Array.from({ length: D }, (_, j) => at(r0 * 1.15, (j / D) * TAU, 0.05));
@@ -157,6 +171,25 @@ export function head(m, rand, C, F, R, k, c) {
   // The green cup behind it.
   const tail = C.clone().addScaledVector(F, -R * 0.25);
   for (let j = 0; j < 6; j++) m.tri(at(r0 * 1.3, (j / 6) * TAU, -0.02), at(r0 * 1.3, ((j + 1) / 6) * TAU, -0.02), tail, c.dark, c.dark, c.shade, back);
+}
+
+/**
+ * A leaf as leaf() in birch.js lays it, its outline in fewer points: six triangles instead of ten, for a kind built
+ * small.
+ */
+function smallLeaf(m, base, along, face, size, col, wide) {
+  const across = new THREE.Vector3().crossVectors(along, face).normalize();
+  const width = size * wide;
+  const at = (s, drop, out, rise) => base.clone().addScaledVector(along, s * size).addScaledVector(face, (rise - drop) * size).addScaledVector(across, out * width);
+  const mids = [[0, 0], [0.45, 0.03], [1, 0.14]].map(([s, d]) => at(s, d, 0, 0));
+  const facing = (a, b, c) => {
+    const n = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(c, a));
+    return n.dot(face) < 0 ? n.negate() : n;
+  };
+  for (const side of [1, -1]) {
+    const rim = [[0.3, 0.48], [0.68, 0.38]].map(([s, w]) => at(s, 0.14 * s * s, side * w, 0.08));
+    for (const [a, b, c] of [[mids[0], rim[0], mids[1]], [mids[1], rim[0], rim[1]], [mids[1], rim[1], mids[2]]]) m.tri(a, b, c, col, col, col, facing);
+  }
 }
 
 /** The leaves' colour from `c`'s shade to its light, t from 0 to 1. */
@@ -224,7 +257,7 @@ function spikes(m, hm, rand, k, c) {
       const b = k.side ? camera + (i % 2 ? 0.75 : -0.75) + (rand() - 0.5) * 0.3 : turn + i * 2.4;
       const F = new THREE.Vector3(Math.cos(b), 0.5 + t, Math.sin(b)).normalize();
       const C = p.clone().add(new THREE.Vector3(Math.cos(b), 0, Math.sin(b)).multiplyScalar(R * 0.4));
-      head(hm, rand, C, F, R, t > 0.75 ? BUD : k, cc);
+      head(hm, rand, C, F, R, t > 0.75 ? (k.small ? SMALL_BUD : BUD) : k, cc);
     }
   }
 }
@@ -258,7 +291,7 @@ export function flowers(seed = 1, height = 0.6, kind = 'daisy') {
     const face = new THREE.Vector3(0, 1, 0).addScaledVector(along, -along.y).normalize().applyAxisAngle(along, (rand() - 0.5) * 0.8);
     const rb = 0.05 + 0.22 * v;
     const base = new THREE.Vector3(Math.cos(a) * rb * mound, (0.4 - 0.32 * v) * mound, Math.sin(a) * rb * mound);
-    leaf(m, base, along, face, FORM.leaf * (1 - 0.15 * v) * (0.8 + rand() * 0.35) * mound, tone(0.28 + 0.4 * face.y + 0.3 * (1 - v) + (rand() - 0.5) * 0.25), FORM.wide);
+    (k.small ? smallLeaf : leaf)(m, base, along, face, FORM.leaf * (1 - 0.15 * v) * (0.8 + rand() * 0.35) * mound, tone(0.28 + 0.4 * face.y + 0.3 * (1 - v) + (rand() - 0.5) * 0.25), FORM.wide);
   }
   if (k.spikes) {
     spikes(m, hm, rand, k, c);
@@ -280,14 +313,14 @@ export function flowers(seed = 1, height = 0.6, kind = 'daisy') {
     const end = C.clone().addScaledVector(F, -R * 0.2);
     // Up from the foot, bending out towards the head.
     const path = [0, 0.35, 0.7, 1].map((t) => foot.clone().lerp(end, t ** 1.6).setY(end.y * t ** 0.85));
-    tube(m, path, path.map((_, i) => FORM.stem * (1.1 - 0.3 * (i / 3))), { dark: c.dark, light: c.mid }, { sides: 4 });
+    tube(m, path, path.map((_, i) => FORM.stem * (1.1 - 0.3 * (i / 3))), { dark: c.dark, light: c.mid }, { sides: k.small ? 3 : 4 });
     // Two leaves up the stem, either side, out and up a little, so the heads sit among leaves.
     for (const [t, side] of [[0.5, 1], [0.72, -1]]) {
       const b = (a + side * (0.7 + rand() * 0.5));
       const along = new THREE.Vector3(Math.cos(b), 0.35 + rand() * 0.3, Math.sin(b)).normalize();
       const face = new THREE.Vector3(0, 1, 0).addScaledVector(along, -along.y).normalize().applyAxisAngle(along, (rand() - 0.5) * 0.6);
       const at = foot.clone().lerp(end, t ** 1.6).setY(end.y * t ** 0.85);
-      leaf(m, at, along, face, FORM.leaf * (0.6 + rand() * 0.25), tone(0.45 + 0.4 * face.y + (rand() - 0.5) * 0.2), FORM.wide);
+      (k.small ? smallLeaf : leaf)(m, at, along, face, FORM.leaf * (0.6 + rand() * 0.25), tone(0.45 + 0.4 * face.y + (rand() - 0.5) * 0.2), FORM.wide);
     }
     head(hm, rand, C, F, R, k, k.mix ? mixed(c, k.mix[Math.floor(rand() * k.mix.length)]) : c);
   }

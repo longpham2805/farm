@@ -1,8 +1,8 @@
 // A pig, built like the cattle and the sheep (parts.js): pink, as the reference draws it in the farm behind the plots.
 // A plump round body on short legs, a big head straight off the shoulders with a flat round snout, ears flopping
-// forward over its eyes, a curly tail; a fine, sparse coat of bristles over pink skin. It roots about with its snout
-// in the grass, now and then lifts its head to look about, twitches its tail and flicks its ears, and every so often
-// walks a little way to another spot (herd in herd.js).
+// forward over its eyes, a curly tail; smooth pink skin. It roots about with its snout in the grass, now and then lifts
+// its head to look about, twitches its tail and flicks its ears, and every so often walks a little way to another spot
+// (herd in herd.js).
 //
 // A pig faces +z, standing on its origin. Its legs, head, tail and ears are children of their own, so they can move;
 // userData.update(t, dt, speed) moves them.
@@ -30,11 +30,6 @@ const TRUNK = [
   [0.265, 0.0, 0, 0, 0],
 ];
 const TRUNK_GEOMETRY = loft(TRUNK, 5, 32, 2.3);
-// Round its middle, and along it in model units.
-TRUNK_GEOMETRY.userData.hair = [1.2, 1];
-
-// A pig's coat is a few fine bristles: they hardly stand off the skin and hardly streak it.
-const BRISTLES = { stand: 0.3, streak: 0.25 };
 
 // How far a pig goes in one stride (both pairs of legs stepping), as modelled, before its size.
 const STRIDE = 0.24;
@@ -48,7 +43,7 @@ function leg(kind, h, w) {
   return merged((b, coat) => {
     coat.add(CYL, kind.skin, [0, -h * 0.45, 0], [w, h * 0.9, w * 1.05]);
     b.add(HOOF, kind.hoof, [0, -h + 0.016, 0.004], [w * 0.95, 0.032, w]);
-  }, BRISTLES);
+  });
 }
 
 /**
@@ -73,7 +68,7 @@ export function pig(name, phase = 0) {
       coat.add(BALL, kind.skin, [s * 0.1, y - 0.05, 0.13], [0.08, 0.12, 0.09]);
       coat.add(BALL, kind.skin, [s * 0.1, y - 0.04, -0.17], [0.085, 0.13, 0.1]);
     }
-  }, BRISTLES));
+  }));
   // The legs swing from the top: front left with back right, then front right with back left.
   const legs = [[-0.1, 0.14, 0], [0.1, 0.14, Math.PI], [-0.1, -0.17, Math.PI], [0.1, -0.17, 0]].map(([x, z, step]) => {
     const l = leg(kind, len + 0.05, 0.05);
@@ -112,13 +107,13 @@ export function pig(name, phase = 0) {
       b.add(BALL, EYE, [s * 0.062, 0.025, 0.105], 0.009);
       b.add(BALL, '#ffffff', [s * 0.065, 0.028, 0.111], 0.003);
     }
-  }, { flat: true, ...BRISTLES }));
+  }));
   // The ears, broad and pointed, flopping forward and down over the eyes, flicking now and then.
   const ears = [-1, 1].map((s) => {
     const ear = merged((b, coat) => {
       coat.add(BALL, kind.skin, [s * 0.025, 0.01, 0.035], [0.042, 0.012, 0.055], [0.7, s * -0.3, 0]);
       b.add(BALL, kind.ear, [s * 0.025, 0.004, 0.039], [0.032, 0.008, 0.042], [0.7, s * -0.3, 0]);
-    }, { flat: true, ...BRISTLES });
+    });
     ear.position.set(s * 0.06, 0.085, 0.02);
     head.add(ear);
     return ear;
