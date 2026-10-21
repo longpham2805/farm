@@ -72,7 +72,7 @@ export const FLOWERS = {
   lupin: {
     colors: { petal: '#b48af0', petalFoot: '#5a2ab0', heart: '#3a1680', heartTop: '#5a2ab0', shade: '#18440f', dark: '#28621a', mid: '#468e28', light: '#80bc44' },
     mix: [['#9a86f0', '#3e2aa0', '#2a1a70'], ['#9a86f0', '#3e2aa0', '#2a1a70'], ['#b48af0', '#5a2ab0', '#3a1680'], ['#e6a0e0', '#a03aa0', '#701a70']],
-    petals: 4, petalWide: 1.1, cup: 1.3, spikes: [3, 5], florets: 14, floret: 0.055, spike: 0.5, mound: 0.6, glow: 0.3,
+    petals: 4, petalWide: 1.1, cup: 1.3, spikes: [3, 5], florets: 14, floret: 0.055, spike: 0.5, mound: 0.6, glow: 0.3, small: true,
   },
   // Small flowers of every colour, the clumps of a bed (flowerBed).
   bed: {
@@ -93,8 +93,9 @@ export const FLOWERS = {
 /** `c` with the petals' and heart's colours from an entry of a kind's `mix`. */
 const mixed = (c, [tip, deep, heart, top]) => ({ ...c, petal: new THREE.Color(tip), petalFoot: new THREE.Color(deep), heart: new THREE.Color(heart), heartTop: new THREE.Color(top ?? deep) });
 
-// A bud: a head of five petals cupped up so far they close over it.
+// A bud: a head of five petals cupped up so far they close over it; on a kind built small, small too.
 const BUD = { petals: 5, petalWide: 1, cup: 2.4 };
+const SMALL_BUD = { ...BUD, small: true };
 
 /**
  * How a clump grows, in units of its height: its leaves ([least, most], how long, how wide of their length), how far
@@ -256,7 +257,7 @@ function spikes(m, hm, rand, k, c) {
       const b = k.side ? camera + (i % 2 ? 0.75 : -0.75) + (rand() - 0.5) * 0.3 : turn + i * 2.4;
       const F = new THREE.Vector3(Math.cos(b), 0.5 + t, Math.sin(b)).normalize();
       const C = p.clone().add(new THREE.Vector3(Math.cos(b), 0, Math.sin(b)).multiplyScalar(R * 0.4));
-      head(hm, rand, C, F, R, t > 0.75 ? BUD : k, cc);
+      head(hm, rand, C, F, R, t > 0.75 ? (k.small ? SMALL_BUD : BUD) : k, cc);
     }
   }
 }
