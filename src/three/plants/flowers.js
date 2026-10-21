@@ -60,7 +60,7 @@ export const FLOWERS = {
       ['#ece4fc', '#6a3ab0', '#ffc61e', '#ffe066'],
       ['#a4aaf2', '#3a2a90', '#ffc61e', '#ffe066'],
     ],
-    petals: 5, petalWide: 1.1, cup: 0.15, eye: 0.14, heads: [7, 9], head: 0.17, glow: 0.3,
+    petals: 5, petalWide: 1.1, cup: 0.15, eye: 0.14, heads: [7, 9], head: 0.17, glow: 0.3, small: true,
   },
   // Spikes like gladioli, orange and yellow, the florets big and turned to the camera, on the well's left.
   orange: {

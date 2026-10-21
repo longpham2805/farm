@@ -903,7 +903,8 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   35K; their dark hearts show six facets close up. The lupins, their buds small too (`SMALL_BUD`; the gladioli and the
   pinks keep `BUD`): 5,818 → 3,338 a clump, the 6 of them about 36K → 21K. The gladioli (`orange`), their buds small
   now too: 1,813 → 1,145 a clump, the 12 of them about 20K → 13K. The white daisies: 2,045 → 1,301 a clump, the 7 of
-  them about 14K → 9K.
+  them about 14K → 9K. The purple clumps: 1,771 → 1,122 a clump, the 3 of them about 5.3K → 3.4K. The row of pinks
+  (`flowerRow`) is placed nowhere in the valley and was left as it was.
 
 ### Loose ends
 
