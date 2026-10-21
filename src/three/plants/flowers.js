@@ -66,7 +66,7 @@ export const FLOWERS = {
   orange: {
     colors: { petal: '#ffb020', petalFoot: '#e85a0a', heart: '#c83a06', heartTop: '#f08a10', shade: '#18440f', dark: '#28621a', mid: '#468e28', light: '#80bc44' },
     mix: [['#ffb020', '#e85a0a', '#c83a06'], ['#ffd040', '#f08a10', '#c85a08'], ['#ff8a20', '#d8400a', '#a02a06']],
-    petals: 6, petalWide: 0.75, cup: 0.6, spikes: [1, 2], florets: 7, floret: 0.09, spike: 0.55, side: true, mound: 0.6, glow: 0.3,
+    petals: 6, petalWide: 0.75, cup: 0.6, spikes: [1, 2], florets: 7, floret: 0.09, spike: 0.55, side: true, mound: 0.6, glow: 0.3, small: true,
   },
   // Spikes like lupins, purple and now and then pink, dense with small florets all round, by the bench beyond the well.
   lupin: {

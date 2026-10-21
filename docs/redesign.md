@@ -901,7 +901,8 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   stones. The other plants are the same to the byte (the plant-fingerprint hashes). The beds: 1,475 → 944 triangles a
   clump, the valley's 18 beds about 83K → 53K. The yellow clumps: 3,114 → 2,082 a clump, the 17 of them about 52K →
   35K; their dark hearts show six facets close up. The lupins, their buds small too (`SMALL_BUD`; the gladioli and the
-  pinks keep `BUD`): 5,818 → 3,338 a clump, the 6 of them about 36K → 21K.
+  pinks keep `BUD`): 5,818 → 3,338 a clump, the 6 of them about 36K → 21K. The gladioli (`orange`), their buds small
+  now too: 1,813 → 1,145 a clump, the 12 of them about 20K → 13K.
 
 ### Loose ends
 
