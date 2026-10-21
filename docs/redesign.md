@@ -890,6 +890,16 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   same day: caching the shadows of what stands still (copying a 3072² depth map back each time cost the GPU more than
   the triangles it saved: 4.03 → 4.98 ms at 30 frames a second on "Đẹp") and working out the matrices of what stands
   still only once (0.11 → 0.07 ms of about 1 ms of JS a frame, not worth a trap for later edits).
+- **Lighter flowers** (2026-10-21, `plants/flowers.js`), one kind at a time, each approved by the user from
+  side-by-side shots. Measured at an iPhone 14's size, the valley's plants took a third of the GPU's frame ("Đẹp" 3.02
+  → 2.01 ms without them, "Nhanh" 2.08 → 1.32), most of it the trees and flowers placed by hand round the farm, not the
+  woods: a clump of flowers shows a few pixels across and was drawn in a thousand or more triangles. A kind built
+  `small` has its heads' petals in two pieces instead of four, a heart of six facets instead of a dome of twenty-four,
+  no green cup behind its heads (the camera looks down on them), stems of three sides, and leaves in six triangles
+  instead of ten (`smallLeaf`, the outline of `leaf` in birch.js in fewer points); every head and leaf where it was,
+  as the random numbers are drawn as before. Halving the leaves instead showed the dark core under them, like dark
+  stones. The other plants are the same to the byte (the plant-fingerprint hashes). The beds: 1,475 → 944 triangles a
+  clump, the valley's 18 beds about 83K → 53K.
 
 ### Loose ends
 
