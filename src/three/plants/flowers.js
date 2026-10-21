@@ -35,7 +35,7 @@ const FACING = new THREE.Vector3(1, 2.2, 1).normalize();
 export const FLOWERS = {
   daisy: {
     colors: { petal: '#eef3ff', petalFoot: '#e6ebf2', heart: '#ec8c1c', heartTop: '#ffc43a', shade: '#16420e', dark: '#24601a', mid: '#3f8a26', light: '#7ab844' },
-    petals: 6, petalWide: 0.85, cup: 0.3, heads: [8, 10], head: 0.12, glow: 0.5,
+    petals: 6, petalWide: 0.85, cup: 0.3, heads: [8, 10], head: 0.12, glow: 0.5, small: true,
   },
   pink: {
     colors: { petal: '#ff8cc0', petalFoot: '#d42c78', heart: '#8a1446', heartTop: '#d42c78', shade: '#173f10', dark: '#255c18', mid: '#3d8526', light: '#74b040' },
