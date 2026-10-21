@@ -1,6 +1,6 @@
-// What the grazing animals (buffalo.js, cow.js, sheep.js) are built from: the shapes, the coat of hair or wool laid
-// over their hide (with big patches of another colour if they have them), a smooth body round a spine (loft), horns,
-// and the way they graze, look about and walk (grazing).
+// What the grazing animals (buffalo.js, cow.js, sheep.js, pig.js) are built from: the shapes, the hide (smooth, with
+// big round patches of another colour if they have them, or a fleece in round puffs), a smooth body round a spine
+// (loft), horns, and the way they graze, look about and walk (grazing).
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { Batch, paint } from '../batch.js';
@@ -8,127 +8,33 @@ import { seeded } from '../../util.js';
 
 export const TAU = Math.PI * 2;
 export const BALL = new THREE.SphereGeometry(1, 16, 12);
-// A ball fine enough to be lumpy (a fleece, see Coat).
+// A ball fine enough to be puffy (a fleece, see Coat).
 export const FINE_BALL = new THREE.SphereGeometry(1, 36, 26);
 export const CYL = new THREE.CylinderGeometry(1, 0.8, 1, 10);
 export const HOOF = new THREE.CylinderGeometry(0.85, 1, 1, 10);
-// How long a piece of each shape is round it and along it, at a size of 1, for laying hair on it (Coat).
-BALL.userData.hair = FINE_BALL.userData.hair = [TAU, Math.PI];
-CYL.userData.hair = [TAU * 0.9, 1];
 
-// The coats: for each, a picture laid over the hide's colour to streak it darker and lighter, and raised by a bump, on
-// a matt hide; and, for the coat standing off the hide, a mask, brighter where it stands farther. Hair is tufts of
-// strands lying one way (up and down the picture); wool is curls packed together, each lit on top and shaded round its
-// edge. The pictures cover SPAN model units of hide.
-const SPAN = { hair: 0.26, wool: 0.2 };
-const coatPictures = {};
-function coatTextures(kind) {
-  if (kind in coatPictures) return coatPictures[kind];
-  // None outside a browser (the tests), where nothing is drawn.
-  if (typeof document === 'undefined') return (coatPictures[kind] = null);
-  const size = 256;
-  // Anything drawn is drawn again a picture's width or height away, so it runs on across the edges.
-  const WRAP = [[0, 0], [-size, 0], [0, -size], [size, 0], [0, size]];
-  const canvas = (fill) => {
-    const c = document.createElement('canvas');
-    c.width = c.height = size;
-    const g = c.getContext('2d');
-    g.fillStyle = fill;
-    g.fillRect(0, 0, size, size);
-    g.lineCap = 'round';
-    return [c, g];
-  };
-  const [coatCanvas, coat] = canvas(kind === 'wool' ? '#bdbdbd' : '#dedede');
-  const [maskCanvas, mask] = canvas('#000000');
-  const rand = seeded(53);
-  const texture = (c) => {
-    const tex = new THREE.CanvasTexture(c);
-    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.anisotropy = 4;
-    return tex;
-  };
-  if (kind === 'wool') {
-    for (let k = 0; k < 520; k++) {
-      // A curl, overlapping those drawn before it: a dome of wool lit from above, with a curled line in it.
-      const x = rand() * size;
-      const y = rand() * size;
-      const r = 8 + rand() * 9;
-      const turn = rand() * TAU;
-      const stand = Math.round(150 + rand() * 105);
-      for (const [ox, oy] of WRAP) {
-        const cx = x + ox;
-        const cy = y + oy;
-        const lit = coat.createRadialGradient(cx - r * 0.25, cy - r * 0.3, r * 0.1, cx, cy, r);
-        lit.addColorStop(0, '#ffffff');
-        lit.addColorStop(0.55, '#e4e4e4');
-        lit.addColorStop(1, '#a6a6a6');
-        coat.fillStyle = lit;
-        coat.beginPath();
-        coat.arc(cx, cy, r, 0, TAU);
-        coat.fill();
-        coat.strokeStyle = 'rgba(140, 140, 140, 0.55)';
-        coat.lineWidth = 1.4;
-        coat.beginPath();
-        coat.arc(cx, cy, r * 0.5, turn, turn + 4);
-        coat.stroke();
-        const dome = mask.createRadialGradient(cx, cy, 0, cx, cy, r);
-        dome.addColorStop(0, `rgb(${stand}, ${stand}, ${stand})`);
-        dome.addColorStop(1, '#000000');
-        mask.fillStyle = dome;
-        mask.beginPath();
-        mask.arc(cx, cy, r, 0, TAU);
-        mask.fill();
-      }
-    }
-    return (coatPictures[kind] = { coat: texture(coatCanvas), mask: texture(maskCanvas) });
-  }
-  const strand = (g, x, y, a, len, bend, width, style) => {
-    g.strokeStyle = style;
-    g.lineWidth = width;
-    for (const [ox, oy] of WRAP) {
-      g.beginPath();
-      g.moveTo(x + ox, y + oy);
-      g.quadraticCurveTo(x + ox + Math.cos(a) * len * 0.5 - Math.sin(a) * bend, y + oy + Math.sin(a) * len * 0.5 + Math.cos(a) * bend, x + ox + Math.cos(a) * len, y + oy + Math.sin(a) * len);
-      g.stroke();
-    }
-  };
-  for (let k = 0; k < 700; k++) {
-    // A tuft: a few strands side by side, dark ones with a light one among them, all bending the same way.
-    const x = rand() * size;
-    const y = rand() * size;
-    const a = Math.PI / 2 + (rand() - 0.5) * 0.6;
-    const len = 16 + rand() * 26;
-    const bend = (rand() - 0.5) * 8;
-    const stand = 0.25 + rand() * 0.75;
-    for (let i = 0; i < 3 + rand() * 4; i++) {
-      const dx = (rand() - 0.5) * 7;
-      const l = len * (0.7 + rand() * 0.3);
-      const v = i % 3 === 2 ? Math.round(225 + rand() * 30) : Math.round(130 + rand() * 60);
-      strand(coat, x + dx, y, a, l, bend, 1 + rand() * 1.4, `rgb(${v}, ${v}, ${v})`);
-      const m = Math.round(255 * stand * (0.6 + rand() * 0.4));
-      strand(mask, x + dx, y, a, l, bend, 1.2 + rand() * 1.2, `rgb(${m}, ${m}, ${m})`);
-    }
-  }
-  return (coatPictures[kind] = { coat: texture(coatCanvas), mask: texture(maskCanvas) });
-}
-
-// Smooth noise in three dimensions, from 0 to 1, for lumps in a fleece.
+// A number from 0 to 1 for each cell of space, the same every time.
 function hash(i, j, k) {
   let h = Math.imul(i, 374761393) + Math.imul(j, 668265263) + Math.imul(k, 1440662683);
   h = Math.imul(h ^ (h >>> 13), 1274126177);
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
-function noise(x, y, z) {
-  const [i, j, k] = [Math.floor(x), Math.floor(y), Math.floor(z)];
-  const [u, v, w] = [x - i, y - j, z - k].map((f) => f * f * (3 - 2 * f));
-  const lerp = (a, b, t) => a + (b - a) * t;
-  const row = (dj, dk) => lerp(hash(i, j + dj, k + dk), hash(i + 1, j + dj, k + dk), u);
-  return lerp(lerp(row(0, 0), row(1, 0), v), lerp(row(0, 1), row(1, 1), v), w);
-}
 
-// The hair standing off the hide: the coat drawn again a little way out (in model units), showing only the strands of
-// the mask brighter than its threshold, fewer the farther out, so the hide's edges look soft.
-const SHELLS = [[0.004, 0.45], [0.008, 0.6], [0.012, 0.75]];
+// Round puffs packed together, from 0 between them to 1 at their tops, one about each unit, for a fleece as fluffy as a
+// cloud: each cell of space holds a puff's middle somewhere in it, and a point is as high as the highest dome over it.
+function puffs(x, y, z) {
+  const [i, j, k] = [Math.floor(x), Math.floor(y), Math.floor(z)];
+  let top = 0;
+  for (let a = i - 1; a <= i + 1; a++) {
+    for (let b = j - 1; b <= j + 1; b++) {
+      for (let c = k - 1; c <= k + 1; c++) {
+        const d = Math.hypot(a + hash(a, b, c) - x, b + hash(b, c, a) - y, c + hash(c, a, b) - z) / 1.05;
+        if (d < 1) top = Math.max(top, Math.sqrt(1 - d * d));
+      }
+    }
+  }
+  return top;
+}
 
 // Smooth noise in three dimensions, for where the patches lie.
 const NOISE = /* glsl */ `
@@ -148,23 +54,16 @@ float patchNoise(vec3 x) {
 `;
 
 /**
- * A material for the hide: with `out`, drawn that far out along its normals (a shell of hair); the strands streaking
- * its colour only `streak` as much as on a buffalo (1); with `patches` ({ color, size, edge, seed }), big patches of
- * that colour lie over it where its pieces let them (`spots`), about `size` model units across (fewer the higher
- * `edge`, 0.5 covering about half), their edges ragged with the hair, falling differently for each `seed`.
+ * A material for the hide, smooth and matt, its colour in its corners; with `patches` ({ color, size, edge, seed }),
+ * big round patches of that colour lie over it where its pieces let them (`spots`), crisp edged, about `size` model
+ * units across (fewer the higher `edge`, 0.5 covering about half), falling differently for each `seed`. One mesh, as
+ * the reference draws them: the hair laid over it before, three shells standing off it and streaks in it, came out as
+ * grain and ragged edges at the size the game shows them, and drew each animal four times over.
  */
-function hideMaterial(options, { out = 0, streak = 1, patches = null }) {
-  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, ...options });
-  if (!out && streak === 1 && !patches) return material;
+function hideMaterial(patches) {
+  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 });
+  if (!patches) return material;
   material.onBeforeCompile = (shader) => {
-    if (out) shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>\n  transformed += normalize(objectNormal) * ${out.toFixed(4)};`);
-    if (streak !== 1) {
-      shader.fragmentShader = shader.fragmentShader.replace(
-        '#include <map_fragment>',
-        `vec4 sampledDiffuseColor = texture2D(map, vMapUv);\n  sampledDiffuseColor.rgb = mix(vec3(1.0), sampledDiffuseColor.rgb, ${streak.toFixed(3)});\n  diffuseColor *= sampledDiffuseColor;`,
-      );
-    }
-    if (!patches) return;
     const r = seeded(patches.seed * 7919 + 1);
     shader.uniforms.patchColor = { value: new THREE.Color(patches.color) };
     shader.uniforms.patchAt = { value: new THREE.Vector3(r() * 100, r() * 100, r() * 100) };
@@ -179,31 +78,26 @@ function hideMaterial(options, { out = 0, streak = 1, patches = null }) {
       `#include <color_fragment>
   {
     vec3 q = vPatchAt * patchScale + patchAt;
-    float n = 0.6 * patchNoise(q) + 0.28 * patchNoise(q * 2.2 + 11.0) + 0.12 * patchNoise(q * 5.0 + 23.0);
-    // The strands of the coat run across the edge.
-    n += (sampledDiffuseColor.g - 0.8) * 0.12;
+    float n = 0.72 * patchNoise(q) + 0.28 * patchNoise(q * 2.1 + 11.0);
     float w = fwidth(n) * 0.75;
     float m = smoothstep(patchEdge - w, patchEdge + w, n) * vSpots;
-    diffuseColor.rgb = mix(diffuseColor.rgb, patchColor * sampledDiffuseColor.rgb, m);
+    diffuseColor.rgb = mix(diffuseColor.rgb, patchColor, m);
   }`,
     );
   };
-  material.customProgramCacheKey = () => `hide ${out} ${streak} ${!!patches}`;
+  material.customProgramCacheKey = () => 'hide patches';
   return material;
 }
 
 /**
- * Pieces of hide, added as to a Batch, merged into one mesh wearing a coat of hair (or `wool`), with the coat
- * standing off it unless `flat`, and `patches` over it if given (see hideMaterial). A shorter, sleeker coat than a
- * buffalo's has the hair standing off only `stand` as far and the strands streaking and raising it only `streak` as
- * much; a fleece stands farther. With `lumps` ({ size, height, seed }), the hide swells out in lumps about `size`
- * model units across, up to `height` high, as a fleece does. Each piece keeps its texture coordinates, scaled to its
- * size so the coat comes out the same size all over: lying down a leg, down the neck and the head, back along the body.
+ * Pieces of hide, added as to a Batch, merged into one mesh, with `patches` over it if given (see hideMaterial). With
+ * `puffs` ({ size, height, seed }), the hide swells out in round puffs about `size` model units across, up to `height`
+ * high, as a fleece does.
  */
 export class Coat {
-  constructor({ flat = false, patches = null, stand = 1, streak = 1, wool = false, lumps = null } = {}) {
+  constructor({ patches = null, puffs = null } = {}) {
     this.parts = [];
-    Object.assign(this, { flat, patches, stand, streak, kind: wool ? 'wool' : 'hair', lumps });
+    Object.assign(this, { patches, puffs });
   }
 
   /** As Batch.add; `spots` (0 to 1) says how much the patches show on this piece. */
@@ -211,51 +105,36 @@ export class Coat {
     const [sx, sy, sz] = typeof s === 'number' ? [s, s, s] : s;
     let g = geometry.clone();
     g.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(...p), new THREE.Quaternion().setFromEuler(new THREE.Euler(...(r ?? [0, 0, 0]))), new THREE.Vector3(sx, sy, sz)));
-    if (this.lumps) {
-      const { size, height, seed = 0 } = this.lumps;
+    if (this.puffs) {
+      const { size, height, seed = 0 } = this.puffs;
       const pos = g.attributes.position;
       const normal = g.attributes.normal;
       for (let i = 0; i < pos.count; i++) {
-        const [x, y, z] = [pos.getX(i), pos.getY(i), pos.getZ(i)].map((v) => v / size + seed * 17.3);
-        const d = height * (0.7 * noise(x, y, z) + 0.3 * noise(x * 2.3, y * 2.3, z * 2.3));
+        const d = height * puffs(...[pos.getX(i), pos.getY(i), pos.getZ(i)].map((v) => v / size + seed * 12.36));
         pos.setXYZ(i, pos.getX(i) + normal.getX(i) * d, pos.getY(i) + normal.getY(i) * d, pos.getZ(i) + normal.getZ(i) * d);
       }
       g.computeVertexNormals();
     }
     if (g.index) g = g.toNonIndexed();
-    const [round, along] = geometry.userData.hair;
-    const span = SPAN[this.kind];
-    const ru = Math.max(1, Math.round((round * (sx + sz)) / 2 / span));
-    const rv = (along * sy) / span;
-    const uv = g.attributes.uv;
-    for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * ru, uv.getY(i) * rv);
+    g.deleteAttribute('uv');
     paint(g, color);
     if (this.patches) g.setAttribute('spots', new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count).fill(spots), 1));
     this.parts.push(g);
   }
 
   build() {
-    const pictures = coatTextures(this.kind);
     const geometry = mergeGeometries(this.parts, false);
     for (const g of this.parts) g.dispose();
-    const { patches, streak } = pictures ? this : {};
-    const mesh = new THREE.Mesh(geometry, hideMaterial(pictures ? { map: pictures.coat, bumpMap: pictures.coat, bumpScale: 2 * this.streak } : {}, { streak, patches }));
+    const mesh = new THREE.Mesh(geometry, hideMaterial(this.patches));
     mesh.castShadow = mesh.receiveShadow = true;
     mesh.userData.ownMaterial = true;
-    if (!pictures || this.flat) return mesh;
-    for (const [out, threshold] of SHELLS) {
-      const shell = new THREE.Mesh(geometry, hideMaterial({ map: pictures.coat, alphaMap: pictures.mask, alphaTest: threshold }, { out: out * this.stand, streak, patches }));
-      shell.receiveShadow = true;
-      shell.userData.ownMaterial = true;
-      mesh.add(shell);
-    }
     return mesh;
   }
 }
 
 /**
- * A part of an animal: `build(b, coat)` adds its hairy hide to the coat and the rest (eyes, horns, hooves) to b.
- * `coat` says how the coat is (see Coat): a small part's hair lies `flat`.
+ * A part of an animal: `build(b, coat)` adds its hide to the coat and the rest (eyes, horns, hooves) to b. `coat` says
+ * how the hide is (see Coat).
  */
 export function merged(build, coat = {}) {
   const batch = new Batch();

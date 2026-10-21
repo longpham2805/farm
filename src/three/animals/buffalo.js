@@ -38,8 +38,6 @@ const TRUNK = [
   [0.385, 0.0, 0, 0, 0],
 ];
 const TRUNK_GEOMETRY = loft(TRUNK);
-// Round its middle, and along it in model units.
-TRUNK_GEOMETRY.userData.hair = [1.3, 1];
 
 /** A leg `h` long and `w` thick hanging from its top at the origin, darker below the knee. */
 function leg(kind, h, w) {
@@ -100,7 +98,7 @@ export function buffalo(name, phase = 0) {
   tail.add(merged((b, coat) => {
     coat.add(CYL, kind.hide, [0, -0.15, -0.01], [0.012, 0.3, 0.012], [0.08, 0, 0]);
     coat.add(BALL, '#26272b', [0, -0.31, -0.02], [0.024, 0.055, 0.024]);
-  }, { flat: true }));
+  }));
   rig.add(tail);
 
   // The thick neck swings down from the shoulders to graze, carrying the head.
@@ -134,13 +132,13 @@ export function buffalo(name, phase = 0) {
       coat.add(BALL, kind.dark, [0, 0.065, 0.0], [0.05, 0.025, 0.05]);
       for (const s of [-1, 1]) b.add(BALL, kind.horn, [s * 0.05, 0.06, 0.0], [0.018, 0.022, 0.018]);
     }
-  }, { flat: true }));
+  }));
   // The ears, broad and drooping under the horns, pink inside, flicking now and then.
   const ears = [-1, 1].map((s) => {
     const ear = merged((b, coat) => {
       coat.add(BALL, kind.hide, [s * 0.055, 0, 0], [0.062, 0.036, 0.016]);
       b.add(BALL, kind.ear, [s * 0.058, -0.002, 0.008], [0.046, 0.025, 0.01]);
-    }, { flat: true });
+    });
     ear.position.set(s * 0.08, -0.04, 0.0);
     ear.rotation.z = s * -0.5;
     head.add(ear);

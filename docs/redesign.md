@@ -869,7 +869,19 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   after the bubbles moved, made the browser work out the page's style each frame), and the bubbles write their place
   only when it changes. Left, changing the picture: on a phone at "Đẹp" the effects alone (sky, multisampling, bloom,
   tone mapping) take 1.6 ms of the 3.6, on "Nhanh" 0.7 of 2.2; the fur's three shells on each animal (alpha-tested,
-  hard on a phone's GPU); the bloom on phones.
+  hard on a phone's GPU; gone since, the next entry); the bloom on phones.
+- **Smooth hides** (2026-10-21, `animals/parts.js`, `cow.js`, `sheep.js`, `buffalo.js`, `pig.js`), the user finding the
+  fur not pretty. The coat of hair described above for the buffalo, the cows, the sheep and the pig (strands streaking
+  and raising the hide, three alpha-tested shells standing off it) came out at the game's size as grain over the hide
+  and ragged, aliased edges, and the patches' edges ragged with it; the reference draws clean, smooth animals. Now each
+  part's hide is one mesh of plain matt colour (`hideMaterial`, `Coat`); the cows' patches are round and crisp (two
+  octaves of noise, no strands across the edge); the sheep's fleece swells in round puffs like a cloud (`puffs` in
+  parts.js, about 0.084 across and 0.042 high), which keeps it fluffy without the shells. The user picked this from
+  side-by-side samples over one with the strands showing faintly (no different at the game's size) and one with a
+  sheen at the edges (it turned the black patches brown). A cow 36 meshes and 34K triangles → 18 and 13.5K, a buffalo
+  35 and 34K → 17 and 13.6K, a pig 31 and 23K → 16 and 9.5K; the meadow's herd 328 meshes and 487K → 160 and 156K. At
+  an iPhone 14's size looking at the meadow, GPU 5.15 → about 3.4 ms a frame on "Đẹp", 4.47 → about 2.4 on "Nhanh".
+  Close up, the smooth hides show where the shoulders, haunches and knees join the body and legs, which the hair hid.
 
 ### Loose ends
 
