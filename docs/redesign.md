@@ -850,6 +850,26 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   from side-by-side crops): 30 frames a second when the player has not touched for a few seconds
   (about half of what is left while watching), no multisampling (−1.7 ms, jagged fence rails and lamp posts), pixel
   ratio 1.5 (−2.0 ms, softer). "Nhanh" is 3.9 ms.
+- **Lighter frames on a phone** (2026-10-21, `woods.js`, `batch.js`, `buildings.js`, `countryside.js`, `scene.js`,
+  `bubbles.js`), the user's iPhone 14 warming up within ten minutes and not smooth. Measured as above in Chrome on the
+  M4 at an iPhone 14's size (390×844, pixel ratio 3, drawn at 2 on "Đẹp" and 1.25 on "Nhanh"; Safari on an iPhone
+  reports 2 or 4 cores, so `guessQuality` picks "Nhanh" there). The frame was GPU-bound (≈1.5 ms of JS); the main
+  pass drew 1.04M triangles, half of them the woods: each of their instanced meshes holds a model's trees all over the
+  valley, so the renderer drew all of them whatever the view, and the buildings' batch (181K) was one mesh too. Three
+  cuts that leave the picture as it was (both checked pixel for pixel, 0 pixels different, at the opening view and
+  panned and zoomed out): (1) the woods keep in each instanced mesh only the trees in the view or, if it casts
+  shadows, in the sun's shadow box (`cull` in `woods.js`, from `applyView`; a mesh with none is left out): 518K → 136K
+  triangles at the opening view. (2) The buildings' batch is a mesh for each 8-unit square of the world (`cell` in
+  `Batch.build`, `BATCH_CELL`), as the plants already were: 181K → 139K, 2 calls → 10. Main pass 1.04M → 0.62M
+  triangles; GPU 4.35 → 3.6 ms on "Đẹp", 2.97 → 2.2 ms on "Nhanh". At an iPad's size, which sees most of the valley,
+  about the same as before. (3) 30 frames a second once the player has not touched the scene for 3 s and nothing
+  pops (`IDLE_FRAME_MS`, `IDLE_AFTER_MS`, `touchedAt`), 60 again at the first touch; the shadow map goes by time,
+  30 times a second either way (`shadowAt`). While watching, about 60% less GPU work a second than before. And two
+  small ones for the CPU: the canvas's size comes from a `ResizeObserver` instead of being read every frame (which,
+  after the bubbles moved, made the browser work out the page's style each frame), and the bubbles write their place
+  only when it changes. Left, changing the picture: on a phone at "Đẹp" the effects alone (sky, multisampling, bloom,
+  tone mapping) take 1.6 ms of the 3.6, on "Nhanh" 0.7 of 2.2; the fur's three shells on each animal (alpha-tested,
+  hard on a phone's GPU); the bloom on phones.
 
 ### Loose ends
 

@@ -19,8 +19,12 @@ const WET = new THREE.Color('#5e3720');
 const LOCKED = new THREE.Color('#7dc95a');
 const CAM_DIR = new THREE.Vector3(1, 0.95, 1).normalize();
 // At most 60 frames a second: screens that refresh at 120 Hz (MacBooks, iPad Pros) would draw the slow valley twice
-// as often for nothing.
+// as often for nothing. And 30 once the player has not touched the scene for a while (IDLE_AFTER_MS) and nothing pops
+// or flies (tweens, particles): the valley only sways, grazes and flows then, and a phone drawing it 60 times a second
+// warmed up within minutes.
 const FRAME_MS = 1000 / 60;
+const IDLE_FRAME_MS = 1000 / 30;
+const IDLE_AFTER_MS = 3000;
 // The sun hangs in the sky behind the mountains, up and to the left.
 const SUN_AT = at(-5, 20, 3.4);
 
@@ -64,10 +68,11 @@ export class FarmScene {
     renderer.toneMappingExposure = 1.1;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
-    // The shadow map is drawn every other frame, and whenever the view moves (applyView): what moves in the valley
-    // moves slowly, and the map cost a fifth of the frame.
+    // The shadow map is drawn 30 times a second (every other frame at 60, every frame at 30), and whenever the view
+    // moves (applyView): what moves in the valley moves slowly, and the map cost a fifth of the frame.
     renderer.shadowMap.autoUpdate = false;
-    this.shadowTick = 0;
+    this.shadowAt = -Infinity;
+    this.touchedAt = -Infinity;
     this.renderer = renderer;
     // `?stats` in the address shows what each frame costs (stats.js).
     if (new URLSearchParams(location.search).has('stats')) this.stats = frameStats(renderer);
@@ -133,11 +138,15 @@ export class FarmScene {
     this.bindInput();
     this.resize();
     window.addEventListener('resize', () => this.resize());
+    // iOS reports the old size in the resize event after a rotation; the observer sees the canvas's new one.
+    new ResizeObserver(() => this.resize()).observe(canvas);
     let last = -Infinity;
     renderer.setAnimationLoop((time) => {
+      const busy = this.tweens.length || this.particles.length || time - this.touchedAt < IDLE_AFTER_MS;
+      const step = busy ? FRAME_MS : IDLE_FRAME_MS;
       const gap = time - last;
-      if (gap < FRAME_MS - 2) return;
-      last = gap > 2 * FRAME_MS ? time : last + FRAME_MS;
+      if (gap < step - 2) return;
+      last = gap > 2 * step ? time : last + step;
       this.frame();
     });
   }
@@ -251,6 +260,7 @@ export class FarmScene {
     this.camera.updateProjectionMatrix();
     this.viewH = viewH;
     fitShadow(this.sun, this.camera);
+    this.countryside.cull(this.camera, this.sun);
     this.renderer.shadowMap.needsUpdate = true;
   }
 
@@ -566,6 +576,10 @@ export class FarmScene {
     const pointers = new Map();
     let down = null;
     let pinch = null;
+    // Frames go back to 60 a second while the player touches, drags or hovers over the scene (FRAME_MS).
+    for (const type of ['pointerdown', 'pointermove', 'wheel']) {
+      this.canvas.addEventListener(type, () => (this.touchedAt = performance.now()), { passive: true });
+    }
     this.canvas.addEventListener('pointerdown', (ev) => {
       pointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
       if (pointers.size === 1) down = { x: ev.clientX, y: ev.clientY, lastX: ev.clientX, lastY: ev.clientY, dragging: false };
@@ -636,9 +650,6 @@ export class FarmScene {
 
   frame() {
     this.stats?.begin();
-    // iOS reports the old size in the resize event after a rotation, so check every frame.
-    const c = this.canvas;
-    if (c.clientWidth && c.clientHeight && (c.clientWidth !== this.width || c.clientHeight !== this.height)) this.resize();
     this.clock.update();
     const dt = Math.min(0.05, this.clock.getDelta());
     const t = this.clock.getElapsed();
@@ -728,7 +739,10 @@ export class FarmScene {
     for (const fn of this.frameHooks) fn(t);
     this.mist.update(t);
 
-    if (++this.shadowTick % 2 === 0) this.renderer.shadowMap.needsUpdate = true;
+    if (this.renderer.shadowMap.needsUpdate || now - this.shadowAt > FRAME_MS * 1.5) {
+      this.renderer.shadowMap.needsUpdate = true;
+      this.shadowAt = now;
+    }
     this.composer.render(dt);
     this.stats?.end();
   }

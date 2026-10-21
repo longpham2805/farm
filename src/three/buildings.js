@@ -1,7 +1,8 @@
 // The farm's buildings and the animals that live in them, set on their pads in the painted valley (PLACES in
 // valleyMap.js): the houses along the back of the ring road, the fields over the big bridge, the cows' meadow, the
-// bridges, lamps, benches, fences and the landing, with the spray at the falls. Their parts merge into one batch; the
-// windmill's sails, the smoke, the animals and the lanterns' glow move as their own objects.
+// bridges, lamps, benches, fences and the landing, with the spray at the falls. Their parts merge into one batch, a mesh
+// for each square of the world; the windmill's sails, the smoke, the animals and the lanterns' glow move as their own
+// objects.
 import * as THREE from 'three';
 import { Batch } from './batch.js';
 import { seeded } from '../util.js';
@@ -34,6 +35,10 @@ import { sheep } from './animals/sheep.js';
 import { pig } from './animals/pig.js';
 import { paddle } from './animals/duck.js';
 import { wheel } from './animals/birds.js';
+
+// How wide a square of the world the batch's meshes each take (Batch.build): the renderer leaves out the squares off
+// the screen, which on a phone is most of the valley.
+const BATCH_CELL = 8;
 
 /**
  * A fence along a smooth curve through `way` (map points), a post about every `spacing`, and a gate `width` across
@@ -177,7 +182,7 @@ export function placeBuildings({ at }) {
       { count: 8, up: [0.1, 0.25], out: [0.03, 0.12], spread: 0.1, gravity: 0, life: [1.8, 2.8], size: [0.25, 0.55], strength: 0.08, seed: 17 }),
   ];
   const group = new THREE.Group();
-  group.add(...falls.map((f) => f.group), batch.build(), buildGlow(glow), glows.group, paper, smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, water, crops.group, post, jetty.group, buffaloes.group, meadow.group, pigs.group, lawnHens.group, ducks.group, birds.group);
+  group.add(...falls.map((f) => f.group), batch.build({ cell: BATCH_CELL }), buildGlow(glow), glows.group, paper, smoke.group, siloParts, sails, hens.group, wellParts.group, ...hay, water, crops.group, post, jetty.group, buffaloes.group, meadow.group, pigs.group, lawnHens.group, ducks.group, birds.group);
   const update = (t, dt) => {
     smoke.update(t);
     sails.children[0].rotation.z = -t * 0.9;

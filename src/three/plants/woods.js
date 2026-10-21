@@ -148,7 +148,17 @@ export function woodsSpots(at) {
   return spots.filter(({ u, b, height }) => !hidesFlower(u, b, height));
 }
 
-/** The woods' trees, each kind's models drawn once for all their trees. Returns a group. */
+// How far past its model a tree may reach as it sways (sway.js: the top of a tree 2.5 tall moves about 0.06).
+const SWAY_REACH = 0.1;
+const InstancedMeshFrustum = THREE.InstancedMesh.prototype.intersectsFrustum;
+
+/**
+ * The woods' trees, each kind's models drawn once for all their trees. Returns the group, and cull(view, shadow),
+ * which keeps in each instanced mesh only the trees inside the frustum `view` (the camera's) or, for a mesh that casts
+ * shadows, inside `shadow` (the sun's shadow box): one mesh holds a model's trees all over the valley, so the renderer
+ * could only draw all of them or none, and a phone's view takes in a fraction of the woods. Call it whenever the view
+ * or the shadows change; the group must stay where it was built.
+ */
 export function woods(at) {
   const group = new THREE.Group();
   const spots = woodsSpots(at);
@@ -156,6 +166,8 @@ export function woods(at) {
   const q = new THREE.Quaternion();
   const up = new THREE.Vector3(0, 1, 0);
   const tint = new THREE.Color();
+  // Each mesh with all its trees' matrices and tints, and a sphere round each tree, for cull.
+  const meshes = [];
   for (const [kind, { make, seeds, height, turn }] of Object.entries(MODELS)) {
     for (let k = 0; k < seeds; k++) {
       const list = spots.filter((s) => s.kind === kind && s.model === k);
@@ -174,6 +186,16 @@ export function woods(at) {
           if (shaded) mesh.setColorAt(i, tint.setScalar(s.shade));
         });
         mesh.computeBoundingSphere();
+        const bounds = mesh.geometry.boundingSphere;
+        const spheres = list.map((s, i) => {
+          mesh.getMatrixAt(i, m);
+          const sphere = bounds.clone().applyMatrix4(m);
+          sphere.radius += SWAY_REACH;
+          return sphere;
+        });
+        meshes.push({ mesh, matrices: mesh.instanceMatrix.array.slice(), tints: mesh.instanceColor?.array.slice() ?? null, spheres, shown: null });
+        // A mesh none of whose trees are kept is left out of the frame altogether.
+        mesh.intersectsFrustum = (frustum) => mesh.count > 0 && InstancedMeshFrustum.call(mesh, frustum);
         group.add(mesh);
       };
       for (const part of parts) {
@@ -191,5 +213,26 @@ export function woods(at) {
       }
     }
   }
-  return group;
+  const cull = (view, shadow) => {
+    for (const entry of meshes) {
+      const { mesh, matrices, tints, spheres } = entry;
+      // The shadow stand-ins draw nothing in the view; on "Nhanh" they are hidden and the trees cast no shadows.
+      const seen = mesh.material.colorWrite;
+      const casts = mesh.castShadow && shadow;
+      const shown = [];
+      spheres.forEach((sphere, i) => {
+        if ((seen && view.intersectsSphere(sphere)) || (casts && shadow.intersectsSphere(sphere))) shown.push(i);
+      });
+      if (entry.shown && shown.length === entry.shown.length && shown.every((i, k) => i === entry.shown[k])) continue;
+      entry.shown = shown;
+      shown.forEach((i, k) => {
+        mesh.instanceMatrix.array.set(matrices.subarray(i * 16, i * 16 + 16), k * 16);
+        if (tints) mesh.instanceColor.array.set(tints.subarray(i * 3, i * 3 + 3), k * 3);
+      });
+      mesh.count = shown.length;
+      mesh.instanceMatrix.needsUpdate = true;
+      if (tints) mesh.instanceColor.needsUpdate = true;
+    }
+  };
+  return { group, cull };
 }

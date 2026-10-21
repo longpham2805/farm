@@ -75,7 +75,11 @@ export class Bubbles {
       const item = this.items[i];
       if (item.el.hidden) continue;
       const p = item.el.dataset.kind === 'lock' ? scene.screenPos(i, 0.05) : scene.screenPos(i);
-      item.el.style.transform = `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0)`;
+      // Written only when it moves: a style written every frame is worked out again every frame.
+      const at = `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0)`;
+      if (item.at === at) continue;
+      item.at = at;
+      item.el.style.transform = at;
     }
   }
 }

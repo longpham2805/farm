@@ -63,6 +63,8 @@ export class Batch {
     }
     g.applyMatrix4(tmpM);
     if (color !== null) paint(g, color);
+    // Where the part stands, for build's cells.
+    g.userData.at = [tmpM.elements[12], tmpM.elements[14]];
     this.parts[flat ? 'flat' : 'smooth'].push(g);
   }
 
@@ -71,19 +73,40 @@ export class Batch {
     this.parts[flat ? 'flat' : 'smooth'].push(g);
   }
 
-  /** Merges the parts into meshes of vertex-coloured standard material, as rough and as metallic as asked. */
-  build({ castShadow = true, receiveShadow = true, roughness = 0.85, metalness = 0 } = {}) {
+  /**
+   * Merges the parts into meshes of vertex-coloured standard material, as rough and as metallic as asked. With `cell`,
+   * one mesh for the parts standing in each square of that many units of the world's x and z, so the renderer leaves
+   * out the squares off the screen (and outside the sun's shadow box) instead of drawing all of a batch spread over
+   * the valley.
+   */
+  build({ castShadow = true, receiveShadow = true, roughness = 0.85, metalness = 0, cell = 0 } = {}) {
     const group = new THREE.Group();
     for (const kind of ['smooth', 'flat']) {
       const list = this.parts[kind];
       if (!list.length) continue;
-      const geometry = mergeGeometries(list, false);
-      for (const g of list) g.dispose();
-      const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ vertexColors: true, roughness, metalness, flatShading: kind === 'flat' }));
-      mesh.castShadow = castShadow;
-      mesh.receiveShadow = receiveShadow;
-      mesh.userData.ownMaterial = true;
-      group.add(mesh);
+      const cells = new Map();
+      for (const g of list) {
+        let key = '';
+        if (cell) {
+          if (!g.userData.at) {
+            g.computeBoundingBox();
+            g.userData.at = [(g.boundingBox.min.x + g.boundingBox.max.x) / 2, (g.boundingBox.min.z + g.boundingBox.max.z) / 2];
+          }
+          key = g.userData.at.map((v) => Math.floor(v / cell)).join();
+        }
+        if (!cells.has(key)) cells.set(key, []);
+        cells.get(key).push(g);
+      }
+      const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness, metalness, flatShading: kind === 'flat' });
+      for (const parts of cells.values()) {
+        const geometry = mergeGeometries(parts, false);
+        for (const g of parts) g.dispose();
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.castShadow = castShadow;
+        mesh.receiveShadow = receiveShadow;
+        mesh.userData.ownMaterial = true;
+        group.add(mesh);
+      }
     }
     this.parts = { smooth: [], flat: [] };
     return group;

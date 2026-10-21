@@ -118,5 +118,17 @@ export function buildCountryside() {
   };
   // The painting's tiles load for the sharp or the fast setting.
   const setDetail = (high) => backdrop.setDetail(high);
-  return { group, update, valleyPlants: plants.group, setDetail };
+  // Only the woods' trees in `camera`'s view, or casting a shadow into it from inside the sun's shadow box, are drawn
+  // (cull in woods.js). Call it after fitShadow, whenever the view changes or the shadows are turned on or off.
+  const view = new THREE.Frustum();
+  const viewMatrix = new THREE.Matrix4();
+  const cull = (camera, sun) => {
+    camera.updateMatrixWorld();
+    view.setFromProjectionMatrix(viewMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse), camera.coordinateSystem);
+    sun.updateMatrixWorld();
+    sun.target.updateMatrixWorld();
+    sun.shadow.updateMatrices(sun);
+    plants.cull(view, sun.castShadow ? sun.shadow.getFrustum() : null);
+  };
+  return { group, update, valleyPlants: plants.group, setDetail, cull };
 }
