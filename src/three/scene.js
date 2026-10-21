@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { BloomPass, BloomOutputPass } from './bloom.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { buildFarm, plotCenter, SOIL_TOP, PLANT_SCALE, butterfly } from './farm.js';
 import { buildCountryside, VIEW_BOUNDS, SUN_DIR, fitShadow, at } from './countryside.js';
 import { buildPlant } from './models.js';
@@ -185,13 +185,11 @@ export class FarmScene {
     if (!this.composer) {
       this.composer = new EffectComposer(this.renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }));
       this.composer.addPass(new RenderPass(this.scene, this.camera));
-      this.bloom = new BloomPass(new THREE.Vector2(256, 256), 0.32, 0.35, 0.97);
-      this.composer.addPass(this.bloom);
-      this.composer.addPass(new BloomOutputPass(this.bloom));
+      // No bloom, on any setting: the glow round bright things cost a phone an eighth of its frame (docs/redesign.md).
+      this.composer.addPass(new OutputPass());
       // Nothing reads the scene's depth once it is drawn, so its multisamples are not resolved.
       for (const target of [this.composer.renderTarget1, this.composer.renderTarget2]) target.resolveDepthBuffer = false;
     }
-    this.bloom.enabled = high;
     // The painting's tiles load sharp or fast.
     this.countryside.setDetail(high);
     // The painted valley's plants cast shadows only on "Đẹp": a third of the frame's triangles went into them.

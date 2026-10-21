@@ -869,7 +869,7 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   after the bubbles moved, made the browser work out the page's style each frame), and the bubbles write their place
   only when it changes. Left, changing the picture: on a phone at "Đẹp" the effects alone (sky, multisampling, bloom,
   tone mapping) take 1.6 ms of the 3.6, on "Nhanh" 0.7 of 2.2; the fur's three shells on each animal (alpha-tested,
-  hard on a phone's GPU; gone since, the next entry); the bloom on phones.
+  hard on a phone's GPU; gone since, the next entry); the bloom on phones (gone since, "No bloom").
 - **Smooth hides** (2026-10-21, `animals/parts.js`, `cow.js`, `sheep.js`, `buffalo.js`, `pig.js`), the user finding the
   fur not pretty. The coat of hair described above for the buffalo, the cows, the sheep and the pig (strands streaking
   and raising the hide, three alpha-tested shells standing off it) came out at the game's size as grain over the hide
@@ -882,6 +882,14 @@ Decided on 2026-10-12, after building most of the valley in 3D (the earlier comm
   35 and 34K → 17 and 13.6K, a pig 31 and 23K → 16 and 9.5K; the meadow's herd 328 meshes and 487K → 160 and 156K. At
   an iPhone 14's size looking at the meadow, GPU 5.15 → about 3.4 ms a frame on "Đẹp", 4.47 → about 2.4 on "Nhanh".
   Close up, the smooth hides show where the shoulders, haunches and knees join the body and legs, which the hair hid.
+- **No bloom** (2026-10-21, `scene.js`; `bloom.js` gone), at the user's word, after measuring what was left on a phone.
+  The glow round bright things was on "Đẹp" only; at an iPhone 14's size it cost 3.51 → 3.11 ms a frame at 60 frames a
+  second and 4.15 → 3.73 at 30 (about a tenth). The composer is now `RenderPass` and three's `OutputPass`, which is
+  what `BloomOutputPass` did with the bloom off: "Nhanh" the same to the pixel. On "Đẹp" the frost and gold crops and
+  the sparkles glow a little less; their auras, which are sprites of their own, are as they were. Tried and dropped the
+  same day: caching the shadows of what stands still (copying a 3072² depth map back each time cost the GPU more than
+  the triangles it saved: 4.03 → 4.98 ms at 30 frames a second on "Đẹp") and working out the matrices of what stands
+  still only once (0.11 → 0.07 ms of about 1 ms of JS a frame, not worth a trap for later edits).
 
 ### Loose ends
 
