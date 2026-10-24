@@ -259,9 +259,10 @@ export function openChests(state, tier, count = state.chests[tier]) {
 
 // ── Plots ─────────────────────────────────────────────────────
 
+// The lines move with GROW_TIME, so every crop asks for water as often as before the times were cut.
 export function thirstPoints(growMs) {
-  if (growMs < 12000) return [];
-  if (growMs < 180000) return [0.45];
+  if (growMs < 12000 * C.GROW_TIME) return [];
+  if (growMs < 180000 * C.GROW_TIME) return [0.45];
   return [0.3, 0.65];
 }
 
@@ -285,7 +286,7 @@ export function plotInfo(plot, now) {
 export const seedCount = (state, id) => (id === 'radish' ? Infinity : state.seeds[id] || 0);
 
 export function growMsFor(crop, level) {
-  return Math.round(crop.grow * 1000 * (1 - C.growReduction(level)));
+  return Math.round(crop.grow * 1000 * C.GROW_TIME * (1 - C.growReduction(level)));
 }
 
 export function mutationChance(state, plot) {

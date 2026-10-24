@@ -3,7 +3,7 @@
 //  xp     – farm XP per harvested plant
 //  yield  – items per harvest (watering adds +1 each, up to +2)
 //  sell   – coins per item when sold (before level bonus / mutation multiplier)
-//  grow   – seconds to grow (before level reduction)
+//  grow   – seconds to grow, before GROW_TIME and the level's reduction (config.js)
 //  variants – number of looks in the encyclopedia (index 0 = normal)
 //  tags: exp (lots of XP), special (cute character crop), lucky (+5% mutation)
 //  colors: used by the 3D models and UI

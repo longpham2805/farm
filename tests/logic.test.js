@@ -73,7 +73,7 @@ test('plant, water, ripen, harvest', () => {
   assert.deepEqual(G.plant(s, 5, 'rice', T0), { ok: false, err: 'occupied' });
 
   const plot = s.plots[5];
-  assert.equal(plot.growMs, 12000);
+  assert.equal(plot.growMs, 8400); // 12 s, cut by 30%
   assert.equal(G.plotInfo(plot, T0).stage, 0);
   assert.equal(G.water(s, 5, T0).ok, false); // not thirsty yet
   assert.equal(G.plotInfo(plot, T0 + 6000).thirsty, true);
