@@ -568,17 +568,20 @@ B.waterSpinach = (g, P, crop) => {
   return 0.6;
 };
 
-B.cabbage = (g, P, crop) => {
+/** A head of cabbage in its outer leaves; wrap is the colour of the leaves hugging the head. */
+function cabbageHead(g, P, crop, wrap) {
   const outer = P(crop.leaf, 'leaf');
   for (let i = 0; i < 7; i++) leaf(g, outer, { p: [0, 0.04, 0], len: 0.3, w: 0.2, tilt: 0.3, yaw: i * 0.9, th: 0.045 });
   g.add(mesh(SPHERE(), P(crop.color, 'produce', { roughness: 0.45 }), [0, 0.21, 0], [0.19, 0.18, 0.19]));
-  const wrap = P('#8fe04a', 'produce', { roughness: 0.5 });
+  const wrapM = P(wrap, 'produce', { roughness: 0.5 });
   for (let i = 0; i < 6; i++) {
     const yaw = i * (TAU / 6) + 0.2;
-    leaf(g, wrap, { p: [Math.sin(yaw) * 0.15, 0.05, Math.cos(yaw) * 0.15], len: 0.26, w: 0.17, tilt: 1.22, yaw, th: 0.03 });
+    leaf(g, wrapM, { p: [Math.sin(yaw) * 0.15, 0.05, Math.cos(yaw) * 0.15], len: 0.26, w: 0.17, tilt: 1.22, yaw, th: 0.03 });
   }
   return 0.42;
-};
+}
+
+B.cabbage = (g, P, crop) => cabbageHead(g, P, crop, '#8fe04a');
 
 B.sweetPotato = (g, P, crop) => {
   const leafM = P(crop.leaf, 'leaf');
@@ -1270,6 +1273,207 @@ B.jackfruit = (g, P, crop) => {
   h.add(mesh(CYL(), P('#f8f2d6', 'accent'), [0, 0.004, 0], [0.022, 0.008, 0.022]));
   pips(h, P('#ffbf1a', 'accent', { roughness: 0.3 }), { n: 9, r: 0.055, s: 0.015, seed: 'jackfruit', ring: true });
   return top;
+};
+
+// ── Levels that opened nothing: 16, 19, 21, 23, 27 and 29 ─────
+
+B.purpleCabbage = (g, P, crop) => {
+  const top = cabbageHead(g, P, crop, '#b37ae8');
+  // Cut in half, it shows white veins curling through the purple.
+  const h = cutHalf(g, P, { at: [0.27, 0.25], r: 0.085, skin: P(crop.leaf, 'produce', { roughness: 0.45 }), flesh: P(crop.color, 'accent', { roughness: 0.45 }) });
+  const vein = P('#f7efff', 'accent');
+  h.add(mesh(BOX(), vein, [0, 0.006, 0.025], [0.02, 0.004, 0.08]));
+  for (const [r, a] of [[0.032, 0.4], [0.055, 1.2], [0.072, -0.3]]) h.add(mesh(TORUS(r, 0.0045, Math.PI * 1.3), vein, [0, 0.006, 0], 1, [Math.PI / 2, 0, a]));
+  return top;
+};
+
+// A cauliflower's head: a dome of little knobs.
+const CAULIFLOWER = () => studded('cauliflower', 56, () => new THREE.SphereGeometry(0.3, 8, 6).translate(0, 0.86, 0));
+
+B.cauliflower = (g, P, crop) => {
+  const leafM = P(crop.leaf, 'leaf');
+  for (let i = 0; i < 7; i++) leaf(g, leafM, { p: [0, 0.04, 0], len: 0.34, w: 0.13, tilt: 0.5, yaw: i * 0.9, th: 0.04 });
+  g.add(mesh(CAULIFLOWER(), P(crop.color, 'produce', { roughness: 0.8 }), [0, 0.21, 0], [0.2, 0.15, 0.2]));
+  // Inner leaves cup the head and keep the sun off it.
+  const inner = P('#62c84a', 'leaf');
+  for (let i = 0; i < 6; i++) {
+    const yaw = i * (TAU / 6) + 0.5;
+    leaf(g, inner, { p: [Math.sin(yaw) * 0.15, 0.06, Math.cos(yaw) * 0.15], len: 0.24, w: 0.11, tilt: 1.1, yaw, th: 0.03 });
+  }
+  return 0.42;
+};
+
+B.lemongrass = (g, P, crop) => {
+  const stalk = P(crop.color, 'produce', { roughness: 0.5 });
+  const base = P('#e6c8cc', 'accent', { roughness: 0.5 });
+  const blade = P(crop.leaf, 'leaf');
+  const rnd = rand('lemongrass');
+  for (let i = 0; i < 9; i++) {
+    const a = i * 2.4;
+    const out = i % 3;
+    const h = 0.24 + rnd() * 0.08;
+    const s = group(g, [Math.sin(a) * out * 0.04, 0, Math.cos(a) * out * 0.04], 1, [Math.cos(a) * out * 0.12, 0, -Math.sin(a) * out * 0.12]);
+    s.add(mesh(SPHERE_LO(), base, [0, 0.045, 0], [0.028, 0.05, 0.028]));
+    s.add(mesh(CYL(0.75), stalk, [0, h / 2 + 0.05, 0], [0.024, h, 0.024]));
+    leaf(s, blade, { p: [0, h + 0.04, 0], len: 0.36, w: 0.026, tilt: 1.1, yaw: a, th: 0.014 });
+    leaf(s, blade, { p: [0, h * 0.8, 0], len: 0.3, w: 0.024, tilt: 0.55, yaw: a + 2.2, th: 0.014 });
+  }
+  // Cut stalks tied in a bundle, as at the market.
+  const b = group(g, FRONT_FLAT.clone().multiplyScalar(0.31).add(V(0, 0.03, 0)).toArray());
+  b.quaternion.setFromUnitVectors(UPV, RIGHT);
+  for (const [x, z] of [[0, 0], [0.04, 0.02], [0.012, -0.036]]) {
+    b.add(mesh(CAPS(0.022, 0.2), stalk, [x, 0.02, z], 1));
+    b.add(mesh(SPHERE(), base, [x, -0.09, z], 0.024));
+  }
+  b.add(mesh(TORUS(0.058, 0.009, TAU), P('#ff4f5a', 'deco', { roughness: 0.5 }), [0.017, -0.02, -0.005], 1, [Math.PI / 2, 0, 0]));
+  return 0.62;
+};
+
+/** A bamboo shoot breaking out of the ground: brown sheaths wrapped round each other up to a point. */
+function bambooShootAt(g, P, crop, at, s, lean) {
+  const sh = group(g, at, s);
+  sh.quaternion.setFromUnitVectors(UPV, V(lean[0], 1, lean[1]).normalize());
+  const husk = [P(crop.color, 'produce', { roughness: 0.85 }), P('#7e5836', 'produce', { roughness: 0.85 })];
+  for (let k = 0; k < 5; k++) {
+    const r = 0.11 * (1 - k * 0.17);
+    const a = k * 2.2;
+    // Each sheath leans a little to its own side, so their edges overlap on a slant.
+    sh.add(mesh(CONE(), husk[k % 2], [0, 0.07 + k * 0.065, 0], [r, 0.2 - k * 0.015, r], [Math.cos(a) * 0.16, 0, Math.sin(a) * 0.16]));
+  }
+  sh.add(mesh(CONE(), P('#a8b84a', 'accent'), [0, 0.42, 0], [0.018, 0.08, 0.018], [0.25, 0, 0]));
+}
+
+B.bambooShoot = (g, P, crop) => {
+  // A grown cane behind tells the shoots are bamboo.
+  const cane = P('#7cbc4a', 'stem', { roughness: 0.5 });
+  const at = FRONT_FLAT.clone().multiplyScalar(-0.24);
+  g.add(mesh(CYL(0.9), cane, [at.x, 0.4, at.z], [0.026, 0.8, 0.026]));
+  for (let k = 1; k <= 4; k++) g.add(mesh(TORUS(0.026, 0.007, TAU), P('#5e9a3a', 'stem'), [at.x, k * 0.17, at.z], 1 - k * 0.04, [Math.PI / 2, 0, 0]));
+  // Thin twigs with sprays of narrow, drooping leaves.
+  const leafM = P(crop.leaf, 'leaf');
+  for (const [y, yaw] of [[0.8, 0.3], [0.66, 2.6], [0.52, 4.6]]) {
+    const twig = group(g, [at.x, y, at.z], 1, [0, yaw, 0]);
+    twig.add(mesh(CYL(), cane, [0, 0.03, 0.07], [0.006, 0.15, 0.006], [1.1, 0, 0]));
+    for (const off of [-0.6, 0, 0.6]) leaf(twig, leafM, { p: [0, 0.06, 0.13], len: 0.15, w: 0.022, tilt: -0.35 - Math.abs(off) * 0.3, yaw: off });
+  }
+  bambooShootAt(g, P, crop, [0.06, 0, 0.06], 1, [0.05, 0.08]);
+  bambooShootAt(g, P, crop, RIGHT.clone().multiplyScalar(-0.22).toArray(), 0.78, [-0.12, 0.02]);
+  bambooShootAt(g, P, crop, RIGHT.clone().multiplyScalar(0.24).add(V(-0.04, 0, -0.04)).toArray(), 0.62, [0.1, -0.06]);
+  // A peeled one lying in front shows the pale shoot that is eaten.
+  const p = group(g, FRONT_FLAT.clone().multiplyScalar(0.34).add(RIGHT.clone().multiplyScalar(0.1)).setY(0.045).toArray());
+  p.quaternion.setFromUnitVectors(UPV, RIGHT.clone().multiplyScalar(-1).applyAxisAngle(UPV, -0.3));
+  const flesh = P('#f6e6a6', 'accent', { roughness: 0.55 });
+  p.add(mesh(CONE(), flesh, [0, 0, 0], [0.045, 0.17, 0.045]));
+  for (let k = 0; k < 3; k++) p.add(mesh(TORUS(0.034 - k * 0.009, 0.004, TAU), P('#e2c870', 'accent'), [0, -0.05 + k * 0.04, 0], 1, [Math.PI / 2, 0, 0]));
+  return 0.86;
+};
+
+/** A little round pond on the plot, for the plants that grow in water. */
+function pond(g, P, r, x = 0, z = 0) {
+  const disc = geo('pond', () => new THREE.CylinderGeometry(1, 1, 1, 32));
+  g.add(mesh(disc, P('#7a5634', 'deco', { roughness: 0.95 }), [x, 0.006, z], [r + 0.03, 0.012, r + 0.03]));
+  const water = mesh(disc, P('#4fb6cf', 'deco', { roughness: 0.12 }), [x, 0.012, z], [r, 0.012, r]);
+  water.castShadow = false;
+  g.add(water);
+}
+
+// A lotus leaf lying on the water: a flat disc facing up.
+const PAD = () => geo('pad', () => new THREE.CircleGeometry(1, 24).rotateX(-Math.PI / 2));
+
+// A lotus leaf held up on its stalk: a shallow bowl, open at the top, its rim at y = 0.
+const LOTUS_CUP = () =>
+  geo('lotusCup', () => new THREE.SphereGeometry(1, 20, 4, 0, TAU, Math.PI * 0.62, Math.PI * 0.38).translate(0, -Math.cos(Math.PI * 0.62), 0));
+
+/** A lotus leaf of radius r: floating on the water when h is 0, otherwise a bowl held up on a stalk h tall. */
+function lotusLeaf(g, P, crop, [x, z], r, h = 0, tilt = 0.2) {
+  const leafM = P(crop.leaf, 'leaf', { roughness: 0.6, side: THREE.DoubleSide });
+  const heart = P('#9ad87a', 'leaf');
+  if (!h) {
+    g.add(mesh(PAD(), leafM, [x, 0.024, z], r));
+    g.add(mesh(SPHERE_LO(), heart, [x, 0.031, z], [r * 0.12, 0.004, r * 0.12]));
+    return;
+  }
+  g.add(mesh(CYL(0.8), P('#6aa84a', 'stem'), [x, h / 2, z], [0.011, h, 0.011]));
+  const cup = group(g, [x, h, z]);
+  cup.quaternion.setFromUnitVectors(UPV, V(tilt, 1, tilt).normalize());
+  const sy = r * 0.42;
+  cup.add(mesh(LOTUS_CUP(), leafM, [0, (1 + Math.cos(Math.PI * 0.62)) * sy, 0], [r, sy, r]));
+  cup.add(mesh(SPHERE_LO(), heart, [0, 0.006, 0], [r * 0.12, 0.004, r * 0.12]));
+}
+
+/** A lotus seed head: an upside-down cone with the seeds set in its flat top. */
+function lotusPod(parent, P, color, s) {
+  const pod = group(parent, [0, 0, 0], s);
+  pod.add(mesh(CYL(0.55), P(color, 'accent'), [0, 0.03, 0], [0.05, 0.06, 0.05], [Math.PI, 0, 0]));
+  const seed = P('#6a8a2a', 'accent');
+  for (let i = 0; i < 7; i++) {
+    const a = (i / 7) * TAU;
+    pod.add(mesh(SPHERE_LO(), seed, [Math.cos(a) * 0.03, 0.06, Math.sin(a) * 0.03], [0.009, 0.004, 0.009]));
+  }
+  pod.add(mesh(SPHERE_LO(), seed, [0, 0.06, 0], [0.009, 0.004, 0.009]));
+  return pod;
+}
+
+B.lotusFlower = (g, P, crop) => {
+  pond(g, P, 0.36);
+  lotusLeaf(g, P, crop, [-0.2, 0.1], 0.12);
+  lotusLeaf(g, P, crop, [0.12, -0.2], 0.1);
+  lotusLeaf(g, P, crop, [0.22, 0.14], 0.08);
+  lotusLeaf(g, P, crop, [-0.12, -0.14], 0.16, 0.4, 0.25);
+  const stalk = P('#6aa84a', 'stem');
+  const outer = P(crop.color, 'produce');
+  const inner = P('#ffc6dc', 'produce');
+  // The open flower, petals in three rings round the yellow seed head.
+  const at = V(0.05, 0.5, 0.05);
+  g.add(mesh(CYL(0.8), stalk, [at.x, at.y / 2, at.z], [0.013, at.y, 0.013]));
+  const f = group(g, at.toArray());
+  f.quaternion.setFromUnitVectors(UPV, V(0.25, 1, 0.25).normalize());
+  lotusPod(f, P, '#f2d83a', 0.75);
+  [[8, 0.45, 0.17, 0.07, outer, 0], [8, 0.9, 0.16, 0.062, outer, 0.39], [6, 1.28, 0.12, 0.05, inner, 0.2]].forEach(([n, tilt, len, w, m, off]) => {
+    for (let i = 0; i < n; i++) {
+      const yaw = off + (i / n) * TAU;
+      leaf(f, m, { p: [Math.sin(yaw) * 0.02, 0.01, Math.cos(yaw) * 0.02], len, w, tilt, yaw, th: 0.018 });
+    }
+  });
+  // A bud still closed, and a green seed head where a flower has fallen.
+  const bud = RIGHT.clone().multiplyScalar(0.2).add(V(-0.05, 0, -0.05));
+  g.add(mesh(CYL(0.8), stalk, [bud.x, 0.19, bud.z], [0.011, 0.38, 0.011]));
+  g.add(mesh(SPHERE(), outer, [bud.x, 0.44, bud.z], [0.045, 0.08, 0.045]));
+  g.add(mesh(CONE(), outer, [bud.x, 0.53, bud.z], [0.03, 0.06, 0.03]));
+  const seedHead = RIGHT.clone().multiplyScalar(-0.24).add(V(0.02, 0, 0.02));
+  g.add(mesh(CYL(0.8), stalk, [seedHead.x, 0.15, seedHead.z], [0.01, 0.3, 0.01]));
+  lotusPod(group(g, [seedHead.x, 0.3, seedHead.z], 1, [0.35, 0, -0.35]), P, '#9ac84a', 1);
+  return 0.72;
+};
+
+B.lotusRoot = (g, P, crop) => {
+  pond(g, P, 0.28, -0.08, -0.08);
+  lotusLeaf(g, P, crop, [-0.2, 0.0], 0.1);
+  lotusLeaf(g, P, crop, [-0.18, -0.2], 0.16, 0.44, 0.25);
+  lotusLeaf(g, P, crop, [0.02, -0.24], 0.12, 0.3, 0.3);
+  // The root, dug out of the mud: plump pieces joined in a chain.
+  const skin = P(crop.color, 'produce', { roughness: 0.45 });
+  const joint = P('#b88a64', 'accent');
+  const chain = group(g, FRONT_FLAT.clone().multiplyScalar(0.2).add(V(0, 0.055, 0)).toArray());
+  chain.quaternion.setFromUnitVectors(UPV, RIGHT.clone().applyAxisAngle(UPV, 0.3));
+  let y = -0.22;
+  for (const [len, r] of [[0.06, 0.045], [0.09, 0.054], [0.05, 0.042]]) {
+    chain.add(mesh(CAPS(r, len), skin, [0, y + len / 2 + r, 0], 1));
+    y += len + r * 2 - 0.015;
+    chain.add(mesh(SPHERE_LO(), joint, [0, y + 0.006, 0], [r * 0.5, 0.016, r * 0.5]));
+  }
+  // A slice shows the ring of holes that carry air down to the root.
+  const sl = group(g, FRONT_FLAT.clone().multiplyScalar(0.3).add(RIGHT.clone().multiplyScalar(0.26)).setY(0.045).toArray());
+  sl.quaternion.setFromUnitVectors(UPV, V(0.6, 1, 0.6).normalize());
+  sl.add(mesh(CYL(), skin, [0, 0, 0], [0.075, 0.022, 0.075]));
+  sl.add(mesh(CYL(), P('#fdf5e8', 'accent', { roughness: 0.5 }), [0, 0.002, 0], [0.068, 0.022, 0.068]));
+  const hole = P('#8a6446', 'accent');
+  for (let i = 0; i < 7; i++) {
+    const a = (i / 7) * TAU;
+    sl.add(mesh(CYL(), hole, [Math.cos(a) * 0.042, 0.01, Math.sin(a) * 0.042], [0.016, 0.006, 0.016]));
+  }
+  sl.add(mesh(CYL(), hole, [0, 0.01, 0], [0.011, 0.006, 0.011]));
+  return 0.6;
 };
 
 // ── Growth stages ─────────────────────────────────────────────
