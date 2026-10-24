@@ -58,6 +58,8 @@ export const PLOT_UNLOCK = [
   10, 5, 5, 12,
 ];
 
+// Every crop grows in this share of the time crops.js lists (cut by 30%, 2026-10-24).
+export const GROW_TIME = 0.7;
 export const growReduction = (level) => Math.min(0.4, (level - 1) * 0.0125);
 export const priceBonus = (level) => (level - 1) * 0.036;
 export const energyBonus = (level) => (level - 1) * 0.012;

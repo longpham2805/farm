@@ -26,6 +26,23 @@ function roundFruit(base, dark, { cx = 50, cy = 56, rx = 33, ry = rx, pores = nu
     + (top ? stroke(`M${cx - 1} ${cy - ry + 1}Q${cx - 1} ${cy - ry - 4} ${cx + 2} ${cy - ry - 6}`, WOOD, 2.6) + leaf(cx + 1, cy - ry - 3, 22, 7.5, leafRot) : '');
 }
 
+/** A head of cabbage between two outer leaves, each given as [colour, dark side, veins]. */
+function cabbageHead([head, headDark, vein], [side, sideDark, sideVein], eyes = OL) {
+  const veins = line('M50 86L50 66M50 86Q36 74 30 60M50 86Q64 74 70 60', vein, 2, 0.8);
+  const d = 'M50 92C24 92 8 74 12 52C14 40 22 32 30 32C22 50 26 76 50 92Z';
+  return body(circle(50, 56, 32), head, headDark, veins + line('M20 46Q34 32 50 42Q66 32 80 46', OL, 2.2))
+    + body(d, side, sideDark, line('M14 56Q20 74 40 86', sideVein, 1.6))
+    + body(d, side, sideDark, line('M14 56Q20 74 40 86', sideVein, 1.6), { transform: 'translate(100 0) scale(-1 1)' })
+    + gloss(64, 34, 2.4, 6, -50) + face(50, 56, 0.85, eyes);
+}
+
+/** A lotus petal from the flower's foot at (50, 80), turned rot degrees, its tip a deeper pink. */
+function lotusPetal(rot, len, w, [base, dark, tip]) {
+  const d = `M0 0C${-w} ${f(-len * 0.3)} ${f(-w * 0.85)} ${f(-len * 0.72)} 0 ${-len}C${f(w * 0.85)} ${f(-len * 0.72)} ${w} ${f(-len * 0.3)} 0 0Z`;
+  return body(d, base, dark, `<ellipse cx="0" cy="${-len}" rx="${w}" ry="${f(len * 0.34)}" fill="${tip}"/>`,
+    { transform: `translate(50 80) rotate(${rot})`, dx: 3, dy: -3 });
+}
+
 const ICONS = {
   // ── Tier 1 ──
   radish() {
@@ -115,12 +132,7 @@ const ICONS = {
   },
 
   cabbage() {
-    const veins = line('M50 86L50 66M50 86Q36 74 30 60M50 86Q64 74 70 60', '#eaffcf', 2, 0.8);
-    const side = 'M50 92C24 92 8 74 12 52C14 40 22 32 30 32C22 50 26 76 50 92Z';
-    return body(circle(50, 56, 32), '#b6f26a', '#93d64a', veins + line('M20 46Q34 32 50 42Q66 32 80 46', OL, 2.2))
-      + body(side, '#72d040', '#56b83a', line('M14 56Q20 74 40 86', '#9ae866', 1.6))
-      + body(side, '#72d040', '#56b83a', line('M14 56Q20 74 40 86', '#9ae866', 1.6), { transform: 'translate(100 0) scale(-1 1)' })
-      + gloss(64, 34, 2.4, 6, -50) + face(50, 56, 0.85);
+    return cabbageHead(['#b6f26a', '#93d64a', '#eaffcf'], ['#72d040', '#56b83a', '#9ae866']);
   },
 
   sunflower() {
@@ -526,6 +538,64 @@ const ICONS = {
     return stroke('M50 16L50 6', '#6b4a2a', 4.4)
       + body(ellipse(50, 56, 30, 39), '#a8b43a', '#86922a', line(knobs, '#6f7c1c', 1.2, 0.75))
       + gloss(66, 34, 2.8, 8, -30) + face(50, 60, 0.85);
+  },
+
+  // ── Levels 16–29 ──
+  purpleCabbage() {
+    return cabbageHead(['#a952e6', '#8434c8', '#f1dcff'], ['#7a62d6', '#5c46b8', '#a896ec'], DEEP);
+  },
+
+  cauliflower() {
+    const curd = [[28, 50, 13], [38, 36, 14], [62, 36, 14], [72, 50, 13], [50, 30, 14], [50, 50, 18]];
+    const knobs = line('M31 42q4 -4 8 0M57 29q4 -4 8 0M43 22q4 -4 8 0M66 45q4 -4 8 0M19 52q4 -4 8 0M72 56q4 -4 8 0', '#e4d2a2', 1.8);
+    const wrap = 'M52 94C30 94 12 82 8 60C8 55 12 53 17 56C26 63 38 66 56 66Z';
+    const vein = line('M14 62Q28 76 50 84', '#7ad866', 1.6);
+    return leaf(30, 64, 34, 10, -145) + leaf(70, 64, 34, 10, -35)
+      + cloud(curd, '#fff8e8') + knobs
+      + body(wrap, LEAF, LEAF_DARK, vein) + body(wrap, LEAF, LEAF_DARK, vein, { transform: 'translate(100 0) scale(-1 1)' })
+      + gloss(66, 28, 2.4, 5.5, -45) + face(50, 50, 0.8);
+  },
+
+  lemongrass() {
+    const side = 'M45 40C45 36 55 36 55 40L56 86C56 93 44 93 44 86Z';
+    const main = 'M40 34C40 28 60 28 60 34L62 84C62 94 38 94 38 84Z';
+    const pink = '<path d="M20 86L80 86L80 100L20 100Z" fill="#efc4d4"/>';
+    return leaf(31, 42, 34, 4.5, -125, '#4fb83a') + leaf(69, 42, 34, 4.5, -55, '#4fb83a')
+      + leaf(50, 32, 38, 4.5, -101, '#62c24a') + leaf(50, 32, 32, 4, -77, '#6fd04a')
+      + body(side, '#eaf4b8', '#c8d884', pink, { transform: 'rotate(-22 50 88)' })
+      + body(side, '#eaf4b8', '#c8d884', pink, { transform: 'rotate(22 50 88)' })
+      + body(main, '#f2f8cc', '#d4e294', pink + line('M45 36L46 62', '#fbffe6', 2.2, 0.8))
+      + `<rect x="31" y="66" width="38" height="7" rx="3" fill="#ff5a5a" stroke="${OL}" stroke-width="2.4"/>`
+      + gloss(56, 38, 1.6, 4.5, -4) + face(50, 48, 0.56);
+  },
+
+  bambooShoot() {
+    const sheaths = line('M40 30Q50 37 60 30M33 46Q50 57 67 46M24 82Q50 95 76 82', '#8a5426', 2.4);
+    const hairs = dots([[42, 34], [56, 34], [36, 51], [48, 54], [62, 51], [30, 86], [44, 90], [58, 90], [70, 86]], 1.1, '#7a4a22');
+    return leaf(50, 12, 12, 4, -60, '#b8cf4a') + leaf(50, 12, 11, 3.6, -118, '#a6c044')
+      + body('M50 8C55 20 62 34 70 52C78 70 82 82 76 88C66 96 34 96 24 88C18 82 22 70 30 52C38 34 45 20 50 8Z', '#e2a85c', '#c08040', sheaths + hairs)
+      + gloss(62, 40, 2.2, 6.5, -25) + face(50, 66, 0.8);
+  },
+
+  lotusRoot() {
+    const rings = line('M26 34Q21 46 26 58M75 34Q80 46 75 58', '#d0a67e', 2);
+    const holes = Array.from({ length: 7 }, (_, i) => [68 + Math.cos((i / 7) * TAU - 1.2) * 9, 74 + Math.sin((i / 7) * TAU - 1.2) * 9]);
+    return `<g transform="rotate(-16 50 46)">`
+      + body(ellipse(13, 46, 8, 11), '#f2d8b8', '#d8b48e')
+      + body(ellipse(50, 46, 34, 19), '#f8e4c8', '#dfbc94', rings + dots([[34, 34], [62, 58], [70, 36]], 1, '#c8a07a'))
+      + gloss(68, 33, 2.4, 6.5, -70) + face(46, 46, 0.78) + '</g>'
+      + body(circle(68, 74, 17), '#fff6e8', '#efd8b6', `<circle cx="68" cy="74" r="14.5" fill="none" stroke="#e6c69c" stroke-width="1.6"/>`
+        + dots(holes, 3.2, '#c49a72') + dots([[68, 74]], 2.4, '#c49a72'));
+  },
+
+  lotusFlower() {
+    const back = ['#ffd6e6', '#f4aac8', '#ff8cbc'];
+    const front = ['#ffc8de', '#f498c0', '#ff74aa'];
+    return body(ellipse(50, 84, 42, 12), '#3fae6a', '#2a8a52', line('M50 84L74 77', '#2a8a52', 2) + line('M50 84L28 76M50 84L62 94', '#5cc888', 1.4))
+      + lotusPetal(-62, 38, 12, back) + lotusPetal(62, 38, 12, back)
+      + lotusPetal(-34, 46, 14, back) + lotusPetal(34, 46, 14, back) + lotusPetal(0, 52, 14, back)
+      + lotusPetal(-14, 40, 16, front) + lotusPetal(14, 40, 16, front) + lotusPetal(0, 44, 21, front)
+      + gloss(59, 48, 1.8, 5, -20) + face(50, 60, 0.62);
   },
 };
 

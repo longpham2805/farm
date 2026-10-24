@@ -3,7 +3,7 @@
 //  xp     – farm XP per harvested plant
 //  yield  – items per harvest (watering adds +1 each, up to +2)
 //  sell   – coins per item when sold (before level bonus / mutation multiplier)
-//  grow   – seconds to grow (before level reduction)
+//  grow   – seconds to grow, before GROW_TIME and the level's reduction (config.js)
 //  variants – number of looks in the encyclopedia (index 0 = normal)
 //  tags: exp (lots of XP), special (cute character crop), lucky (+5% mutation)
 //  colors: used by the 3D models and UI
@@ -72,24 +72,36 @@ export const CROPS = [
     name: { vi: 'Bé Việt Quất Hiệp Sĩ', en: 'Blueberry Knight' }, color: '#3b4ff0', leaf: '#3fae35' },
   { id: 'mango', tier: 3, unlock: 15, price: 380, xp: 95, yield: 6, sell: 520, grow: 25920, variants: 3,
     name: { vi: 'Xoài', en: 'Mango' }, color: '#ffb800', leaf: '#2fa83a' },
+  { id: 'purpleCabbage', tier: 3, unlock: 16, price: 390, xp: 100, yield: 6, sell: 540, grow: 27000, variants: 3,
+    name: { vi: 'Bắp cải tím', en: 'Purple Cabbage' }, color: '#9a3fd6', leaf: '#7a62cc' },
 
   // ── Tier 4 · red ────────────────────────────────────────────
   { id: 'dragonFruit', tier: 4, unlock: 17, price: 420, xp: 210, yield: 6, sell: 640, grow: 30240, variants: 5,
     name: { vi: 'Thanh long', en: 'Dragon Fruit' }, color: '#ff2d95', leaf: '#3fcf4a' },
   { id: 'mangosteen', tier: 4, unlock: 18, price: 408, xp: 200, yield: 6, sell: 609, grow: 29700, variants: 5, tags: ['special'],
     name: { vi: 'Bé Măng Cụt', en: 'Mangosteen Buddy' }, color: '#7a1f8a', leaf: '#3fb83a' },
+  { id: 'cauliflower', tier: 4, unlock: 19, price: 432, xp: 220, yield: 6, sell: 645, grow: 31200, variants: 3,
+    name: { vi: 'Súp lơ trắng', en: 'Cauliflower' }, color: '#fbf4dc', leaf: '#45b83a' },
   { id: 'avocado', tier: 4, unlock: 20, price: 459, xp: 240, yield: 6, sell: 685, grow: 32700, variants: 3,
     name: { vi: 'Bơ', en: 'Avocado' }, color: '#4f9a1f', leaf: '#2fa83a' },
+  { id: 'lemongrass', tier: 4, unlock: 21, price: 480, xp: 250, yield: 7, sell: 690, grow: 34200, variants: 3,
+    name: { vi: 'Củ sả', en: 'Lemongrass' }, color: '#e2eda0', leaf: '#62c24a' },
   { id: 'broccoli', tier: 4, unlock: 22, price: 502, xp: 260, yield: 6, sell: 750, grow: 35640, variants: 5, tags: ['special'],
     name: { vi: 'Bé Bông Cải Nơ Hồng', en: 'Bow Broccoli' }, color: '#3fc23a', leaf: '#33b833' },
+  { id: 'bambooShoot', tier: 4, unlock: 23, price: 495, xp: 270, yield: 6, sell: 745, grow: 34560, variants: 3,
+    name: { vi: 'Củ măng', en: 'Bamboo Shoot' }, color: '#a8825a', leaf: '#5aae3a' },
   { id: 'watermelon', tier: 4, unlock: 24, price: 480, xp: 280, yield: 6, sell: 720, grow: 32400, variants: 3,
     name: { vi: 'Dưa hấu', en: 'Watermelon' }, color: '#2fae2a', leaf: '#45c23a' },
   { id: 'pineapple', tier: 4, unlock: 25, price: 520, xp: 300, yield: 6, sell: 790, grow: 36720, variants: 5, tags: ['special'],
     name: { vi: 'Bé Dứa', en: 'Pineapple Pal' }, color: '#ffbf1a', leaf: '#33b833' },
   { id: 'lychee', tier: 4, unlock: 26, price: 500, xp: 290, yield: 7, sell: 700, grow: 34560, variants: 3,
     name: { vi: 'Vải thiều', en: 'Lychee' }, color: '#f21d4a', leaf: '#2f9e35' },
+  { id: 'lotusRoot', tier: 4, unlock: 27, price: 525, xp: 305, yield: 6, sell: 790, grow: 37800, variants: 3,
+    name: { vi: 'Củ sen', en: 'Lotus Root' }, color: '#f2dcc2', leaf: '#3faa6a' },
   { id: 'pear', tier: 4, unlock: 28, price: 540, xp: 320, yield: 6, sell: 820, grow: 38880, variants: 8, tags: ['lucky'],
     name: { vi: 'Lê vàng', en: 'Golden Pear' }, color: '#e6e81a', leaf: '#3fbf3a' },
+  { id: 'lotusFlower', tier: 4, unlock: 29, price: 430, xp: 800, yield: 6, sell: 660, grow: 41040, variants: 5, tags: ['exp'],
+    name: { vi: 'Hoa sen', en: 'Lotus' }, color: '#ff7fb2', leaf: '#3faa6a' },
   { id: 'durian', tier: 4, unlock: 30, price: 600, xp: 400, yield: 5, sell: 1200, grow: 43200, variants: 8,
     name: { vi: 'Sầu riêng', en: 'Durian' }, color: '#b5cf1a', leaf: '#33a835' },
 
@@ -160,7 +172,7 @@ export const RENAMED_CROPS = {
   wheat: 'rice',
   purpleRadish: 'beet',
   fox: 'papaya',
-  lotus: 'mangosteen',
+  lotus: 'mangosteen', // so today's lotus is lotusFlower
   lantern: 'orange',
   gentian: 'durian',
   dahlia: 'avocado',

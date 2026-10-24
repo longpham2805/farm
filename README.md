@@ -27,7 +27,7 @@ Everything is in Vietnamese by default; English can be picked in Settings.
    Each level grows plants faster, raises prices and opens more plots and seeds.
 6. **Mutations**: when a plant ripens it may turn into a rare look (golden, ruby, frost,
    pearl, shadow, rainbow…). The rarest ones wear a crown or a halo and shine with a beam.
-7. **Collection** (*Bách khoa*): 58 fruits and vegetables with 249 looks to discover.
+7. **Collection** (*Bách khoa*): 64 fruits, vegetables and flowers with 269 looks to discover.
    A full set or a milestone gives a gift.
 8. **Nutrition** (*Dinh dưỡng*): the shop, the barn and the new-plant card show what is
    good inside each crop (vitamin A, C, K, iron, fibre…). Tap a badge to hear what it does.
@@ -128,7 +128,7 @@ candy crops become fruits of the same tier (see `RENAMED_CROPS`).
 | `src/ui/` | HUD, bottom bars and the menus (shop, barn, collection, quests, chests…); `cropIcons.js` draws each crop's picture for the menus as SVG (mutated looks and the collection still use the 3D renders in `src/three/thumbs.js`), `icons.js` the interface's icons and the chests, `avatars.js` the avatars, all with the kit in `draw.js`; no emoji are left in the interface |
 | `src/i18n.js` | Vietnamese and English text |
 | `public/` | App manifest and icons, the painting in tiles (`backdrop/`: four sharp and one fast) and the river's water maps; `vite.config.js` writes the offline service worker |
-| `dev/gallery.html` | Shows every crop model (`?mode=thumbs` lists all 249 looks) |
+| `dev/gallery.html` | Shows every crop model (`?mode=thumbs` lists all 269 looks) |
 | `dev/nature.html` | Shows the nature models (`?pack` in the pack's own colours) |
 | `dev/animals.html` | The animals close up (`?set=ducks`, `?set=birds`…) |
 | `dev/plants.html` | One plant kind beside the reference design wherever it draws one, then a few seeds close up (`?set=pines`) |
